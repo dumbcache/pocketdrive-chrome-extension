@@ -1,0 +1,253 @@
+@import url("https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+#krabWrapper .krab,
+#krabStatusWrapper .krab {
+    font-family: "Ubuntu", sans-serif;
+    line-height: 1;
+    font-size: 16px;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background: none;
+}
+
+#krabWrapper .div {
+    user-select: none;
+}
+
+#krabWrapper {
+    box-sizing: border-box;
+    width: 280px;
+    height: 75px;
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    padding: 20px;
+    z-index: 1000000000;
+    font-size: 16px;
+    background-color: #fff;
+    border-radius: 5px;
+    color: #000;
+    box-shadow: 0 0 5px 1px #0005;
+}
+#krabStatusWrapper {
+    position: fixed;
+    z-index: 10000000000;
+    top: 10px;
+    right: 10px;
+    width: 250px;
+    background-color: #fff;
+    border-radius: 5px;
+    color: #000;
+    box-shadow: 0 0 5px 1px #0005;
+    padding: 20px;
+}
+#krabStatusWrapper .krabStatusText {
+    border-radius: 5px;
+    width: 100%;
+    text-decoration: none;
+    outline: none;
+    border: none;
+}
+#krabStatusWrapper .statusImg {
+    max-width: 24px;
+    max-height: 24px;
+    background: none;
+    box-shadow: none;
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translate(-50%, -50%);
+    filter: none;
+    display: none;
+}
+@keyframes spin {
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+#krabStatusWrapper .statusScroll {
+    display: initial;
+    animation: spin 1.5s linear 0s infinite;
+}
+
+#krabWrapper .krabMain {
+    width: 100%;
+    background: none;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#krabWrapper .menuImg {
+    max-width: 30px;
+    max-height: 30px;
+    background: none;
+}
+#krabWrapper .doneImg {
+    max-width: 20px;
+    max-height: 20px;
+    background: none;
+}
+#krabWrapper .cancelImg {
+    max-width: 16px;
+    max-height: 16px;
+    background: none;
+}
+
+#krabWrapper .statusImg:hover,
+#krabWrapper .statusImg:hover::after,
+#krabWrapper .statusImg:hover::before {
+    background: none;
+    box-shadow: none;
+    filter: none;
+}
+#krabWrapper .img:hover,
+#krabWrapper .img:hover::after,
+#krabWrapper .img:hover::before {
+    background: none;
+    background-color: none;
+    box-shadow: none;
+    filter: invert(0.5);
+}
+
+#krabWrapper .button:hover,
+#krabWrapper .button:hover::after,
+#krabWrapper .button:hover::before {
+    background: none;
+    box-shadow: none;
+}
+
+#krabWrapper .menuButton,
+#krabWrapper .doneButton,
+#krabWrapper .cancelButton {
+    text-decoration: none;
+    padding: 0;
+    margin: 0;
+    line-height: 1.5;
+    min-width: fit-content;
+    height: fit-content;
+    line-height: 0;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    border-radius: 5px;
+    background: none !important;
+    box-shadow: none;
+}
+
+#krabWrapper .doneButton {
+    position: absolute;
+    top: 50%;
+    right: 3px;
+    transform: translate(0%, -50%);
+    width: 16px;
+    padding: 2px;
+}
+#krabWrapper .cancelButton {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 16px;
+}
+
+#krabWrapper .recentWrapper {
+    display: initial;
+    position: relative;
+    width: 200px;
+}
+
+#krabWrapper .dirWrapper {
+    display: none;
+    position: absolute;
+    top: 0px;
+    right: 281px;
+    border-radius: 5px;
+    width: 200px;
+    background: #fff;
+    box-shadow: 0 0 5px 1px #0005;
+}
+#krabWrapper .childDirs,
+#krabWrapper .dirs,
+#krabWrapper .recentDirs {
+    display: none;
+    position: absolute;
+    top: 21px;
+    right: 0px;
+    width: 200px;
+    border-radius: 5px;
+    overflow-y: scroll;
+    background-color: #fff;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 5px 1px #0005;
+}
+#krabWrapper .dirs,
+#krabWrapper .childDirs {
+    display: block;
+    top: 36px;
+    max-height: 300px;
+}
+#krabWrapper .recentDirs {
+    top: 35px;
+    max-height: 150px;
+}
+
+#krabWrapper .recentSelect,
+#krabWrapper .dirInput {
+    width: 100%;
+    height: 35px;
+    padding: 5px;
+    background: inherit;
+    text-decoration: none;
+    outline: none;
+    border: none;
+    border-radius: 5px;
+    background-color: #ddd;
+}
+#krabWrapper .dirInput::placeholder {
+    color: #444;
+}
+
+#krabWrapper .recentSelect {
+    width: 100%;
+    cursor: pointer;
+    padding-right: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 25px;
+}
+
+#krabWrapper .option {
+    padding: 7px 5px;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: none;
+}
+#krabWrapper .option:hover {
+    background-color: #0005;
+}
+#krabWrapper .option:first-child {
+    padding-top: 10px;
+}
+#krabWrapper .option:last-child {
+    padding-bottom: 10px;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+::-webkit-scrollbar-track {
+    background: #0002;
+    backdrop-filter: blur(10px);
+}
+::-webkit-scrollbar-thumb {
+    background: #1459;
+    border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #022;
+}
