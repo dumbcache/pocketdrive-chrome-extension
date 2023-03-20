@@ -66,7 +66,7 @@
 
     const krabMain = createElement("div", [["class", "krabMain"]]);
     const statusText = createElement("div", [["class", "krabStatusText"]]);
-    statusText.innerHTML = "Uploading...";
+    statusText.innerText = "Uploading...";
 
     const menuIcon = createElement("img", [
         ["class", "menuImg"],
@@ -250,11 +250,16 @@
             }
             if (message.context === "uploadStatus") {
                 statusIcon.style.display = "none";
-                message.status === 200
-                    ? (successIcon.style.display = "initial")
-                    : (errorIcon.style.display = "initial");
+                if (message.status === 200) {
+                    statusText.innerText = "success";
+                    successIcon.style.display = "initial";
+                } else {
+                    statusText.innerText = "failed";
+                    errorIcon.style.display = "initial";
+                }
                 setTimeout(() => {
                     krabStatusWrapper.style.display = "none";
+                    statusText.innerText = "Uploading...";
                     statusIcon.style.display = "initial";
                     successIcon.style.display = "none";
                     errorIcon.style.display = "none";

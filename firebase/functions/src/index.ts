@@ -15,10 +15,6 @@ import type {
     DirListResponse,
 } from "../types";
 
-const router = express();
-router.use(cors());
-router.use(express.json());
-
 dotenv.config();
 const app = initializeApp();
 const firestore = getFirestore(app);
@@ -149,6 +145,16 @@ const fetchImgExternal = async (req: Request, res: Response) => {
 export const authenticate = functions.https.onRequest(async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
     res.send(await getFSToken());
+});
+
+const router = express();
+router.use(cors());
+router.use(express.json());
+router.use((req, res, next) => {
+    console.log("------------------------------------");
+    console.log(req.get("host"));
+    console.log(req.get("origin"));
+    next();
 });
 
 router.route("/dirs").post(async (req, res) => {

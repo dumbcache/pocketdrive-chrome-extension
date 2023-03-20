@@ -237,17 +237,17 @@
     padding-bottom: 10px;
 }
 
-::-webkit-scrollbar {
+#krabWrapper ::-webkit-scrollbar {
     width: 5px;
 }
-::-webkit-scrollbar-track {
+#krabWrapper ::-webkit-scrollbar-track {
     background: #0002;
     backdrop-filter: blur(10px);
 }
-::-webkit-scrollbar-thumb {
+#krabWrapper ::-webkit-scrollbar-thumb {
     background: #1459;
     border-radius: 5px;
 }
-::-webkit-scrollbar-thumb:hover {
+#krabWrapper ::-webkit-scrollbar-thumb:hover {
     background: #022;
 }
