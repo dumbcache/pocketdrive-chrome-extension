@@ -11,6 +11,13 @@ export interface FSToken {
     refreshToken: string;
 }
 
+export interface UserData {
+    jwt: string;
+    mail: string;
+    pass: string;
+    secret: string;
+}
+
 export interface ImgMeta {
     name?: string;
     mimeType?: string;

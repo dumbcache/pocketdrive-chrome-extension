@@ -1,0 +1,22 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+.loginWrapper {
+    width: 200px;
+    padding: 0.5rem;
+}
+.loginForm {
+    font-family: "Ubuntu", sans-serif;
+    width: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+input,
+button {
+    font: inherit;
+    padding: 3px;
+}

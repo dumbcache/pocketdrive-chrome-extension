@@ -19,6 +19,9 @@
         "service_worker": "sw.js"
     },
     "permissions": ["activeTab", "scripting", "contextMenus", "storage"],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'"
+    },
     "commands": {
         "_execute_action": {
             "suggested_key": {

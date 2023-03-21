@@ -6,6 +6,8 @@ import * as dotenv from "dotenv";
 import fetch from "node-fetch";
 import express, { Request, Response } from "express";
 import cors from "cors";
+import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 import type {
     GOauthTokenReponse,
@@ -13,6 +15,7 @@ import type {
     ImgMeta,
     CreateImgResponse,
     DirListResponse,
+    UserData,
 } from "../types";
 
 dotenv.config();
@@ -47,6 +50,30 @@ const getFSToken = async () => {
             ? tokenData.accessToken
             : await getGOatuthToken(tokenData.refreshToken);
     return { accessToken };
+};
+
+const createJWT = (user: string, secret: string) => {
+    const token = jwt.sign({ name: user }, secret, {
+        expiresIn: 60 * 60 * 24,
+        issuer: process.env.ISSUER,
+    });
+    let query = firestore.doc(`users/${user}`);
+    query.update({ jwt: token });
+    return token;
+};
+
+const authenticateUser = async (
+    user: string,
+    pass: string
+): Promise<{ auth: Boolean; secret?: string }> => {
+    let query = firestore.doc(`users/${user}`);
+    const userData = (await query.get()).data() as UserData;
+    const passHash = crypto.createHash("sha256").update(pass).digest("hex");
+    if (userData.pass === passHash) {
+        return { auth: true, secret: userData.secret };
+    } else {
+        return { auth: false };
+    }
 };
 
 const patchImgMetaData = async (
@@ -151,10 +178,29 @@ const router = express();
 router.use(cors());
 router.use(express.json());
 router.use((req, res, next) => {
-    console.log("------------------------------------");
+    console.log("----------------------------");
     console.log(req.get("host"));
     console.log(req.get("origin"));
     next();
+});
+
+router.route("/login").post(async (req, res) => {
+    try {
+        let { user, pass } = req.body;
+        if (!user || !pass) {
+            res.status(401).send({ cause: "wrong credentials" });
+            return;
+        }
+        const { auth, secret } = await authenticateUser(user, pass);
+        if (!auth) {
+            res.status(401).send({ cause: "wrong credentials" });
+        }
+        let token = createJWT(user, secret!);
+        res.status(200).send({ token });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ cause: "unable to verify user at the moment" });
+    }
 });
 
 router.route("/dirs").post(async (req, res) => {
