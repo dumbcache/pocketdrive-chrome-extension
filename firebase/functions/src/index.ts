@@ -181,6 +181,7 @@ router.use((req, res, next) => {
     console.log("----------------------------");
     console.log(req.get("host"));
     console.log(req.get("origin"));
+    console.log(req.headers.authorization);
     next();
 });
 
@@ -188,12 +189,14 @@ router.route("/login").post(async (req, res) => {
     try {
         let { user, pass } = req.body;
         if (!user || !pass) {
+            console.log("creds missing");
             res.status(401).send({ cause: "wrong credentials" });
             return;
         }
         const { auth, secret } = await authenticateUser(user, pass);
         if (!auth) {
             res.status(401).send({ cause: "wrong credentials" });
+            return;
         }
         let token = createJWT(user, secret!);
         res.status(200).send({ token });

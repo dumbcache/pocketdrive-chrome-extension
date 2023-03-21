@@ -51,10 +51,12 @@ try {
 
     const fetchDirs = async (parents) => {
         let url = "http://127.0.0.1:5001/dumbcache4658/us-central1/utils/dirs";
+        const { access_token } = await chrome.storage.local.get("access_token");
         let req = await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${access_token}`,
             },
             body: JSON.stringify(parents),
         });
@@ -69,11 +71,13 @@ try {
 
     const uploadRequest = async (parents, img) => {
         let url = "http://127.0.0.1:5001/dumbcache4658/us-central1/utils/pics";
+        const { access_token } = await chrome.storage.local.get("access_token");
         let body = { ...img, parents };
         let req = await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${access_token}`,
             },
             body: JSON.stringify(body),
         });
@@ -154,6 +158,7 @@ try {
                 }
                 if (message.context === "loginSubmit") {
                     const creds = message.creds;
+                    console.log(creds);
                     let req = await fetch(
                         "http://127.0.0.1:5001/dumbcache4658/us-central1/utils/login",
                         {
@@ -166,7 +171,8 @@ try {
                         return;
                     }
                     const { token } = await req.json();
-                    chrome.storage.local.set({ access_token: token });
+                    await chrome.storage.local.set({ access_token: token });
+                    console.log(token);
                 }
             } catch ({ message, cause }) {
                 chrome.tabs.sendMessage(sender.tab.id, {

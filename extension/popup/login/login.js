@@ -7,6 +7,6 @@ form.onsubmit = async (e) => {
     }
     const res = await chrome.runtime.sendMessage({
         context: "loginSubmit",
-        createImageBitmap,
+        creds,
     });
 };
