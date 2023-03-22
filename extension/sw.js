@@ -1,5 +1,5 @@
 try {
-    chrome.runtime.onInstalled.addListener(async () => {
+    const initContextMenus = () => {
         chrome.contextMenus.create({
             id: "save",
             title: "KrabSave",
@@ -10,7 +10,30 @@ try {
             title: "KrabRefresh",
             contexts: ["page"],
         });
-        init();
+    };
+
+    chrome.runtime.onInstalled.addListener(async () => {
+        let { loginStatus } = await chrome.storage.local.get("loginStatus");
+        if (loginStatus === 1) {
+            await chrome.action.setIcon({ path: "images/krabs.png" });
+            initContextMenus();
+            init();
+        } else {
+            await chrome.action.setIcon({ path: "images/krabsOff.png" });
+            await chrome.storage.local.set({ loginStatus: 0 });
+        }
+    });
+
+    chrome.storage.onChanged.addListener(async (changes) => {
+        if (changes.loginStatus) {
+            let { newValue } = changes.loginStatus;
+            if (newValue === 1) {
+                chrome.action.setIcon({ path: "images/krabs.png" });
+            } else {
+                chrome.action.setIcon({ path: "images/krabsOff.png" });
+                chrome.contextMenus.removeAll();
+            }
+        }
     });
 
     const init = async () => {
@@ -112,11 +135,11 @@ try {
 
     chrome.action.onClicked.addListener(async (tab) => {
         try {
-            console.log("clicked");
-            await chrome.action.setPopup({
-                popup: "popup/login/login.html",
-                tabId: tab.id,
-            });
+            const { loginStatus } = await chrome.storage.local.get(
+                "loginStatus"
+            );
+            if (loginStatus === 0) {
+            }
         } catch (error) {
             console.error("error", error);
         }
@@ -156,10 +179,10 @@ try {
                         status,
                     });
                     updateRecents(id, dirName);
+                    chrome.storage.local.remove("img");
                 }
                 if (message.context === "loginSubmit") {
                     const creds = message.creds;
-                    console.log(creds);
                     let req = await fetch(
                         "http://127.0.0.1:5001/dumbcache4658/us-central1/utils/login",
                         {
@@ -169,18 +192,32 @@ try {
                         }
                     );
                     if (req.status !== 200) {
+                        await chrome.storage.local.set({
+                            access_token: "",
+                            loginStatus: 0,
+                        });
                         return;
                     }
                     const { token } = await req.json();
-                    await chrome.storage.local.set({ access_token: token });
-                    console.log(token);
+                    await chrome.storage.local.set({
+                        access_token: token,
+                        username: creds.user,
+                        loginStatus: 1,
+                    });
+                    chrome.action.setIcon({ path: "images/krabs.png" });
+                    initContextMenus();
+                    console.log("session logged in");
+                    chrome.runtime.sendMessage({
+                        context: "loginStatus",
+                        status: 200,
+                    });
                 }
-            } catch ({ message, cause }) {
-                chrome.tabs.sendMessage(sender.tab.id, {
-                    context: "uploadStatus",
-                    status: 500,
-                });
-                console.error(message, cause);
+                if (message.context === "logoutSubmit") {
+                    console.log("session logged out");
+                    chrome.storage.local.set({ loginStatus: 0 });
+                }
+            } catch (error) {
+                console.error(error);
             }
         }
     );

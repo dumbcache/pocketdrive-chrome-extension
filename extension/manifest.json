@@ -4,10 +4,11 @@
     "version": "1.0.0",
     "action": {
         "default_icon": {},
-        "default_title": "Krabs - Be eaten by me"
+        "default_title": "Krabs - Be eaten by me",
+        "default_popup": "popup/login/login.html"
     },
     "icons": {
-        "48": "images/krab.png"
+        "48": "images/krabs.png"
     },
     "content_scripts": [
         {

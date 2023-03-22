@@ -1,12 +1,31 @@
-let form = document.querySelector(".loginForm");
-form.onsubmit = async (e) => {
-    e.preventDefault();
-    let creds = {};
-    for (let [name, val] of new FormData(form)) {
-        creds[name] = val.trim();
+(async () => {
+    const loginWrapper = document.querySelector(".loginWrapper");
+    const logOutButton = document.querySelector(".logout");
+    const form = document.querySelector(".loginForm");
+    const { loginStatus } = await chrome.storage.local.get("loginStatus");
+
+    if (loginStatus === 1) {
+        loginWrapper.style.display = "none";
+        logOutButton.style.display = "initial";
+        logOutButton.onclick = (e) => {
+            console.log("clicked");
+            chrome.runtime.sendMessage({ context: "logoutSubmit" });
+        };
+        return;
     }
-    const res = await chrome.runtime.sendMessage({
-        context: "loginSubmit",
-        creds,
-    });
-};
+    logOutButton.style.display = "none";
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        let creds = {};
+        for (let [name, val] of new FormData(form)) {
+            creds[name] = val.trim();
+        }
+        await chrome.runtime.sendMessage({
+            context: "loginSubmit",
+            creds,
+        });
+        chrome.runtime.onMessage.addListener((message, sender, sendRes) => {
+            if (message.status === 200) loginWrapper.style.display = "none";
+        });
+    };
+})();

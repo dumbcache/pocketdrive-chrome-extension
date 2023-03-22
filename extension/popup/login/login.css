@@ -2,10 +2,12 @@
     padding: 0;
     margin: 0;
     box-sizing: border-box;
+    font-size: 13px;
 }
 .loginWrapper {
-    width: 200px;
+    width: 150px;
     padding: 0.5rem;
+    background-color: #999;
 }
 .loginForm {
     font-family: "Ubuntu", sans-serif;
@@ -19,4 +21,12 @@ input,
 button {
     font: inherit;
     padding: 3px;
+    border-radius: 5px;
+    text-decoration: none;
+    outline: none;
+    border: none;
+}
+button:hover {
+    cursor: pointer;
+    background-color: #fffa;
 }
