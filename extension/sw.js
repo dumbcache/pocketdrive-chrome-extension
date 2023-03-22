@@ -15,7 +15,6 @@ try {
 
     const init = async () => {
         try {
-            console.log("ruuning");
             await refreshDirs();
             let { childDirs, recents } = await chrome.storage.local.get();
             childDirs = childDirs ? { ...childDirs } : {};
@@ -61,10 +60,11 @@ try {
             body: JSON.stringify(parents),
         });
         let { status, statusText } = req;
-        if (status !== 200)
+        if (status !== 200) {
             throw new Error("error while fetching dirs", {
                 cause: `${status} ${statusText}`,
             });
+        }
         let data = await req.json();
         return { status, data };
     };
@@ -130,6 +130,7 @@ try {
                     let { childDirs } = await chrome.storage.local.get(
                         "childDirs"
                     );
+
                     if (childDirs[parents] === undefined) {
                         let { status, data } = await fetchDirs({ parents });
                         childDirs[parents] = data.dirs;

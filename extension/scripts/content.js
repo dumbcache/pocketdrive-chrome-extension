@@ -37,10 +37,11 @@
                     data: { parents: id },
                 });
             }
-            const recentSelect = document.querySelector(".recentSelect");
-            recentSelect.dataset.id = id;
-            recentSelect.dataset.dirName = dirName;
-            recentSelect.innerHTML = dirName;
+            recentSelected.dataset.id = id;
+            recentSelected.dataset.dirName = dirName;
+            recentSelected.innerHTML = dirName;
+            dirInput.value = "";
+            dirInput.focus();
             if (currentTarget.classList.contains("recentDirs")) {
                 const recentDirs = document.querySelector(".recentDirs");
                 recentDirs.style.display = "none";
@@ -56,6 +57,7 @@
     const successIconPath = chrome.runtime.getURL("images/successIcon.svg");
     const statusIconPath = chrome.runtime.getURL("images/statusIcon.svg");
     const { root, dirs } = await chrome.storage.local.get(["root", "dirs"]);
+    let tempDirs = dirs;
 
     const krabWrapper = createElement("div", [["id", "krabWrapper"]]);
     krabWrapper.style.display = "none";
@@ -151,6 +153,9 @@
         let availableChildDirs = document.querySelector(
             ".optionWrapper.childDirs"
         );
+        tempDirs = dirs;
+        dirInput.value = "";
+        dirInput.focus();
         availableChildDirs.style.display = "none";
     };
     doneButton.onclick = async (e) => {
@@ -188,9 +193,6 @@
         recentDirs.style.display = "none";
         availableChildDirs.style.display = "none";
     };
-    dirInput.onclick = (e) => {
-        e.stopPropagation();
-    };
 
     recentSelected.onclick = (e) => {
         e.stopPropagation();
@@ -198,6 +200,26 @@
         dirWrapper.style.display = "none";
         recentDirs.style.display =
             recentDirs.style.display === "block" ? "none" : "block";
+    };
+    dirInput.onclick = (e) => {
+        e.stopPropagation();
+    };
+    dirInput.oninput = (e) => {
+        let val = e.target.value.toLowerCase();
+        // if (val.trim() === "") {
+        //     availableDirs.style.display = "block";
+        //     let childDirs = document.querySelector(".childDirs");
+        //     childDirs.style.display = "none";
+        //     return;
+        // }
+        let filtered = tempDirs.filter((element) =>
+            element.name.toLowerCase().includes(val)
+        );
+        let childDirs = document.querySelector(".childDirs");
+        dirWrapper.removeChild(childDirs);
+        childDirs = createOptionsElement(filtered, "childDirs");
+        availableDirs.style.display = "none";
+        dirWrapper.appendChild(childDirs);
     };
 
     window.onclick = () => {
@@ -239,12 +261,10 @@
             }
 
             if (message.context === "childDirs") {
+                tempDirs = message.childDirs;
                 let childDirs = document.querySelector(".childDirs");
                 dirWrapper.removeChild(childDirs);
-                childDirs = createOptionsElement(
-                    message.childDirs,
-                    "childDirs"
-                );
+                childDirs = createOptionsElement(tempDirs, "childDirs");
                 availableDirs.style.display = "none";
                 dirWrapper.appendChild(childDirs);
             }
