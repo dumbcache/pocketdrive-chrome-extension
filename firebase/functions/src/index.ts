@@ -61,6 +61,11 @@ const createJWT = (user: string, secret: string) => {
     query.update({ jwt: token });
     return token;
 };
+const removeJWT = (user: string) => {
+    let query = firestore.doc(`users/${user}`);
+    query.update({ jwt: "" });
+    return { status: 200 };
+};
 
 const validateJWT = async (
     user: string,
@@ -89,7 +94,7 @@ const authenticateUser = async (
     let query = firestore.doc(`users/${user}`);
     const userData = (await query.get()).data() as UserData;
     const passHash = crypto.createHash("sha256").update(pass).digest("hex");
-    if (userData.pass === passHash) {
+    if (userData?.pass === passHash) {
         return { auth: true, secret: userData.secret };
     } else {
         return { auth: false };
@@ -239,6 +244,16 @@ expressApp.route("/login").post(validateUserMW, async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).send({ cause: "unable to verify user at the moment" });
+    }
+});
+expressApp.route("/:user/logout").post(validateUserMW, async (req, res) => {
+    try {
+        let { user } = req.params;
+        let { status } = removeJWT(user);
+        res.status(status).send({});
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ cause: "unable to logout user at the moment" });
     }
 });
 

@@ -186,6 +186,7 @@ try {
                         chrome.storage.local.remove("img");
                     } catch (error) {
                         console.log(error);
+                        chrome.storage.local.remove("img");
                         chrome.tabs.sendMessage(sender.tab.id, {
                             context: "uploadStatus",
                             status: 500,
@@ -207,6 +208,11 @@ try {
                             access_token: "",
                             loginStatus: 0,
                         });
+                        chrome.runtime.sendMessage({
+                            context: "loginStatus",
+                            status: req.status,
+                            message: `${req.status} ${req.statusText}`,
+                        });
                         return;
                     }
                     const { token } = await req.json();
@@ -224,8 +230,26 @@ try {
                     });
                 }
                 if (message.context === "logoutSubmit") {
+                    const { username, access_token } =
+                        await chrome.storage.local.get([
+                            "username",
+                            "access_token",
+                        ]);
+                    let { status } = await fetch(
+                        `http://127.0.0.1:5001/dumbcache4658/us-central1/utils/${username}/logout`,
+                        {
+                            method: "POST",
+                            headers: {
+                                Authorization: `Bearer ${access_token}`,
+                            },
+                        }
+                    );
+                    if (status !== 200) {
+                        throw new Error("unable to logout", { cause });
+                    }
                     console.log("session logged out");
                     chrome.storage.local.set({ loginStatus: 0 });
+                    chrome.storage.local.remove(["access_token", "username"]);
                 }
             } catch (error) {
                 console.log(error.cause);

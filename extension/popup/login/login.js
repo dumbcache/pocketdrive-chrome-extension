@@ -1,6 +1,7 @@
 (async () => {
     const loginWrapper = document.querySelector(".loginWrapper");
     const logOutButton = document.querySelector(".logout");
+    const warnings = document.querySelector(".warnings");
     const form = document.querySelector(".loginForm");
     const { loginStatus } = await chrome.storage.local.get("loginStatus");
 
@@ -24,8 +25,14 @@
             context: "loginSubmit",
             creds,
         });
-        chrome.runtime.onMessage.addListener((message, sender, sendRes) => {
-            if (message.status === 200) loginWrapper.style.display = "none";
-        });
     };
+    chrome.runtime.onMessage.addListener((message, sender, sendRes) => {
+        if (message.context === "loginStatus") {
+            if (message.status !== 200) {
+                warnings.innerText = message.message;
+                return;
+            }
+            loginWrapper.style.display = "none";
+        }
+    });
 })();
