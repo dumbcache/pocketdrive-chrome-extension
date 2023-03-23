@@ -50,6 +50,8 @@
         return optionWrapper;
     }
 
+    const addIconPath = chrome.runtime.getURL("images/addIcon.svg");
+    const sendIconPath = chrome.runtime.getURL("images/sendIcon.svg");
     const cancelIconPath = chrome.runtime.getURL("images/cancelIcon.svg");
     const doneIconPath = chrome.runtime.getURL("images/doneIcon.svg");
     const menuIconPath = chrome.runtime.getURL("images/menuIcon.svg");
@@ -74,6 +76,16 @@
         ["class", "menuImg"],
         ["src", menuIconPath],
         ["alt", "menuImg"],
+    ]);
+    const addIcon = createElement("img", [
+        ["class", "addImg"],
+        ["src", addIconPath],
+        ["alt", "addImg"],
+    ]);
+    const sendIcon = createElement("img", [
+        ["class", "sendImg"],
+        ["src", sendIconPath],
+        ["alt", "sendImg"],
     ]);
     const doneIcon = createElement("img", [
         ["class", "doneImg"],
@@ -101,9 +113,13 @@
         ["alt", "statusImg"],
     ]);
     const menuButton = createElement("button", [["class", "menuButton"]]);
+    const addButton = createElement("button", [["class", "addButton"]]);
+    const sendButton = createElement("button", [["class", "sendButton"]]);
     const cancelButton = createElement("button", [["class", "cancelButton"]]);
     const doneButton = createElement("button", [["class", "doneButton"]]);
     menuButton.appendChild(menuIcon);
+    addButton.appendChild(addIcon);
+    sendButton.appendChild(sendIcon);
     doneButton.appendChild(doneIcon);
     cancelButton.appendChild(cancelIcon);
 
@@ -125,6 +141,8 @@
     let availableDirs = createOptionsElement(dirs, "dirs");
     let availableChildDirs = createOptionsElement([], "childDirs");
     dirWrapper.appendChild(dirInput);
+    dirWrapper.appendChild(addButton);
+    dirWrapper.appendChild(sendButton);
     dirWrapper.appendChild(availableDirs);
     dirWrapper.appendChild(availableChildDirs);
 
@@ -153,10 +171,30 @@
         let availableChildDirs = document.querySelector(
             ".optionWrapper.childDirs"
         );
+        if (sendButton.style.display !== "none") {
+            dirInput.placeholder = "Search Directory";
+            sendButton.style.display = "none";
+            addButton.style.display = "initial";
+        }
         tempDirs = dirs;
         dirInput.value = "";
         dirInput.focus();
         availableChildDirs.style.display = "none";
+    };
+    addButton.onclick = async (e) => {
+        e.stopPropagation();
+        addButton.style.display = "none";
+        sendButton.style.display = "initial";
+        dirInput.placeholder = "Enter Dir to Create";
+        dirInput.focus();
+    };
+    sendButton.onclick = async (e) => {
+        e.stopPropagation();
+        sendButton.style.display = "none";
+        addButton.style.display = "initial";
+        dirInput.placeholder = "Search Directory";
+        dirInput.focus();
+        console.log(dirInput.value);
     };
     doneButton.onclick = async (e) => {
         e.stopPropagation();
@@ -205,13 +243,8 @@
         e.stopPropagation();
     };
     dirInput.oninput = (e) => {
-        let val = e.target.value.toLowerCase();
-        // if (val.trim() === "") {
-        //     availableDirs.style.display = "block";
-        //     let childDirs = document.querySelector(".childDirs");
-        //     childDirs.style.display = "none";
-        //     return;
-        // }
+        let val = e.target.value.toLowerCase().trimLeft();
+        if (val === "") e.target.value = "";
         let filtered = tempDirs.filter((element) =>
             element.name.toLowerCase().includes(val)
         );
@@ -234,6 +267,11 @@
             dirWrapper.style.display = "none";
             recentDirs.style.display = "none";
             availableChildDirs.style.display = "none";
+            if (sendButton.style.display !== "none") {
+                dirInput.placeholder = "Search Directory";
+                sendButton.style.display = "none";
+                addButton.style.display = "initial";
+            }
         }
     };
 
@@ -289,7 +327,6 @@
         }
     );
     let styles = chrome.runtime.getURL("scripts/content.css");
-    console.log(styles);
     let styleElement = createElement("link", [
         ["rel", "stylesheet"],
         ["href", styles],
