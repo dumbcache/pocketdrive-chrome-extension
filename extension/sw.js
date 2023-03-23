@@ -48,6 +48,7 @@ try {
             });
         } catch (error) {
             console.warn(error);
+            console.log("cause:", error.cause);
         }
     };
 
@@ -57,7 +58,7 @@ try {
             let { status, data } = await fetchDirs({ parents });
             await chrome.storage.local.set({ dirs: data.dirs });
         } catch (error) {
-            console.warn("Unable to Refresh dirs:", error);
+            console.warn("Unable to Refresh dirs:", error, error.cause);
             let { dirs } = await chrome.storage.local.get();
             dirs = dirs ? [...dirs] : [];
             await chrome.storage.local.set({ dirs });
@@ -72,7 +73,8 @@ try {
     };
 
     const fetchDirs = async (parents) => {
-        let url = "http://127.0.0.1:5001/dumbcache4658/us-central1/utils/dirs";
+        let { username } = await chrome.storage.local.get("username");
+        let url = `http://127.0.0.1:5001/dumbcache4658/us-central1/utils/${username}/dirs`;
         const { access_token } = await chrome.storage.local.get("access_token");
         let req = await fetch(url, {
             method: "POST",
@@ -85,7 +87,7 @@ try {
         let { status, statusText } = req;
         if (status !== 200) {
             throw new Error("error while fetching dirs", {
-                cause: `${status} ${statusText}`,
+                cause: `${status} ${statusText} ${await req.text()}`,
             });
         }
         let data = await req.json();
@@ -93,7 +95,8 @@ try {
     };
 
     const uploadRequest = async (parents, img) => {
-        let url = "http://127.0.0.1:5001/dumbcache4658/us-central1/utils/pics";
+        let { username } = await chrome.storage.local.get("username");
+        let url = `http://127.0.0.1:5001/dumbcache4658/us-central1/utils/${username}/pics`;
         const { access_token } = await chrome.storage.local.get("access_token");
         let body = { ...img, parents };
         let req = await fetch(url, {
@@ -106,7 +109,7 @@ try {
         });
         let { status, statusText } = req;
         if (status !== 200)
-            throw new Error("error while fetching dirs", {
+            throw new Error("error while uploading img", {
                 cause: `${status} ${statusText}`,
             });
         return { status };
@@ -171,15 +174,23 @@ try {
                     });
                 }
                 if (message.context === "submit") {
-                    const { img } = await chrome.storage.local.get("img");
-                    const { id, dirName } = message.data;
-                    let { status } = await uploadRequest([id], img);
-                    chrome.tabs.sendMessage(sender.tab.id, {
-                        context: "uploadStatus",
-                        status,
-                    });
-                    updateRecents(id, dirName);
-                    chrome.storage.local.remove("img");
+                    try {
+                        const { img } = await chrome.storage.local.get("img");
+                        const { id, dirName } = message.data;
+                        let { status } = await uploadRequest([id], img);
+                        chrome.tabs.sendMessage(sender.tab.id, {
+                            context: "uploadStatus",
+                            status,
+                        });
+                        updateRecents(id, dirName);
+                        chrome.storage.local.remove("img");
+                    } catch (error) {
+                        console.log(error);
+                        chrome.tabs.sendMessage(sender.tab.id, {
+                            context: "uploadStatus",
+                            status: 500,
+                        });
+                    }
                 }
                 if (message.context === "loginSubmit") {
                     const creds = message.creds;
@@ -217,7 +228,8 @@ try {
                     chrome.storage.local.set({ loginStatus: 0 });
                 }
             } catch (error) {
-                console.error(error);
+                console.log(error.cause);
+                console.warn(error);
             }
         }
     );

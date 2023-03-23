@@ -4,7 +4,7 @@ import { getFirestore } from "firebase-admin/firestore";
 
 import * as dotenv from "dotenv";
 import fetch from "node-fetch";
-import express, { Request, Response } from "express";
+import express, { Request, RequestHandler, Response } from "express";
 import cors from "cors";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
@@ -54,12 +54,32 @@ const getFSToken = async () => {
 
 const createJWT = (user: string, secret: string) => {
     const token = jwt.sign({ name: user }, secret, {
-        expiresIn: 60 * 60 * 24,
+        expiresIn: 60 * 60 * 24 * 30,
         issuer: process.env.ISSUER,
     });
     let query = firestore.doc(`users/${user}`);
     query.update({ jwt: token });
     return token;
+};
+
+const validateJWT = async (
+    user: string,
+    token: string
+): Promise<{ status: number; cause?: string }> => {
+    const query = firestore.doc(`users/${user}`);
+    const userData = (await query.get()).data() as UserData;
+    if (!userData) {
+        return { status: 401, cause: "invalid user" };
+    }
+    if (userData.jwt !== token) {
+        return { status: 401, cause: "invalid token" };
+    }
+    try {
+        jwt.verify(token, userData.secret);
+        return { status: 200 };
+    } catch {
+        return { status: 401, cause: "invalid token" };
+    }
 };
 
 const authenticateUser = async (
@@ -169,23 +189,38 @@ const fetchImgExternal = async (req: Request, res: Response) => {
     return { imgData, imgMeta };
 };
 /*************** End Points ****************/
-export const authenticate = functions.https.onRequest(async (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
-    res.send(await getFSToken());
-});
-
-const router = express();
-router.use(cors());
-router.use(express.json());
-router.use((req, res, next) => {
+const expressApp = express();
+expressApp.use(cors());
+expressApp.use(express.json());
+const validateUserMW: RequestHandler = async (req, res, next) => {
     console.log("----------------------------");
-    console.log(req.get("host"));
-    console.log(req.get("origin"));
-    console.log(req.headers.authorization);
+    if (
+        req.get("origin") !==
+        "chrome-extension://dkgfcadnfmifojphldpmchkjglfpjlgk"
+    ) {
+        res.status(401).send({ cause: "invalid origin" });
+        return;
+    }
+    console.log(req.path);
+    if (req.path === "/login") {
+        next();
+        return;
+    }
+    let token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        res.status(401).send({ cause: "invalid token" });
+        return;
+    }
+    const { user } = req.params;
+    const { status, cause } = await validateJWT(user, token);
+    if (status !== 200) {
+        res.status(status).send({ cause });
+        return;
+    }
     next();
-});
+};
 
-router.route("/login").post(async (req, res) => {
+expressApp.route("/login").post(validateUserMW, async (req, res) => {
     try {
         let { user, pass } = req.body;
         if (!user || !pass) {
@@ -195,6 +230,7 @@ router.route("/login").post(async (req, res) => {
         }
         const { auth, secret } = await authenticateUser(user, pass);
         if (!auth) {
+            console.log("user Authentication status", auth);
             res.status(401).send({ cause: "wrong credentials" });
             return;
         }
@@ -206,7 +242,7 @@ router.route("/login").post(async (req, res) => {
     }
 });
 
-router.route("/dirs").post(async (req, res) => {
+expressApp.route("/:user/dirs").post(validateUserMW, async (req, res) => {
     try {
         let { accessToken } = await getFSToken();
         let { parents } = req.body;
@@ -224,7 +260,7 @@ router.route("/dirs").post(async (req, res) => {
     }
 });
 
-router.route("/pics").post(async (req, res) => {
+expressApp.route("/:user/pics").post(validateUserMW, async (req, res) => {
     try {
         let { accessToken } = await getFSToken();
         let { imgData, imgMeta } = await fetchImgExternal(req, res);
@@ -246,5 +282,4 @@ router.route("/pics").post(async (req, res) => {
         res.status(500).send({ cause });
     }
 });
-
-export const utils = functions.https.onRequest(router);
+export const utils = functions.https.onRequest(expressApp);
