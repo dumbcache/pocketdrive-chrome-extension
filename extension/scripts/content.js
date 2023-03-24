@@ -181,26 +181,51 @@
         dirInput.focus();
         availableChildDirs.style.display = "none";
     };
+    const dirCreateHandler = async () => {
+        if (dirInput.value === "") {
+            dirInput.placeholder = "Cannot be empty";
+            dirInput.style.backgroundColor = "#f005";
+            setTimeout(() => {
+                dirInput.placeholder = "Enter Dir to Create";
+                dirInput.style.backgroundColor = "#aaa";
+            }, 1000);
+            return;
+        }
+        sendButton.style.display = "none";
+        addButton.style.display = "initial";
+        dirInput.placeholder = "Search Directory";
+        dirInput.style.backgroundColor = "#ddd";
+        dirInput.focus();
+        await chrome.runtime.sendMessage({
+            context: "createDir",
+            data: { name: dirInput.value, parents: recentSelected.dataset.id },
+        });
+        dirInput.value = "";
+        dirInput.removeEventListener("keyup", enterButtonHandler);
+    };
+    const enterButtonHandler = (e) => {
+        if (e.key === "Enter") {
+            dirCreateHandler();
+        }
+    };
     addButton.onclick = async (e) => {
         e.stopPropagation();
         addButton.style.display = "none";
         sendButton.style.display = "initial";
         dirInput.placeholder = "Enter Dir to Create";
+        dirInput.style.backgroundColor = "#aaa";
         dirInput.focus();
+        dirInput.addEventListener("keyup", enterButtonHandler);
     };
     sendButton.onclick = async (e) => {
         e.stopPropagation();
-        sendButton.style.display = "none";
-        addButton.style.display = "initial";
-        dirInput.placeholder = "Search Directory";
-        dirInput.focus();
-        console.log(dirInput.value);
+        dirCreateHandler();
     };
     doneButton.onclick = async (e) => {
         e.stopPropagation();
         let { id, dirName } = document.querySelector(".recentSelect").dataset;
         await chrome.runtime.sendMessage({
-            context: "submit",
+            context: "save",
             data: { id, dirName },
         });
         let recentDirs = document.querySelector(".optionWrapper.recentDirs");
@@ -298,7 +323,7 @@
                 toggleKrab(recents);
             }
 
-            if (message.context === "childDirs") {
+            if (message.context === "getChilds") {
                 tempDirs = message.childDirs;
                 let childDirs = document.querySelector(".childDirs");
                 dirWrapper.removeChild(childDirs);
@@ -306,7 +331,7 @@
                 availableDirs.style.display = "none";
                 dirWrapper.appendChild(childDirs);
             }
-            if (message.context === "uploadStatus") {
+            if (message.context === "save") {
                 statusIcon.style.display = "none";
                 if (message.status === 200) {
                     statusText.textContent = "success";

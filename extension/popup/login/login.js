@@ -27,7 +27,7 @@
         });
     };
     chrome.runtime.onMessage.addListener((message, sender, sendRes) => {
-        if (message.context === "loginStatus") {
+        if (message.context === "loginSubmit") {
             if (message.status !== 200) {
                 warnings.innerText = message.message;
                 return;

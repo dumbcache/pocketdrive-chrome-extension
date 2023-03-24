@@ -13,7 +13,7 @@ export interface FSToken {
 
 export interface UserData {
     jwt: string;
-    mail: string;
+    id: string;
     pass: string;
     secret: string;
 }
@@ -28,7 +28,7 @@ export interface ImgMeta {
     };
 }
 
-export interface CreateImgResponse {
+export interface CreateResourceResponse {
     kind: string;
     id: string;
     name: string;

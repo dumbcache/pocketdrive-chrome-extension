@@ -54,8 +54,8 @@ try {
 
     const refreshDirs = async () => {
         try {
-            let parents = "1MqEnipzxCT2KVMhTYy_OkYj_mxqRGHCT";
-            let { status, data } = await fetchDirs({ parents });
+            let { root } = await chrome.storage.local.get("root");
+            let { data } = await fetchDirs(root);
             await chrome.storage.local.set({ dirs: data.dirs });
         } catch (error) {
             console.warn("Unable to Refresh dirs:", error, error.cause);
@@ -74,15 +74,35 @@ try {
 
     const fetchDirs = async (parents) => {
         let { username } = await chrome.storage.local.get("username");
-        let url = `http://127.0.0.1:5001/dumbcache4658/us-central1/utils/${username}/dirs`;
+        let url = `http://127.0.0.1:5001/dumbcache4658/us-central1/krabs/${username}/dirs/${parents}`;
+        const { access_token } = await chrome.storage.local.get("access_token");
+        let req = await fetch(url, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${access_token}`,
+            },
+        });
+        let { status, statusText } = req;
+        if (status !== 200) {
+            throw new Error("error while fetching dirs", {
+                cause: `${status} ${statusText} ${await req.text()}`,
+            });
+        }
+        let data = await req.json();
+        return { status, data };
+    };
+    const createDir = async (name, parents) => {
+        console.log(name, parents);
+        let { username } = await chrome.storage.local.get("username");
+        let url = `http://127.0.0.1:5001/dumbcache4658/us-central1/krabs/${username}/dirs/`;
         const { access_token } = await chrome.storage.local.get("access_token");
         let req = await fetch(url, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
                 Authorization: `Bearer ${access_token}`,
+                "Content-Type": "application/json",
             },
-            body: JSON.stringify(parents),
+            body: JSON.stringify({ dirName: name, parents }),
         });
         let { status, statusText } = req;
         if (status !== 200) {
@@ -96,7 +116,7 @@ try {
 
     const uploadRequest = async (parents, img) => {
         let { username } = await chrome.storage.local.get("username");
-        let url = `http://127.0.0.1:5001/dumbcache4658/us-central1/utils/${username}/pics`;
+        let url = `http://127.0.0.1:5001/dumbcache4658/us-central1/krabs/${username}/pics`;
         const { access_token } = await chrome.storage.local.get("access_token");
         let body = { ...img, parents };
         let req = await fetch(url, {
@@ -148,9 +168,49 @@ try {
         }
     });
 
+    const loginListener = async (creds) => {
+        let req = await fetch(
+            "http://127.0.0.1:5001/dumbcache4658/us-central1/krabs/login",
+            {
+                method: "POST",
+                headers: { "Content-type": "application/json" },
+                body: JSON.stringify(creds),
+            }
+        );
+        if (req.status !== 200) {
+            await chrome.storage.local.set({
+                access_token: "",
+                loginStatus: 0,
+            });
+            chrome.runtime.sendMessage({
+                context: "loginStatus",
+                status: req.status,
+                message: `${req.status} ${req.statusText}`,
+            });
+            return;
+        }
+        const { token } = await req.json();
+        await chrome.storage.local.set({
+            access_token: token,
+            username: creds.user,
+            loginStatus: 1,
+        });
+        chrome.action.setIcon({ path: "images/krabs.png" });
+        initContextMenus();
+        console.log("session logged in");
+    };
+
     chrome.runtime.onMessage.addListener(
         async (message, sender, sendResponse) => {
             try {
+                if (message.context === "loginSubmit") {
+                    const creds = message.creds;
+                    let { status, data } = await loginListener(creds);
+                    chrome.runtime.sendMessage({
+                        context: "loginSubmit",
+                        status: 200,
+                    });
+                }
                 if (message.context === "getChilds") {
                     let { parents } = message.data;
                     let { childDirs } = await chrome.storage.local.get(
@@ -158,28 +218,28 @@ try {
                     );
 
                     if (childDirs[parents] === undefined) {
-                        let { status, data } = await fetchDirs({ parents });
+                        let { status, data } = await fetchDirs(parents);
                         childDirs[parents] = data.dirs;
                         chrome.storage.local.set({ childDirs });
                         chrome.tabs.sendMessage(sender.tab.id, {
-                            context: "childDirs",
+                            context: "getChilds",
                             status,
                             childDirs: data.dirs,
                         });
                     }
                     chrome.tabs.sendMessage(sender.tab.id, {
-                        context: "childDirs",
+                        context: "getChilds",
                         status: 200,
                         childDirs: childDirs[parents],
                     });
                 }
-                if (message.context === "submit") {
+                if (message.context === "save") {
                     try {
                         const { img } = await chrome.storage.local.get("img");
                         const { id, dirName } = message.data;
                         let { status } = await uploadRequest([id], img);
                         chrome.tabs.sendMessage(sender.tab.id, {
-                            context: "uploadStatus",
+                            context: "save",
                             status,
                         });
                         updateRecents(id, dirName);
@@ -188,46 +248,17 @@ try {
                         console.log(error);
                         chrome.storage.local.remove("img");
                         chrome.tabs.sendMessage(sender.tab.id, {
-                            context: "uploadStatus",
+                            context: "save",
                             status: 500,
                         });
                     }
                 }
-                if (message.context === "loginSubmit") {
-                    const creds = message.creds;
-                    let req = await fetch(
-                        "http://127.0.0.1:5001/dumbcache4658/us-central1/utils/login",
-                        {
-                            method: "POST",
-                            headers: { "Content-type": "application/json" },
-                            body: JSON.stringify(creds),
-                        }
-                    );
-                    if (req.status !== 200) {
-                        await chrome.storage.local.set({
-                            access_token: "",
-                            loginStatus: 0,
-                        });
-                        chrome.runtime.sendMessage({
-                            context: "loginStatus",
-                            status: req.status,
-                            message: `${req.status} ${req.statusText}`,
-                        });
-                        return;
-                    }
-                    const { token } = await req.json();
-                    await chrome.storage.local.set({
-                        access_token: token,
-                        username: creds.user,
-                        loginStatus: 1,
-                    });
-                    chrome.action.setIcon({ path: "images/krabs.png" });
-                    initContextMenus();
-                    console.log("session logged in");
-                    chrome.runtime.sendMessage({
-                        context: "loginStatus",
-                        status: 200,
-                    });
+
+                if (message.context === "createDir") {
+                    console.log("createDirs");
+                    const { name, parents } = message.data;
+                    const { status, data } = await createDir(name, parents);
+                    console.log(status, data);
                 }
                 if (message.context === "logoutSubmit") {
                     const { username, access_token } =
@@ -236,7 +267,7 @@ try {
                             "access_token",
                         ]);
                     let { status } = await fetch(
-                        `http://127.0.0.1:5001/dumbcache4658/us-central1/utils/${username}/logout`,
+                        `http://127.0.0.1:5001/dumbcache4658/us-central1/krabs/${username}/logout`,
                         {
                             method: "POST",
                             headers: {
@@ -254,6 +285,10 @@ try {
             } catch (error) {
                 console.log(error.cause);
                 console.warn(error);
+                chrome.runtime.sendMessage({
+                    context: message.context,
+                    status: 500,
+                });
             }
         }
     );

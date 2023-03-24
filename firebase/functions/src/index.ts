@@ -13,7 +13,7 @@ import type {
     GOauthTokenReponse,
     FSToken,
     ImgMeta,
-    CreateImgResponse,
+    CreateResourceResponse,
     DirListResponse,
     UserData,
 } from "../types";
@@ -22,7 +22,10 @@ dotenv.config();
 const app = initializeApp();
 const firestore = getFirestore(app);
 
-const getGOatuthToken = async (refreshToken: string): Promise<string> => {
+const getGOatuthToken = async (
+    refreshToken: string,
+    id: string
+): Promise<string> => {
     const request = await fetch("https://oauth2.googleapis.com/token", {
         method: "POST",
         body: JSON.stringify({
@@ -34,7 +37,7 @@ const getGOatuthToken = async (refreshToken: string): Promise<string> => {
         }),
     });
     let data = (await request.json()) as GOauthTokenReponse;
-    let query = firestore.doc(`tokens/${process.env.USERID}`);
+    let query = firestore.doc(`tokens/${id}`);
     query.update({
         accessToken: data.access_token,
         expiresIn: Math.floor(Date.now() / 1000 + data.expires_in),
@@ -42,13 +45,15 @@ const getGOatuthToken = async (refreshToken: string): Promise<string> => {
     return data.access_token;
 };
 
-const getFSToken = async () => {
-    let query = firestore.doc(`tokens/${process.env.USERID}`);
+const getFSToken = async (user: string) => {
+    let query = firestore.doc(`users/${user}`);
+    let { id } = (await query.get()).data() as UserData;
+    query = firestore.doc(`tokens/${id}`);
     let tokenData = (await query.get()).data() as FSToken;
     let accessToken =
         Math.floor(Date.now() / 1000) < tokenData.expiresIn
             ? tokenData.accessToken
-            : await getGOatuthToken(tokenData.refreshToken);
+            : await getGOatuthToken(tokenData.refreshToken, id);
     return { accessToken };
 };
 
@@ -161,7 +166,7 @@ const uploadImg = async (
         body: imgData,
     });
     let { status, statusText } = req;
-    let { id } = (await req.json()) as CreateImgResponse;
+    let { id } = (await req.json()) as CreateResourceResponse;
     // console.log("UploadingImg", status, statusText);
     if (status !== 200)
         throw new Error(`error while uploadingImg ${status} ${statusText}`, {
@@ -199,13 +204,13 @@ expressApp.use(cors());
 expressApp.use(express.json());
 const validateUserMW: RequestHandler = async (req, res, next) => {
     console.log("----------------------------");
-    if (
-        req.get("origin") !==
-        "chrome-extension://dkgfcadnfmifojphldpmchkjglfpjlgk"
-    ) {
-        res.status(401).send({ cause: "invalid origin" });
-        return;
-    }
+    // if (
+    //     req.get("origin") !==
+    //     "chrome-extension://dkgfcadnfmifojphldpmchkjglfpjlgk"
+    // ) {
+    //     res.status(401).send({ cause: "invalid origin" });
+    //     return;
+    // }
     console.log(req.path);
     if (req.path === "/login") {
         next();
@@ -257,27 +262,56 @@ expressApp.route("/:user/logout").post(validateUserMW, async (req, res) => {
     }
 });
 
-expressApp.route("/:user/dirs").post(validateUserMW, async (req, res) => {
+expressApp.get("/:user/dirs/:parents", validateUserMW, async (req, res) => {
     try {
-        let { accessToken } = await getFSToken();
-        let { parents } = req.body;
-        let url = "https://www.googleapis.com/drive/v3/files";
-        let dirReq = await fetch(
+        const { user } = req.params;
+        const { accessToken } = await getFSToken(user);
+        const { parents } = req.params;
+        const url = "https://www.googleapis.com/drive/v3/files";
+        const dirReq = await fetch(
             `${url}?q='${parents}' in parents and mimeType='application/vnd.google-apps.folder'&fields=files(name,id)`,
             {
                 headers: { Authorization: `Bearer ${accessToken}` },
             }
         );
-        let { files } = (await dirReq.json()) as DirListResponse;
+        const { files } = (await dirReq.json()) as DirListResponse;
         res.status(200).send({ dirs: files });
     } catch ({ message }) {
         res.status(500).send({ cause: message });
     }
 });
+expressApp.post("/:user/dirs", validateUserMW, async (req, res) => {
+    const { user } = req.params;
+    const { accessToken } = await getFSToken(user);
+    const url = "https://www.googleapis.com/drive/v3/files";
+    const { dirName, parents } = req.body as {
+        dirName: string;
+        parents: string;
+    };
+    const dirReq = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "applications/json",
+            Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+            name: dirName,
+            mimeType: "application/vnd.google-apps.folder",
+            parents: [parents],
+        }),
+    });
+    if (dirReq.status !== 200) {
+        res.status(dirReq.status).send({ cause: await dirReq.json() });
+        return;
+    }
+    const { id, name } = (await dirReq.json()) as CreateResourceResponse;
+    res.status(200).send({ id, name });
+});
 
 expressApp.route("/:user/pics").post(validateUserMW, async (req, res) => {
     try {
-        let { accessToken } = await getFSToken();
+        let { user } = req.params;
+        let { accessToken } = await getFSToken(user);
         let { imgData, imgMeta } = await fetchImgExternal(req, res);
         let { location } = (await createImgMetadata(imgMeta, accessToken)) as {
             location: string;
@@ -297,4 +331,4 @@ expressApp.route("/:user/pics").post(validateUserMW, async (req, res) => {
         res.status(500).send({ cause });
     }
 });
-export const utils = functions.https.onRequest(expressApp);
+export const krabs = functions.https.onRequest(expressApp);
