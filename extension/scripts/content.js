@@ -198,50 +198,6 @@
             dirInput.focus();
             availableChildDirs.style.display = "none";
         };
-        const dirCreateHandler = async () => {
-            if (dirInput.value === "") {
-                dirInput.placeholder = "Cannot be empty";
-                dirInput.style.backgroundColor = "#f005";
-                setTimeout(() => {
-                    dirInput.placeholder = "Enter Dir to Create";
-                    dirInput.style.backgroundColor = "#aaa";
-                }, 1000);
-                return;
-            }
-            sendButton.style.display = "none";
-            // addButton.style.display = "initial";
-            dirStatusIcon.style.display = "initial";
-            dirInput.placeholder = "Search Directory";
-            dirInput.style.backgroundColor = "#ddd";
-            dirInput.focus();
-            await chrome.runtime.sendMessage({
-                context: "createDir",
-                data: {
-                    name: dirInput.value.trim(),
-                    parents: tempParent,
-                },
-            });
-            dirInput.value = "";
-            dirInput.removeEventListener("keyup", enterButtonHandler);
-        };
-        const enterButtonHandler = (e) => {
-            if (e.key === "Enter") {
-                dirCreateHandler();
-            }
-        };
-        addButton.onclick = async (e) => {
-            e.stopPropagation();
-            addButton.style.display = "none";
-            sendButton.style.display = "initial";
-            dirInput.placeholder = "Enter Dir to Create";
-            dirInput.style.backgroundColor = "#aaa";
-            dirInput.focus();
-            dirInput.addEventListener("keyup", enterButtonHandler);
-        };
-        sendButton.onclick = async (e) => {
-            e.stopPropagation();
-            dirCreateHandler();
-        };
         doneButton.onclick = async (e) => {
             e.stopPropagation();
             let { id, dirName } =
@@ -306,6 +262,52 @@
             childDirs = createOptionsElement(filtered, "childDirs");
             availableDirs.style.display = "none";
             dirWrapper.appendChild(childDirs);
+        };
+        const dirCreateHandler = async () => {
+            if (dirInput.value === "") {
+                dirInput.placeholder = "Cannot be empty";
+                dirInput.style.backgroundColor = "#f005";
+                setTimeout(() => {
+                    dirInput.placeholder = "Enter Dir to Create";
+                    dirInput.style.backgroundColor = "#aaa";
+                }, 1000);
+                return;
+            }
+            sendButton.style.display = "none";
+            dirStatusIcon.style.display = "initial";
+
+            await chrome.runtime.sendMessage({
+                context: "createDir",
+                data: {
+                    name: dirInput.value.trim(),
+                    parents: tempParent,
+                },
+            });
+            dirInput.removeEventListener("keyup", enterButtonHandler);
+        };
+        const enterButtonHandler = (e) => {
+            if (e.key === "Enter") {
+                dirCreateHandler();
+            }
+        };
+        addButton.onclick = async (e) => {
+            e.stopPropagation();
+            addButton.style.display = "none";
+            sendButton.style.display = "initial";
+            dirInput.placeholder = "Enter Dir to Create";
+            dirInput.style.backgroundColor = "#aaa";
+            dirInput.focus();
+            dirInput.addEventListener("keyup", enterButtonHandler);
+        };
+        sendButton.onclick = async (e) => {
+            e.stopPropagation();
+            dirCreateHandler();
+        };
+        dirInput.onkeyup = (e) => {
+            if (e.ctrlKey && e.key === "Enter") {
+                addButton.style.display = "none";
+                dirCreateHandler();
+            }
         };
 
         window.onclick = () => {
@@ -391,6 +393,12 @@
                             console.log(message.status);
                             if (message.status !== 200) {
                             }
+                            dirStatusIcon.style.display = "none";
+                            addButton.style.display = "initial";
+                            dirInput.placeholder = "Search Directory";
+                            dirInput.style.backgroundColor = "#ddd";
+                            dirInput.focus();
+                            dirInput.value = "";
                             break;
                         case "save":
                             imgStatusIcon.style.display = "none";
