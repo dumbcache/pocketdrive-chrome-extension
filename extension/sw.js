@@ -25,7 +25,6 @@ try {
     });
 
     chrome.storage.onChanged.addListener(async (changes) => {
-        console.log(changes);
         if (changes.loginStatus) {
             let { newValue } = changes.loginStatus;
             if (newValue === 1) {
@@ -34,7 +33,17 @@ try {
             } else {
                 chrome.action.setIcon({ path: "images/krabsOff.png" });
                 chrome.contextMenus.removeAll();
+                chrome.storage.local.clear();
             }
+        }
+        if (changes.dirs) {
+            console.log(changes);
+            let { newValue } = changes.dirs;
+            const [tab] = await chrome.tabs.query({ active: true });
+            chrome.tabs.sendMessage(tab.id, {
+                context: "dirs",
+                data: newValue,
+            });
         }
     });
 
@@ -177,7 +186,6 @@ try {
                 refreshChildDirs();
             }
             if (info.menuItemId === "save") {
-                console.log(info.menuItemId);
                 await chrome.storage.local.set({
                     img: { origin: info.pageUrl, src: info.srcUrl },
                 });
@@ -232,6 +240,7 @@ try {
             username: user,
             loginStatus: 1,
             root,
+            childDirs: {},
         });
         chrome.action.setIcon({ path: "images/krabs.png" });
         refreshDirs();
@@ -254,7 +263,6 @@ try {
         if (status !== 200) {
             throw new Error("unable to logout", { cause });
         }
-        chrome.storage.local.clear();
         console.log("session logged out");
     };
 
@@ -269,9 +277,15 @@ try {
                         context: "loginSubmit",
                         status,
                     });
+                    const [tab] = await chrome.tabs.query({ active: true });
                 }
                 if (message.context === "logoutSubmit") {
                     await logoutHandler();
+                    const [tab] = await chrome.tabs.query({ active: true });
+                    chrome.tabs.sendMessage(tab.id, {
+                        context: "loginStatus",
+                        status: 0,
+                    });
                 }
             } catch (error) {
                 console.warn(error, `cause: ${error?.cause}`);

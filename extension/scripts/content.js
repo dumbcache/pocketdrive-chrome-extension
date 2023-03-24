@@ -327,7 +327,6 @@
                     );
                     recentSelected.innerHTML = recents[0].name;
                 }
-                console.log(document.querySelector(".recentDirs"));
                 let recentDirs = createOptionsElement(recents, "recentDirs");
                 let previousRecentDirs = document.querySelector(".recentDirs");
                 previousRecentDirs &&
@@ -355,7 +354,6 @@
                     switch (message.context) {
                         case "recents":
                             let recents = message.data;
-                            console.log(recents);
                             toggleKrab(recents);
                             break;
                         case "childDirs":
@@ -384,7 +382,6 @@
                             }
                             break;
                         case "save":
-                            console.log(message.context);
                             statusIcon.style.display = "none";
                             if (message.status === 200) {
                                 statusText.textContent = "success";
@@ -401,11 +398,8 @@
                                 errorIcon.style.display = "none";
                                 krabMain.style.display = "flex";
                             }, 2000);
+                            break;
                         case "loginStatus":
-                            if (message.status !== 1) {
-                                availableDirs.innerHTML = "";
-                            }
-                            const { root } = chrome.storage.local.get("root");
                             break;
                     }
                 } catch (error) {
