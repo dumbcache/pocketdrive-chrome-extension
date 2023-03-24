@@ -1,6 +1,6 @@
 (async () => {
     try {
-        function createElement(type, attributes = [], elementBody = "") {
+        function createElement(type, attributes = []) {
             let element = document.createElement(type);
             for (let [key, val] of attributes) {
                 element.setAttribute(key, val);
@@ -38,6 +38,7 @@
                         data: { parents: id },
                     });
                 }
+                tempParent = id;
                 recentSelected.dataset.id = id;
                 recentSelected.dataset.dirName = dirName;
                 recentSelected.innerHTML = dirName;
@@ -58,10 +59,13 @@
         const menuIconPath = chrome.runtime.getURL("images/menuIcon.svg");
         const errorIconPath = chrome.runtime.getURL("images/errorIcon.svg");
         const successIconPath = chrome.runtime.getURL("images/successIcon.svg");
-        const statusIconPath = chrome.runtime.getURL("images/statusIcon.svg");
+        const imgStatusIconPath = chrome.runtime.getURL(
+            "images/statusIcon.svg"
+        );
         let { root, dirs } = await chrome.storage.local.get(["root", "dirs"]);
         dirs = dirs || [];
         let tempDirs = dirs;
+        let tempParent = root;
 
         const krabWrapper = createElement("div", [["id", "krabWrapper"]]);
         krabWrapper.style.display = "none";
@@ -109,9 +113,14 @@
             ["src", errorIconPath],
             ["alt", "errorImg"],
         ]);
-        const statusIcon = createElement("img", [
+        const imgStatusIcon = createElement("img", [
             ["class", "statusImg statusScroll"],
-            ["src", statusIconPath],
+            ["src", imgStatusIconPath],
+            ["alt", "statusImg"],
+        ]);
+        const dirStatusIcon = createElement("img", [
+            ["class", "statusImg dirStatusScroll"],
+            ["src", imgStatusIconPath],
             ["alt", "statusImg"],
         ]);
         const menuButton = createElement("button", [["class", "menuButton"]]);
@@ -147,6 +156,7 @@
         dirWrapper.appendChild(dirInput);
         dirWrapper.appendChild(addButton);
         dirWrapper.appendChild(sendButton);
+        dirWrapper.appendChild(dirStatusIcon);
         dirWrapper.appendChild(availableDirs);
         dirWrapper.appendChild(availableChildDirs);
 
@@ -160,7 +170,7 @@
         krabStatusWrapper.appendChild(statusText);
         krabStatusWrapper.appendChild(successIcon);
         krabStatusWrapper.appendChild(errorIcon);
-        krabStatusWrapper.appendChild(statusIcon);
+        krabStatusWrapper.appendChild(imgStatusIcon);
 
         document.body.appendChild(krabWrapper);
         document.body.appendChild(krabStatusWrapper);
@@ -182,8 +192,8 @@
                 sendButton.style.display = "none";
                 addButton.style.display = "initial";
             }
-            console.log(dirs);
             tempDirs = dirs;
+            tempParent = root;
             dirInput.value = "";
             dirInput.focus();
             availableChildDirs.style.display = "none";
@@ -199,15 +209,16 @@
                 return;
             }
             sendButton.style.display = "none";
-            addButton.style.display = "initial";
+            // addButton.style.display = "initial";
+            dirStatusIcon.style.display = "initial";
             dirInput.placeholder = "Search Directory";
             dirInput.style.backgroundColor = "#ddd";
             dirInput.focus();
             await chrome.runtime.sendMessage({
                 context: "createDir",
                 data: {
-                    name: dirInput.value,
-                    parents: recentSelected.dataset.id,
+                    name: dirInput.value.trim(),
+                    parents: tempParent,
                 },
             });
             dirInput.value = "";
@@ -382,7 +393,7 @@
                             }
                             break;
                         case "save":
-                            statusIcon.style.display = "none";
+                            imgStatusIcon.style.display = "none";
                             if (message.status === 200) {
                                 statusText.textContent = "success";
                                 successIcon.style.display = "initial";
@@ -393,7 +404,7 @@
                             setTimeout(() => {
                                 krabStatusWrapper.style.display = "none";
                                 statusText.textContent = "Uploading...";
-                                statusIcon.style.display = "initial";
+                                imgStatusIcon.style.display = "initial";
                                 successIcon.style.display = "none";
                                 errorIcon.style.display = "none";
                                 krabMain.style.display = "flex";

@@ -296,7 +296,7 @@ expressApp.post("/:user/dirs", validateUserMW, async (req, res) => {
             Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-            name: dirName,
+            name: dirName.trim(),
             mimeType: "application/vnd.google-apps.folder",
             parents: [parents],
         }),
