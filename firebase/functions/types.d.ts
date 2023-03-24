@@ -16,6 +16,7 @@ export interface UserData {
     id: string;
     pass: string;
     secret: string;
+    root: string;
 }
 
 export interface ImgMeta {

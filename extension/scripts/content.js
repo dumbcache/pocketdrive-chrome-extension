@@ -33,7 +33,7 @@
                 currentTarget.classList.contains("childDirs")
             ) {
                 chrome.runtime.sendMessage({
-                    context: "getChilds",
+                    context: "childDirs",
                     data: { parents: id },
                 });
             }
@@ -58,7 +58,9 @@
     const errorIconPath = chrome.runtime.getURL("images/errorIcon.svg");
     const successIconPath = chrome.runtime.getURL("images/successIcon.svg");
     const statusIconPath = chrome.runtime.getURL("images/statusIcon.svg");
-    const { root, dirs } = await chrome.storage.local.get(["root", "dirs"]);
+    let { root, dirs } = await chrome.storage.local.get(["root", "dirs"]);
+    console.log(root, dirs);
+    dirs = dirs || [];
     let tempDirs = dirs;
 
     const krabWrapper = createElement("div", [["id", "krabWrapper"]]);
@@ -301,37 +303,47 @@
     };
 
     function toggleKrab(recents) {
-        if (krabWrapper.style.display === "none") {
+        if (recents) {
             if (recents.length > 0) {
                 recentSelected.setAttribute("data-id", recents[0].id);
                 recentSelected.setAttribute("data-dir-name", recents[0].name);
                 recentSelected.innerHTML = recents[0].name;
             }
-            let recentDirs = createOptionsElement(recents, "recentDirs");
+            let recentDirs =
+                document.querySelector(".recentDirs") ||
+                createOptionsElement(recents, "recentDirs");
             let previousRecentDirs = document.querySelector(".recentDirs");
             previousRecentDirs && recentWrapper.removeChild(previousRecentDirs);
             recentWrapper.appendChild(recentDirs);
-
             krabWrapper.style.display = "initial";
+            return;
         }
+        let recentDirs = createOptionsElement([], "recentDirs");
+        recentWrapper.appendChild(recentDirs);
+        krabWrapper.style.display = "initial";
     }
 
     chrome.runtime.onMessage.addListener(
         async (message, sender, sendResponse) => {
             if (message.context === "recents") {
-                let { recents } = message.data;
+                let recents = message.data;
                 toggleKrab(recents);
             }
-
-            if (message.context === "getChilds") {
-                tempDirs = message.childDirs;
+            if (message.context === "childDirs") {
+                tempDirs = message.childDirs ? message.childDirs : [];
                 let childDirs = document.querySelector(".childDirs");
                 dirWrapper.removeChild(childDirs);
                 childDirs = createOptionsElement(tempDirs, "childDirs");
                 availableDirs.style.display = "none";
                 dirWrapper.appendChild(childDirs);
             }
+            if (message.context === "createDir") {
+                console.log(message.status);
+                if (message.status !== 200) {
+                }
+            }
             if (message.context === "save") {
+                console.log(message.context);
                 statusIcon.style.display = "none";
                 if (message.status === 200) {
                     statusText.textContent = "success";

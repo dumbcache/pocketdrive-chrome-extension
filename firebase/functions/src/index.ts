@@ -57,14 +57,15 @@ const getFSToken = async (user: string) => {
     return { accessToken };
 };
 
-const createJWT = (user: string, secret: string) => {
+const createJWT = async (user: string, secret: string) => {
     const token = jwt.sign({ name: user }, secret, {
         expiresIn: 60 * 60 * 24 * 30,
         issuer: process.env.ISSUER,
     });
     let query = firestore.doc(`users/${user}`);
     query.update({ jwt: token });
-    return token;
+    let { root } = (await query.get()).data() as UserData;
+    return { token, root };
 };
 const removeJWT = (user: string) => {
     let query = firestore.doc(`users/${user}`);
@@ -244,14 +245,14 @@ expressApp.route("/login").post(validateUserMW, async (req, res) => {
             res.status(401).send({ cause: "wrong credentials" });
             return;
         }
-        let token = createJWT(user, secret!);
-        res.status(200).send({ token });
+        let data = await createJWT(user, secret!);
+        res.status(200).send({ ...data, user });
     } catch (error) {
         console.log(error);
         res.status(500).send({ cause: "unable to verify user at the moment" });
     }
 });
-expressApp.route("/:user/logout").post(validateUserMW, async (req, res) => {
+expressApp.route("/:user/logout").get(validateUserMW, async (req, res) => {
     try {
         let { user } = req.params;
         let { status } = removeJWT(user);
@@ -275,7 +276,7 @@ expressApp.get("/:user/dirs/:parents", validateUserMW, async (req, res) => {
             }
         );
         const { files } = (await dirReq.json()) as DirListResponse;
-        res.status(200).send({ dirs: files });
+        res.status(200).send(files);
     } catch ({ message }) {
         res.status(500).send({ cause: message });
     }
