@@ -416,7 +416,11 @@
                                 ["data-dir-name", name],
                             ]);
                             div.innerHTML = name;
+                            div.style.backgroundColor = "#0f05";
                             document.querySelector(".childDirs").prepend(div);
+                            setTimeout(() => {
+                                div.style.backgroundColor = "initial";
+                            }, 500);
                             dirStatusIcon.style.display = "none";
                             addButton.style.display = "initial";
                             dirInput.focus();
