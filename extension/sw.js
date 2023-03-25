@@ -37,7 +37,6 @@ try {
             }
         }
         if (changes.dirs) {
-            console.log(changes);
             let { newValue } = changes.dirs;
             const [tab] = await chrome.tabs.query({ active: true });
             chrome.tabs.sendMessage(tab.id, {
@@ -122,6 +121,21 @@ try {
         let data = await req.json();
         return { status, data };
     };
+
+    const addtoLocalDirs = async (data, parents) => {
+        const { root } = await chrome.storage.local.get("root");
+        if (root === parents) {
+            let { dirs } = await chrome.storage.local.get("dirs");
+            dirs.unshift(data);
+            chrome.storage.local.set({ dirs });
+            return;
+        }
+        let { childDirs } = await chrome.storage.local.get("childDirs");
+        childDirs[parents]
+            ? childDirs[parents].unshift(data)
+            : (childDirs[parents] = [data]);
+        chrome.storage.local.set({ childDirs });
+    };
     const createDir = async (name, parents) => {
         let { username } = await chrome.storage.local.get("username");
         let url = `http://127.0.0.1:5001/dumbcache4658/us-central1/krabs/${username}/dirs/`;
@@ -147,6 +161,7 @@ try {
             });
         }
         let data = await req.json();
+        addtoLocalDirs(data, parents);
         return { status, data };
     };
 
@@ -263,6 +278,7 @@ try {
         if (status !== 200) {
             throw new Error("unable to logout", { cause });
         }
+        chrome.storage.local.set({ loginStatus: 0 });
         console.log("session logged out");
     };
 
@@ -272,6 +288,7 @@ try {
             try {
                 if (message.context === "loginSubmit") {
                     const creds = message.creds;
+                    console.log(creds);
                     let status = await loginHandler(creds);
                     chrome.runtime.sendMessage({
                         context: "loginSubmit",

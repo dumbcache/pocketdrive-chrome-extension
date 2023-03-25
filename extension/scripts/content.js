@@ -66,6 +66,7 @@
         dirs = dirs || [];
         let tempDirs = dirs;
         let tempParent = root;
+        console.log(tempParent);
 
         const krabWrapper = createElement("div", [["id", "krabWrapper"]]);
         krabWrapper.style.display = "none";
@@ -253,10 +254,15 @@
         };
         dirInput.oninput = (e) => {
             let val = e.target.value.toLowerCase().trimLeft();
-            if (val === "") e.target.value = "";
-            let filtered = tempDirs.filter((element) =>
-                element.name.toLowerCase().includes(val)
-            );
+            let filtered = [];
+            if (val === "") {
+                e.target.value = "";
+                filtered = tempDirs;
+            } else {
+                filtered = tempDirs.filter((element) =>
+                    element.name.toLowerCase().includes(val)
+                );
+            }
             let childDirs = document.querySelector(".childDirs");
             dirWrapper.removeChild(childDirs);
             childDirs = createOptionsElement(filtered, "childDirs");
@@ -306,7 +312,7 @@
         dirInput.onkeyup = (e) => {
             if (e.ctrlKey && e.key === "Enter") {
                 addButton.style.display = "none";
-                availableDirs.style.display = "block";
+                // availableDirs.style.display = "block";
                 dirCreateHandler();
             }
         };
@@ -384,14 +390,13 @@
                             break;
                         case "dirs":
                             const dirs = message.data || [];
-                            console.log(dirs);
                             tempDirs = dirs;
                             dirWrapper.removeChild(availableDirs);
                             availableDirs = createOptionsElement(dirs, "dirs");
+                            availableDirs.style.display = "none";
                             dirWrapper.appendChild(availableDirs);
                             break;
                         case "createDir":
-                            console.log(message.status);
                             if (message.status !== 200) {
                                 dirInput.style.backgroundColor = "#f005";
                                 dirInput.placeholder = "failed";
@@ -400,6 +405,14 @@
                                     dirInput.placeholder = "Search Directory";
                                 }, 1000);
                             }
+                            let { id, name } = message.data;
+                            let div = createElement("div", [
+                                ["class", `option`],
+                                ["data-id", id],
+                                ["data-dir-name", name],
+                            ]);
+                            div.innerHTML = name;
+                            document.querySelector(".childDirs").prepend(div);
                             dirStatusIcon.style.display = "none";
                             addButton.style.display = "initial";
                             dirInput.focus();
