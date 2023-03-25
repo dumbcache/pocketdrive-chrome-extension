@@ -84,8 +84,8 @@ try {
             }
         } catch (error) {
             console.warn("Unable to Refresh childDirs:", error, error.cause);
-            let { childDirs } = await chrome.storage.local.get();
-            childDirs = childDirs ? [...childDirs] : [];
+            let { childDirs } = await chrome.storage.local.get("childDirs");
+            childDirs = childDirs ? { ...childDirs } : {};
             await chrome.storage.local.set({ childDirs });
         }
     };

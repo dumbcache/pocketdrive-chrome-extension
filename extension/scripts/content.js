@@ -306,6 +306,7 @@
         dirInput.onkeyup = (e) => {
             if (e.ctrlKey && e.key === "Enter") {
                 addButton.style.display = "none";
+                availableDirs.style.display = "block";
                 dirCreateHandler();
             }
         };
@@ -392,11 +393,15 @@
                         case "createDir":
                             console.log(message.status);
                             if (message.status !== 200) {
+                                dirInput.style.backgroundColor = "#f005";
+                                dirInput.placeholder = "failed";
+                                setTimeout(() => {
+                                    dirInput.style.backgroundColor = "#ddd";
+                                    dirInput.placeholder = "Search Directory";
+                                }, 1000);
                             }
                             dirStatusIcon.style.display = "none";
                             addButton.style.display = "initial";
-                            dirInput.placeholder = "Search Directory";
-                            dirInput.style.backgroundColor = "#ddd";
                             dirInput.focus();
                             dirInput.value = "";
                             break;
