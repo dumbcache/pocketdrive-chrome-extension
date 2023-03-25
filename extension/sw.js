@@ -19,7 +19,7 @@ try {
         ]);
         if (loginStatus === 1) {
             await chrome.action.setIcon({ path: "images/krabs.png" });
-            await chrome.action.setBadgeText({ text: username });
+            await chrome.action.setBadgeText({ text: username[0] });
             initContextMenus();
             init();
         } else {
@@ -34,7 +34,7 @@ try {
             if (newValue === 1) {
                 let { username } = await chrome.storage.local.get("username");
                 chrome.action.setIcon({ path: "images/krabs.png" });
-                chrome.action.setBadgeText({ text: username });
+                chrome.action.setBadgeText({ text: username[0] });
                 initContextMenus();
             } else {
                 chrome.action.setIcon({ path: "images/krabsOff.png" });
