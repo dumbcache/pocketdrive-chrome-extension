@@ -48,7 +48,7 @@ try {
 
     const init = async () => {
         try {
-            refreshDirs();
+            await refreshDirs();
             refreshChildDirs();
             let { recents } = await chrome.storage.local.get();
             recents = recents ? [...recents] : [];
@@ -73,7 +73,17 @@ try {
     };
     const refreshChildDirs = async () => {
         try {
-            let { childDirs } = await chrome.storage.local.get("childDirs");
+            let { childDirs, dirs } = await chrome.storage.local.get([
+                "childDirs",
+                "dirs",
+            ]);
+            for (let child of Object.keys(childDirs)) {
+                let status = false;
+                for (let { id } of dirs) {
+                    child === id && (status = true);
+                }
+                status || delete childDirs[child];
+            }
             if (childDirs) {
                 for (let parent of Object.keys(childDirs)) {
                     const { data } = await fetchDirs(parent);
@@ -197,7 +207,7 @@ try {
     chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         try {
             if (info.menuItemId === "refresh") {
-                refreshDirs();
+                await refreshDirs();
                 refreshChildDirs();
             }
             if (info.menuItemId === "save") {
