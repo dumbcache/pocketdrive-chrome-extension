@@ -249,26 +249,6 @@
             recentDirs.style.display =
                 recentDirs.style.display === "block" ? "none" : "block";
         };
-        dirInput.onclick = (e) => {
-            e.stopPropagation();
-        };
-        dirInput.oninput = (e) => {
-            let val = e.target.value.toLowerCase().trimLeft();
-            let filtered = [];
-            if (val === "") {
-                e.target.value = "";
-                filtered = tempDirs;
-            } else {
-                filtered = tempDirs.filter((element) =>
-                    element.name.toLowerCase().includes(val)
-                );
-            }
-            let childDirs = document.querySelector(".childDirs");
-            dirWrapper.removeChild(childDirs);
-            childDirs = createOptionsElement(filtered, "childDirs");
-            availableDirs.style.display = "none";
-            dirWrapper.appendChild(childDirs);
-        };
         const dirCreateHandler = async () => {
             if (dirInput.value === "") {
                 dirInput.placeholder = "Cannot be empty";
@@ -312,9 +292,33 @@
         dirInput.onkeyup = (e) => {
             if (e.ctrlKey && e.key === "Enter") {
                 addButton.style.display = "none";
-                // availableDirs.style.display = "block";
                 dirCreateHandler();
+                let childDirs = document.querySelector(".childDirs");
+                dirWrapper.removeChild(childDirs);
+                childDirs = createOptionsElement(tempDirs, "childDirs");
+                dirWrapper.appendChild(childDirs);
             }
+        };
+        dirInput.onclick = (e) => {
+            e.stopPropagation();
+        };
+        dirInput.oninput = (e) => {
+            let val = e.target.value.toLowerCase().trimLeft();
+            let filtered = [];
+            if (val === "") {
+                e.target.value = "";
+                filtered = tempDirs;
+                console.log("filtered");
+            } else {
+                filtered = tempDirs.filter((element) =>
+                    element.name.toLowerCase().includes(val)
+                );
+            }
+            let childDirs = document.querySelector(".childDirs");
+            dirWrapper.removeChild(childDirs);
+            childDirs = createOptionsElement(filtered, "childDirs");
+            availableDirs.style.display = "none";
+            dirWrapper.appendChild(childDirs);
         };
 
         window.onclick = () => {
