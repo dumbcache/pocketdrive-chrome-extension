@@ -293,6 +293,7 @@
             if (e.ctrlKey && e.key === "Enter") {
                 addButton.style.display = "none";
                 dirCreateHandler();
+                console.log(tempDirs);
                 let childDirs = document.querySelector(".childDirs");
                 dirWrapper.removeChild(childDirs);
                 childDirs = createOptionsElement(tempDirs, "childDirs");
@@ -418,6 +419,7 @@
                             div.innerHTML = name;
                             div.style.backgroundColor = "#0f05";
                             document.querySelector(".childDirs").prepend(div);
+                            tempDirs.unshift(message.data);
                             setTimeout(() => {
                                 div.style.backgroundColor = "initial";
                             }, 500);
