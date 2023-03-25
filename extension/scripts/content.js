@@ -249,14 +249,30 @@
             recentDirs.style.display =
                 recentDirs.style.display === "block" ? "none" : "block";
         };
+        const inputInvalidate = (text) => {
+            dirInput.placeholder = text;
+            dirInput.style.backgroundColor = "#f005";
+            dirInput.value = "";
+            setTimeout(() => {
+                dirInput.placeholder = "Enter Dir to Create";
+                dirInput.style.backgroundColor = "#ddd";
+            }, 1000);
+        };
+        const checkDirPresent = () => {
+            let name = dirInput.value;
+            for (let dir of tempDirs) {
+                if (dir.name === name) return true;
+            }
+            return false;
+        };
         const dirCreateHandler = async () => {
             if (dirInput.value === "") {
-                dirInput.placeholder = "Cannot be empty";
-                dirInput.style.backgroundColor = "#f005";
-                setTimeout(() => {
-                    dirInput.placeholder = "Enter Dir to Create";
-                    dirInput.style.backgroundColor = "#aaa";
-                }, 1000);
+                inputInvalidate("Cannot be empty");
+                return;
+            }
+            if (checkDirPresent()) {
+                addButton.style.display = "initial";
+                inputInvalidate("Already Present");
                 return;
             }
             sendButton.style.display = "none";
@@ -281,7 +297,6 @@
             addButton.style.display = "none";
             sendButton.style.display = "initial";
             dirInput.placeholder = "Enter Dir to Create";
-            dirInput.style.backgroundColor = "#aaa";
             dirInput.focus();
             dirInput.addEventListener("keyup", enterButtonHandler);
         };
@@ -293,7 +308,6 @@
             if (e.ctrlKey && e.key === "Enter") {
                 addButton.style.display = "none";
                 dirCreateHandler();
-                console.log(tempDirs);
                 let childDirs = document.querySelector(".childDirs");
                 dirWrapper.removeChild(childDirs);
                 childDirs = createOptionsElement(tempDirs, "childDirs");

@@ -13,9 +13,13 @@ try {
     };
 
     chrome.runtime.onInstalled.addListener(async () => {
-        let { loginStatus } = await chrome.storage.local.get("loginStatus");
+        let { loginStatus, username } = await chrome.storage.local.get([
+            "loginStatus",
+            "username",
+        ]);
         if (loginStatus === 1) {
             await chrome.action.setIcon({ path: "images/krabs.png" });
+            await chrome.action.setBadgeText({ text: username });
             initContextMenus();
             init();
         } else {
@@ -28,10 +32,13 @@ try {
         if (changes.loginStatus) {
             let { newValue } = changes.loginStatus;
             if (newValue === 1) {
+                let { username } = await chrome.storage.local.get("username");
                 chrome.action.setIcon({ path: "images/krabs.png" });
+                chrome.action.setBadgeText({ text: username });
                 initContextMenus();
             } else {
                 chrome.action.setIcon({ path: "images/krabsOff.png" });
+                chrome.action.setBadgeText({ text: "" });
                 chrome.contextMenus.removeAll();
                 chrome.storage.local.clear();
             }
@@ -298,7 +305,6 @@ try {
             try {
                 if (message.context === "loginSubmit") {
                     const creds = message.creds;
-                    console.log(creds);
                     let status = await loginHandler(creds);
                     chrome.runtime.sendMessage({
                         context: "loginSubmit",
