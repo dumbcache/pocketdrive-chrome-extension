@@ -205,13 +205,13 @@ expressApp.use(cors());
 expressApp.use(express.json());
 const validateUserMW: RequestHandler = async (req, res, next) => {
     console.log("----------------------------");
-    // if (
-    //     req.get("origin") !==
-    //     "chrome-extension://dkgfcadnfmifojphldpmchkjglfpjlgk"
-    // ) {
-    //     res.status(401).send({ cause: "invalid origin" });
-    //     return;
-    // }
+    if (
+        req.get("origin") !==
+        "chrome-extension://dkgfcadnfmifojphldpmchkjglfpjlgk"
+    ) {
+        res.status(401).send({ cause: "invalid origin" });
+        return;
+    }
     console.log(req.path);
     if (req.path === "/login") {
         next();
