@@ -72,7 +72,6 @@ try {
             initContextMenus();
             init();
         } else {
-            await logoutHandler();
             await chrome.action.setIcon({ path: "images/krabsOff.png" });
             await chrome.storage.local.set({ loginStatus: 0 });
         }
