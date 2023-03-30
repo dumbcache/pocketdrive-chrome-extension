@@ -17,8 +17,6 @@
 
 #krabWrapper {
     box-sizing: border-box;
-    width: 280px;
-    height: 75px;
     position: fixed;
     top: 10px;
     right: 10px;
@@ -29,6 +27,8 @@
     border-radius: 5px;
     color: #000;
     box-shadow: 0 0 5px 1px #0005;
+    width: 300px;
+    height: 75px;
 }
 #krabStatusWrapper {
     position: fixed;
@@ -132,6 +132,7 @@
 }
 
 #krabWrapper .menuButton,
+#krabWrapper .rootButton,
 #krabWrapper .addButton,
 #krabWrapper .sendButton,
 #krabWrapper .doneButton,
@@ -149,6 +150,12 @@
     border-radius: 5px;
     background: none !important;
     box-shadow: none;
+}
+#krabWrapper .krab.rootButton {
+    color: #f00;
+}
+#krabWrapper .rootButton:hover {
+    color: #0005;
 }
 
 #krabWrapper .addButton,
@@ -207,7 +214,7 @@
     display: none;
     position: absolute;
     top: 0px;
-    right: 281px;
+    right: 301px;
     border-radius: 5px;
     width: 200px;
     background: #fff;

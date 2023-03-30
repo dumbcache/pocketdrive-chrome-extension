@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Krabs",
+    "name": "Krabs Dev",
     "version": "1.0.0",
     "action": {
         "default_icon": {},

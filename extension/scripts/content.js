@@ -131,6 +131,9 @@
             ["class", "cancelButton"],
         ]);
         const doneButton = createElement("button", [["class", "doneButton"]]);
+        const rootButton = createElement("button", [["class", "rootButton"]]);
+        rootButton.innerText = "/r";
+
         menuButton.appendChild(menuIcon);
         addButton.appendChild(addIcon);
         sendButton.appendChild(sendIcon);
@@ -162,6 +165,7 @@
         dirWrapper.appendChild(availableChildDirs);
 
         krabMain.appendChild(menuButton);
+        krabMain.appendChild(rootButton);
         krabMain.appendChild(recentWrapper);
         krabMain.appendChild(dirWrapper);
 
@@ -199,6 +203,13 @@
             dirInput.focus();
             availableChildDirs.style.display = "none";
         };
+        rootButton.onclick = async (e) => {
+            let { root } = await chrome.storage.local.get("root");
+            recentSelected.dataset.id = root;
+            recentSelected.dataset.dirName = "root";
+            recentSelected.innerHTML = "root";
+        };
+
         doneButton.onclick = async (e) => {
             e.stopPropagation();
             let { id, dirName } =

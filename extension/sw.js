@@ -1,5 +1,5 @@
 try {
-    const URL = "URL of cloud functions";
+    const URL = "http://127.0.0.1:5001/dumbcache4658/us-central1/krabs";
     const initContextMenus = () => {
         chrome.contextMenus.create({
             id: "save",
