@@ -13,6 +13,54 @@ try {
         });
     };
 
+    const loginHandler = async (creds) => {
+        let req = await fetch(`${URL}/login`, {
+            method: "POST",
+            headers: { "Content-type": "application/json" },
+            body: JSON.stringify(creds),
+        });
+        if (req.status !== 200) {
+            await chrome.storage.local.set({
+                access_token: "",
+                loginStatus: 0,
+            });
+            chrome.runtime.sendMessage({
+                context: "loginStatus",
+                status: req.status,
+                message: `${req.status} ${req.statusText}`,
+            });
+            return {};
+        }
+        const { token, root, user } = await req.json();
+        await chrome.storage.local.set({
+            access_token: token,
+            username: user,
+            loginStatus: 1,
+            root,
+            childDirs: {},
+        });
+        chrome.action.setIcon({ path: "images/krabs.png" });
+        refreshDirs();
+        console.log("session logged in");
+        return req.status;
+    };
+    const logoutHandler = async () => {
+        const { username, access_token } = await chrome.storage.local.get([
+            "username",
+            "access_token",
+        ]);
+        let { status } = await fetch(`${URL}/${username}/logout`, {
+            headers: {
+                Authorization: `Bearer ${access_token}`,
+            },
+        });
+        if (status !== 200) {
+            throw new Error("unable to logout", { cause });
+        }
+        chrome.storage.local.set({ loginStatus: 0 });
+        console.log("session logged out");
+    };
+
     chrome.runtime.onInstalled.addListener(async () => {
         let { loginStatus, username } = await chrome.storage.local.get([
             "loginStatus",
@@ -24,6 +72,7 @@ try {
             initContextMenus();
             init();
         } else {
+            await logoutHandler();
             await chrome.action.setIcon({ path: "images/krabsOff.png" });
             await chrome.storage.local.set({ loginStatus: 0 });
         }
@@ -245,54 +294,6 @@ try {
             console.error("error", error);
         }
     });
-
-    const loginHandler = async (creds) => {
-        let req = await fetch(`${URL}/login`, {
-            method: "POST",
-            headers: { "Content-type": "application/json" },
-            body: JSON.stringify(creds),
-        });
-        if (req.status !== 200) {
-            await chrome.storage.local.set({
-                access_token: "",
-                loginStatus: 0,
-            });
-            chrome.runtime.sendMessage({
-                context: "loginStatus",
-                status: req.status,
-                message: `${req.status} ${req.statusText}`,
-            });
-            return {};
-        }
-        const { token, root, user } = await req.json();
-        await chrome.storage.local.set({
-            access_token: token,
-            username: user,
-            loginStatus: 1,
-            root,
-            childDirs: {},
-        });
-        chrome.action.setIcon({ path: "images/krabs.png" });
-        refreshDirs();
-        console.log("session logged in");
-        return req.status;
-    };
-    const logoutHandler = async () => {
-        const { username, access_token } = await chrome.storage.local.get([
-            "username",
-            "access_token",
-        ]);
-        let { status } = await fetch(`${URL}/${username}/logout`, {
-            headers: {
-                Authorization: `Bearer ${access_token}`,
-            },
-        });
-        if (status !== 200) {
-            throw new Error("unable to logout", { cause });
-        }
-        chrome.storage.local.set({ loginStatus: 0 });
-        console.log("session logged out");
-    };
 
     chrome.runtime.onMessage.addListener(
         async (message, sender, sendResponse) => {
