@@ -40,7 +40,7 @@ try {
             childDirs: {},
         });
         chrome.action.setIcon({ path: "images/krabs.png" });
-        refreshDirs();
+        init();
         console.log("session logged in");
         return req.status;
     };
