@@ -1,4 +1,5 @@
 try {
+    const URL = "URL of cloud functions";
     const initContextMenus = () => {
         chrome.contextMenus.create({
             id: "save",
@@ -115,7 +116,7 @@ try {
 
     const fetchDirs = async (parent) => {
         let { username } = await chrome.storage.local.get("username");
-        let url = `http://127.0.0.1:5001/dumbcache4658/us-central1/krabs/${username}/dirs/${parent}`;
+        let url = `${URL}/${username}/dirs/${parent}`;
         const { access_token } = await chrome.storage.local.get("access_token");
         let req = await fetch(url, {
             method: "GET",
@@ -155,7 +156,7 @@ try {
     };
     const createDir = async (name, parents) => {
         let { username } = await chrome.storage.local.get("username");
-        let url = `http://127.0.0.1:5001/dumbcache4658/us-central1/krabs/${username}/dirs/`;
+        let url = `${URL}/${username}/dirs/`;
         const { access_token } = await chrome.storage.local.get("access_token");
         let req = await fetch(url, {
             method: "POST",
@@ -184,7 +185,7 @@ try {
 
     const uploadRequest = async (parents, img) => {
         let { username } = await chrome.storage.local.get("username");
-        let url = `http://127.0.0.1:5001/dumbcache4658/us-central1/krabs/${username}/pics`;
+        let url = `${URL}/${username}/pics`;
         const { access_token } = await chrome.storage.local.get("access_token");
         let body = { ...img, parents };
         let req = await fetch(url, {
@@ -246,14 +247,11 @@ try {
     });
 
     const loginHandler = async (creds) => {
-        let req = await fetch(
-            "http://127.0.0.1:5001/dumbcache4658/us-central1/krabs/login",
-            {
-                method: "POST",
-                headers: { "Content-type": "application/json" },
-                body: JSON.stringify(creds),
-            }
-        );
+        let req = await fetch(`${URL}/login`, {
+            method: "POST",
+            headers: { "Content-type": "application/json" },
+            body: JSON.stringify(creds),
+        });
         if (req.status !== 200) {
             await chrome.storage.local.set({
                 access_token: "",
@@ -284,14 +282,11 @@ try {
             "username",
             "access_token",
         ]);
-        let { status } = await fetch(
-            `http://127.0.0.1:5001/dumbcache4658/us-central1/krabs/${username}/logout`,
-            {
-                headers: {
-                    Authorization: `Bearer ${access_token}`,
-                },
-            }
-        );
+        let { status } = await fetch(`${URL}/${username}/logout`, {
+            headers: {
+                Authorization: `Bearer ${access_token}`,
+            },
+        });
         if (status !== 200) {
             throw new Error("unable to logout", { cause });
         }
