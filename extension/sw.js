@@ -100,6 +100,13 @@ try {
                 data: newValue,
             });
         }
+        if (changes.recents) {
+            let { newValue } = changes.recents;
+            if (newValue?.length > 10) {
+                newValue.pop();
+                chrome.storage.local.set({ recents: newValue });
+            }
+        }
     });
 
     const init = async () => {
