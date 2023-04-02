@@ -1,0 +1,69 @@
+@import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap");
+
+:root {
+    color-scheme: light dark;
+    font-size: 62.5%; /* 10px (default browser's 16px)*/
+    font-family: Lato, -apple-system, BlinkMacSystemFont, Segoe UI, system-ui,
+        Roboto, Oxygen-Sans, Ubuntu, Cantarell, Fira Sans, Droid Sans,
+        Helvetica Neue, sans-serif;
+    box-sizing: border-box;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+}
+
+*,
+*::before,
+*::after {
+    margin: 0rem;
+    padding: 0rem;
+    box-sizing: inherit;
+}
+
+html,
+body {
+    height: 100%; /* Allows percentage-based heights in the application */
+    font-size: 1.6rem;
+    overscroll-behavior-y: contain; /* Disabling pull down to refresh */
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+    display: block;
+    max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+    font: inherit; /* By default not inherited */
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    overflow-wrap: break-word;
+}
+
+a {
+    color: inherit; /* Default not inherited */
+    text-decoration: none;
+}
+
+@media (max-width: 600px) {
+}
+
+@media (prefers-color-scheme: light) {
+}
+
+@media (prefers-reduced-motion: no-preference) {
+}
