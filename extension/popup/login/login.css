@@ -5,28 +5,18 @@
     font-size: 13px;
 }
 .loginWrapper {
-    width: 150px;
-    padding: 0.5rem;
-    background-color: #999;
+    width: max-content;
 }
-.loginForm {
-    font-family: "Ubuntu", sans-serif;
-    width: 100%;
-    display: flex;
-    flex-flow: column nowrap;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-}
-input,
 button {
     font: inherit;
-    padding: 3px;
+    padding: 5px;
     border-radius: 5px;
     text-decoration: none;
     outline: none;
     border: none;
+    background-color: #9995;
 }
 button:hover {
     cursor: pointer;
-    background-color: #fffa;
+    background-color: #9999;
 }

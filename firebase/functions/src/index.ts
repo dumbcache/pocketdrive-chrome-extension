@@ -3,8 +3,13 @@ import fetch from "node-fetch";
 import express, { RequestHandler } from "express";
 import cors from "cors";
 
-import type { CreateResourceResponse, DirListResponse } from "../types";
+import type {
+    CreateResourceResponse,
+    DirListResponse,
+    GOauthCodeResponse,
+} from "../types.js";
 import {
+    GoauthExchangeCode,
     authenticateUser,
     createImgMetadata,
     createJWT,
@@ -14,7 +19,12 @@ import {
     removeJWT,
     uploadImg,
     validateJWT,
-} from "./utils";
+    /////////////////////////
+    WebOAuth,
+    validateToken,
+    ExtOAuth,
+    verifyIdToken,
+} from "./utils.js";
 
 /*************** End Points ****************/
 const expressApp = express();
@@ -150,3 +160,60 @@ expressApp.route("/:user/pics").post(validateUserMW, async (req, res) => {
     }
 });
 export const krabs = functions.https.onRequest(expressApp);
+
+////////////////////////////////////////////////////////////////////
+
+/******* Krabsv2 ********8*/
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+app.get("/login/:app", async (req, res) => {
+    const { app } = req.params;
+    if (app === "web") {
+        res.send({ url: WebOAuth });
+        return;
+    }
+    if (app === "ext") {
+        res.send({ url: ExtOAuth });
+        return;
+    }
+});
+app.post("/login", async (req, res) => {
+    const { id_token } = req.body;
+    const { status } = await verifyIdToken(id_token);
+    if (status !== 200) {
+        res.status(401).send({ cause: "invalid token signature" });
+        return;
+    }
+    res.status(200).send({});
+});
+
+app.get("/redirect", async (req, res) => {
+    try {
+        // const { code, redirect_uri } = req.query;
+        console.log(req.query);
+        // if (typeof code === "string")
+        //     console.log(await GoauthExchangeCode(code));
+        res.status(200).send();
+    } catch (error) {}
+});
+
+app.route("/auth").get(async (req, res) => {
+    try {
+        let token = req.headers.authorization?.split(" ")[1];
+        if (!token) return;
+        let { status, cause, tokenData } = await validateToken(token);
+        if (status !== 200) {
+            throw new Error("unauthorized error", { cause });
+            return;
+        }
+        const { accessToken } = await getFSToken(tokenData.user);
+        res.send(accessToken);
+    } catch (error) {
+        res.status(401).send({ cause: error.cause });
+        return;
+    }
+});
+
+export const krabsv2 = functions.https.onRequest(app);

@@ -62,6 +62,9 @@ try {
     };
 
     chrome.runtime.onInstalled.addListener(async () => {
+        // chrome.tabs.create({
+        //     url: "http://127.0.0.1:5001/dumbcache4658/us-central1/krabsv2/login",
+        // });
         let { loginStatus, username } = await chrome.storage.local.get([
             "loginStatus",
             "username",

@@ -19,7 +19,13 @@
     "background": {
         "service_worker": "sw.js"
     },
-    "permissions": ["activeTab", "scripting", "contextMenus", "storage"],
+    "permissions": [
+        "activeTab",
+        "scripting",
+        "contextMenus",
+        "storage",
+        "identity"
+    ],
     "content_security_policy": {
         "extension_pages": "script-src 'self'; object-src 'self'"
     },

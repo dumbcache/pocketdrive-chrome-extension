@@ -1,12 +1,12 @@
 (async () => {
     const loginWrapper = document.querySelector(".loginWrapper");
+    const loginButton = document.querySelector(".login");
     const logOutButton = document.querySelector(".logout");
     const warnings = document.querySelector(".warnings");
     const form = document.querySelector(".loginForm");
     const { loginStatus } = await chrome.storage.local.get("loginStatus");
 
     if (loginStatus === 1) {
-        loginWrapper.style.display = "none";
         logOutButton.style.display = "initial";
         logOutButton.onclick = (e) => {
             console.log("clicked");
@@ -14,18 +14,36 @@
         };
         return;
     }
-    logOutButton.style.display = "none";
-    form.onsubmit = async (e) => {
-        e.preventDefault();
-        let creds = {};
-        for (let [name, val] of new FormData(form)) {
-            creds[name] = val.trim();
-        }
-        await chrome.runtime.sendMessage({
-            context: "loginSubmit",
-            creds,
-        });
+    loginButton.onclick = async () => {
+        // window.open(
+        //     "http://127.0.0.1:5001/dumbcache4658/us-central1/krabsv2/login",
+        //     "",
+        //     "popup=1,left=100,top=100,width=320,height=320"
+        // );
+        const req = await fetch(
+            "http://127.0.0.1:5001/dumbcache4658/us-central1/krabsv2/login/ext"
+        );
+        const { url } = await req.json();
+        chrome.identity.launchWebAuthFlow(
+            { url, interactive: true },
+            async (redirectURL) => {
+                const url = new URL(redirectURL);
+                const id_token = url.hash.split("&")[0].split("=")[1];
+                const { status } = await fetch(
+                    "http://127.0.0.1:5001/dumbcache4658/us-central1/krabsv2/login",
+                    {
+                        method: "post",
+                        headers: {
+                            "content-type": "application/json",
+                        },
+                        body: JSON.stringify({ id_token }),
+                    }
+                );
+                console.log(status);
+            }
+        );
     };
+
     chrome.runtime.onMessage.addListener((message, sender, sendRes) => {
         if (message.context === "loginSubmit") {
             if (message.status !== 200) {

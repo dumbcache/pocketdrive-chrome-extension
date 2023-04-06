@@ -1,10 +1,19 @@
+export interface GOauthCodeResponse {
+    code: string;
+    scope: string;
+    authuser: string;
+    prompt: string;
+}
 export interface GOauthTokenReponse {
     access_token: string;
     expires_in: number;
     scope: string;
     token_type: string;
 }
-
+export interface GOpenidTokenResponse extends GOauthTokenReponse {
+    id_token: string;
+    refresh_token?: string;
+}
 export interface FSToken {
     accessToken: string;
     expiresIn: number;
@@ -17,6 +26,11 @@ export interface UserData {
     pass: string;
     secret: string;
     root: string;
+}
+
+export interface User {
+    root: string;
+    token: string;
 }
 
 export interface ImgMeta {
