@@ -3,11 +3,7 @@ import fetch from "node-fetch";
 import express, { RequestHandler } from "express";
 import cors from "cors";
 
-import type {
-    CreateResourceResponse,
-    DirListResponse,
-    GOauthCodeResponse,
-} from "../types.js";
+import type { CreateResourceResponse, DirListResponse } from "../types.js";
 import {
     GoauthExchangeCode,
     authenticateUser,
@@ -24,6 +20,9 @@ import {
     validateToken,
     ExtOAuth,
     verifyIdToken,
+    OAUTH_STATE,
+    generateToken,
+    userExists,
 } from "./utils.js";
 
 /*************** End Points ****************/
@@ -168,6 +167,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const html = `<a href="${WebOAuth}" style="font-family:ubuntu;text-decoration:none;background-color:#ddd;padding:1rem;border-radius:5%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">Sign in using Google<a>`;
+const loginSuccessHTML = `<p style="font-family:ubuntu;text-decoration:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">registered successfully. now you can log into chrome extension<p>`;
+const loginFailedHTML = `<div  style="font-family:ubuntu;text-decoration:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"><p>registration failed. try again</p<a href="${WebOAuth}">Sign in using Google</a><div>`;
+
+app.get("/loginpage", async (req, res) => {
+    const { status } = req.query;
+    if (status) {
+        status === "success"
+            ? res.send(loginSuccessHTML)
+            : res.send(loginFailedHTML);
+        return;
+    }
+    res.send(html);
+});
+
 app.get("/login/:app", async (req, res) => {
     const { app } = req.params;
     if (app === "web") {
@@ -180,39 +194,50 @@ app.get("/login/:app", async (req, res) => {
     }
 });
 app.post("/login", async (req, res) => {
-    const { id_token } = req.body;
-    const { status } = await verifyIdToken(id_token);
-    if (status !== 200) {
-        res.status(401).send({ cause: "invalid token signature" });
-        return;
+    try {
+        const { id_token } = req.body;
+        const { status, payload } = await verifyIdToken(id_token);
+        if (status !== 200 || !payload)
+            throw new Error("invalid token signature");
+        const { exists, email } = await userExists(payload);
+        if (!exists) throw new Error("Unauthorized user");
+        const data = await generateToken(email!, 60 * 60 * 24 * 30);
+        res.status(200).send(data);
+    } catch (error) {
+        res.status(401).send({ cause: error.message });
     }
-    res.status(200).send({});
 });
 
 app.get("/redirect", async (req, res) => {
     try {
-        // const { code, redirect_uri } = req.query;
-        console.log(req.query);
-        // if (typeof code === "string")
-        //     console.log(await GoauthExchangeCode(code));
-        res.status(200).send();
-    } catch (error) {}
+        const { code, state } = req.query;
+        if (state !== OAUTH_STATE) throw new Error("invalid oauth state");
+        const payload =
+            typeof code === "string" && (await GoauthExchangeCode(code));
+        if (!payload) throw new Error("invalid code");
+        res.redirect(
+            "/dumbcache4658/us-central1/krabsv2/loginpage?status=success"
+        );
+    } catch (error) {
+        if (error instanceof Error) console.log(error.message);
+        res.redirect(
+            "/dumbcache4658/us-central1/krabsv2/loginpage?status=failed"
+        );
+    }
 });
 
 app.route("/auth").get(async (req, res) => {
     try {
         let token = req.headers.authorization?.split(" ")[1];
         if (!token) return;
-        let { status, cause, tokenData } = await validateToken(token);
+        let { status, cause, payload } = await validateToken(token);
         if (status !== 200) {
             throw new Error("unauthorized error", { cause });
-            return;
         }
-        const { accessToken } = await getFSToken(tokenData.user);
-        res.send(accessToken);
+        const { accessToken } = await getFSToken(payload!.user);
+        res.send({ accessToken });
     } catch (error) {
-        res.status(401).send({ cause: error.cause });
-        return;
+        res.status(401).send({ cause: error.message });
     }
 });
 

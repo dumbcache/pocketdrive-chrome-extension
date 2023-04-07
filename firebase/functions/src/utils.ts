@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { Request, Response } from "express";
 import fetch from "node-fetch";
-import { OAuth2Client } from "google-auth-library";
+import { OAuth2Client, TokenPayload } from "google-auth-library";
 
 import GoogleInfo from "./discovery.json" assert { type: "json" };
 import type {
@@ -16,6 +16,7 @@ import type {
     UserData,
     User,
     GOpenidTokenResponse,
+    Token,
 } from "../types.js";
 
 dotenv.config();
@@ -24,30 +25,18 @@ const firestore = getFirestore(app);
 
 export const BaseOAuth = `${GoogleInfo.authorization_endpoint}?client_id=${process.env.CLIENT_ID}&nonce=${process.env.NONCE}&prompt=select_account`;
 
+export const OAUTH_STATE = crypto
+    .createHash("sha256")
+    .update(process.env.STATE!)
+    .digest("hex");
+
 export const WebOAuth = encodeURI(
-    `${BaseOAuth}&redirect_uri=${process.env.REDIRECT_URI_WEB}&response_type=code&scope=openid email profile https://www.googleapis.com/auth/drive.file`
+    `${BaseOAuth}&redirect_uri=${process.env.REDIRECT_URI_WEB}&state=${OAUTH_STATE}&response_type=code&scope=openid email profile https://www.googleapis.com/auth/drive.file`
 );
 
 export const ExtOAuth = encodeURI(
-    `${BaseOAuth}&response_type=id_token&scope=openid&redirect_uri=${process.env.REDIRECT_URI_EXT}`
+    `${BaseOAuth}&response_type=id_token&scope=openid email&redirect_uri=${process.env.REDIRECT_URI_EXT}`
 );
-
-export const verifyIdToken = async (token: string) => {
-    try {
-        const client = new OAuth2Client(process.env.CLIENT_ID);
-        const ticket = await client.verifyIdToken({
-            idToken: token,
-            audience: process.env.CLIENT_ID,
-        });
-        const payload = ticket.getPayload();
-        if (payload?.nonce !== process.env.NONCE)
-            throw new Error("Invalid IdToken: nonce mismatch");
-        return { status: 200, payload };
-    } catch (error) {
-        if (error instanceof Error) console.log(error.message);
-        return { status: 401 };
-    }
-};
 
 export const saveTokenData = (data: GOpenidTokenResponse) => {};
 
@@ -60,21 +49,16 @@ export const GoauthExchangeCode = async (
             client_id: process.env.CLIENT_ID,
             client_secret: process.env.CLIENT_SECRET,
             grant_type: "authorization_code",
-            redirect_uri: process.env.REDIRECT_URI,
+            redirect_uri: process.env.REDIRECT_URI_WEB,
             code,
         }),
     });
-    let data = (await request.json()) as GOpenidTokenResponse;
-    // let query = firestore.doc(`tokens/${id}`);
-    // query.update({
-    //     accessToken: data.access_token,
-    //     expiresIn: Math.floor(Date.now() / 1000 + data.expires_in),
-    // });
-    return data;
+    let payload = (await request.json()) as GOpenidTokenResponse;
+    return payload;
 };
 export const getGOatuthToken = async (
     refreshToken: string,
-    id: string
+    user: string
 ): Promise<string> => {
     const request = await fetch("https://oauth2.googleapis.com/token", {
         method: "POST",
@@ -87,23 +71,21 @@ export const getGOatuthToken = async (
         }),
     });
     let data = (await request.json()) as GOauthTokenReponse;
-    let query = firestore.doc(`tokens/${id}`);
+    let query = firestore.doc(`tokens/${user}`);
     query.update({
         accessToken: data.access_token,
-        expiresIn: Math.floor(Date.now() / 1000 + data.expires_in),
+        exp: Math.floor(Date.now() / 1000 + data.expires_in),
     });
     return data.access_token;
 };
 
 export const getFSToken = async (user: string) => {
-    let query = firestore.doc(`users/${user}`);
-    let { id } = (await query.get()).data() as UserData;
-    query = firestore.doc(`tokens/${id}`);
+    let query = firestore.doc(`tokens/${user}`);
     let tokenData = (await query.get()).data() as FSToken;
     let accessToken =
-        Math.floor(Date.now() / 1000) < tokenData.expiresIn
+        Math.floor(Date.now() / 1000) < tokenData.exp
             ? tokenData.accessToken
-            : await getGOatuthToken(tokenData.refreshToken, id);
+            : await getGOatuthToken(tokenData.refreshToken, user);
     return { accessToken };
 };
 
@@ -255,14 +237,40 @@ export const fetchImgExternal = async (req: Request, res: Response) => {
 
 ////////////////////////////////////////////////////////
 
-export const createToken = async (user: string, secret: string) => {
-    const token = jwt.sign({ name: user }, secret, {
-        expiresIn: 60 * 60 * 24 * 30,
+export const userExists = async (payload: TokenPayload) => {
+    const { email, sub } = payload;
+    let query = firestore.doc(`users/${email}`);
+    let data = (await query.get()).data();
+    const exists = data && data.sub === sub;
+    return { exists, email };
+};
+export const verifyIdToken = async (token: string) => {
+    try {
+        const client = new OAuth2Client(process.env.CLIENT_ID);
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        if (payload?.nonce !== process.env.NONCE)
+            throw new Error("Invalid IdToken: nonce mismatch");
+        return { status: 200, payload };
+    } catch (error) {
+        if (error instanceof Error) console.log(error.message);
+        return { status: 401 };
+    }
+};
+
+export const generateToken = async (email: string, expiresIn: number) => {
+    let query = firestore.doc(`secrets/app`);
+    const { secret } = (await query.get()).data() as { secret: string };
+    const token = jwt.sign({ user: email }, secret, {
+        expiresIn,
         issuer: process.env.ISSUER,
     });
-    let query = firestore.doc(`users/${user}`);
-    query.update({ jwt: token });
+    query = firestore.doc(`users/${email}`);
     let { root } = (await query.get()).data() as UserData;
+    query.update({ token });
     return { token, root };
 };
 
@@ -270,21 +278,20 @@ export const validateToken = async (
     token: string
 ): Promise<{
     status: number;
-    tokenData?: string | jwt.JwtPayload;
+    payload?: Token;
     cause?: string;
 }> => {
     const query = firestore.doc(`secrets/app`);
     const { secret } = (await query.get()).data() as { secret: string };
 
     try {
-        const tokenData = jwt.verify(token, secret);
-        console.log(tokenData);
-        const query = firestore.doc(`users/${tokenData.user}`);
+        const payload = jwt.verify(token, secret) as Token;
+        const query = firestore.doc(`users/${payload.user}`);
         const user = (await query.get()).data() as User;
         if (user.token !== token) {
             return { status: 401, cause: "invalid token" };
         }
-        return { status: 200, tokenData };
+        return { status: 200, payload };
     } catch (e) {
         console.log(e);
         return { status: 401, cause: "invalid token" };

@@ -16,8 +16,14 @@ export interface GOpenidTokenResponse extends GOauthTokenReponse {
 }
 export interface FSToken {
     accessToken: string;
-    expiresIn: number;
+    exp: number;
     refreshToken: string;
+}
+export interface Token {
+    user: string;
+    iat: number;
+    exp: number;
+    iss: string;
 }
 
 export interface UserData {

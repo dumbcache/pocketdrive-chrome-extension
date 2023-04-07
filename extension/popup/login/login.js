@@ -29,7 +29,7 @@
             async (redirectURL) => {
                 const url = new URL(redirectURL);
                 const id_token = url.hash.split("&")[0].split("=")[1];
-                const { status } = await fetch(
+                let req = await fetch(
                     "http://127.0.0.1:5001/dumbcache4658/us-central1/krabsv2/login",
                     {
                         method: "post",
@@ -39,7 +39,12 @@
                         body: JSON.stringify({ id_token }),
                     }
                 );
-                console.log(status);
+                const { token } = await req.json();
+                req = await fetch(
+                    "http://127.0.0.1:5001/dumbcache4658/us-central1/krabsv2/auth",
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                console.log(await req.json());
             }
         );
     };
