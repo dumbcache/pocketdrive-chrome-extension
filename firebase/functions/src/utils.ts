@@ -17,6 +17,7 @@ import type {
     User,
     GOpenidTokenResponse,
     Token,
+    HandleUser,
 } from "../types.js";
 
 dotenv.config();
@@ -31,10 +32,10 @@ export const OAUTH_STATE = crypto
     .digest("hex");
 
 export const WebOAuth = encodeURI(
-    `${BaseOAuth}&redirect_uri=${process.env.REDIRECT_URI_WEB}&state=${OAUTH_STATE}&response_type=code&scope=openid email https://www.googleapis.com/auth/drive.file`
+    `${BaseOAuth}&redirect_uri=${process.env.REDIRECT_URI_WEB}&state=${OAUTH_STATE}&access_type=offline&response_type=code&scope=openid email https://www.googleapis.com/auth/drive.file`
 );
 export const WebOAuthConsent = encodeURI(
-    `${BaseOAuth} consent&redirect_uri=${process.env.REDIRECT_URI_WEB}&state=${OAUTH_STATE}&response_type=code&scope=openid email https://www.googleapis.com/auth/drive.file`
+    `${BaseOAuth} consent&redirect_uri=${process.env.REDIRECT_URI_WEB}&state=${OAUTH_STATE}&access_type=offline&response_type=code&scope=openid email https://www.googleapis.com/auth/drive.file`
 );
 
 export const ExtOAuth = encodeURI(
@@ -368,12 +369,16 @@ export const removeToken = (user: string) => {
 export const handleNewUser = async (
     data: GOpenidTokenResponse,
     payload: TokenPayload
-) => {
+): Promise<HandleUser> => {
     const { email } = payload;
-    let query = firestore.doc(`secres/authorized}`);
+    let query = firestore.doc(`secrets/authorized`);
     const { users } = (await query.get()).data() as { users: any[] };
     if (!users.includes(email)) {
-        return { satus: 401 };
+        await fetch(
+            `${GoogleInfo.revocation_endpoint}?token=${data.refresh_token}`,
+            { method: "POST" }
+        );
+        return { status: 401 };
     }
     const rootDir = await createRootDir(data.access_token);
     query = firestore.doc(`tokens/${email}`);
@@ -383,7 +388,7 @@ export const handleNewUser = async (
         refreshToken: data.refresh_token,
     });
     query = firestore.doc(`users/${email}`);
-    await query.set({ root: rootDir, sub: payload.sub });
+    await query.set({ root: rootDir.id, sub: payload.sub });
     const user = await generateToken(email!, "WEB");
     return { status: 200, user };
 };
@@ -391,13 +396,13 @@ export const handleNewUser = async (
 export const handleExistingUser = async (
     data: GOpenidTokenResponse,
     payload: TokenPayload
-) => {
+): Promise<HandleUser> => {
     const query = firestore.doc(`tokens/${payload.email}`);
     query.update({
         accessToken: data.access_token,
         exp: Math.floor(Date.now() / 1000 + data.expires_in),
+        refreshToken: data.refresh_token,
     });
-    data.refresh_token && query.update({ refreshToken: "1234" });
     const user = await generateToken(payload.email!, "WEB");
     return { status: 200, user };
 };

@@ -60,12 +60,17 @@ const validateUserMW: RequestHandler = async (req, res, next) => {
 const html = (url: string) =>
     `<a href="${url}" style="font-family:ubuntu;background-color:#ddd;padding:1rem;border-radius:5%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">Sign in using Google<a>`;
 const loginSuccessHTML = `<p style="font-family:ubuntu;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">registered successfully. now you can log into chrome extension<p>`;
-const loginFailedHTML = `<div  style="font-family:ubuntu;text-align:center;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"><p>registration failed. try again</p><p><a href="${WebOAuth}">Sign in using Google</a></p><div>`;
+const loginFailedHTML = (message?: string) =>
+    `<div  style="font-family:ubuntu;text-align:center;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"><p>registration failed${
+        message ? message : ""
+    }. try again</p><p><a href="${WebOAuth}">Sign in using Google</a></p><div>`;
 
 expressApp.get("/loginpage", async (req, res) => {
     const { status, consent } = req.query;
     if (status) {
-        status === "1" ? res.send(loginSuccessHTML) : res.send(loginFailedHTML);
+        if (status === "1") res.send(loginSuccessHTML);
+        else if (status === "0") res.send(loginFailedHTML());
+        else res.send(loginFailedHTML(", user unauthorized"));
         return;
     }
     if (consent === "1") {
@@ -101,12 +106,16 @@ expressApp.get("/redirect", async (req, res) => {
         if (idStatus !== 200) throw new Error("Invalid IdToken");
         const { exists } = await userExists(data!);
         const { status } = exists
-            ? handleExistingUser(payload, data!)
-            : handleNewUser(payload, data!);
-        res.redirect("/dumbcache4658/us-central1/krabs/loginpage?status=1");
+            ? await handleExistingUser(payload, data!)
+            : await handleNewUser(payload, data!);
+        if (status !== 200) {
+            res.redirect(`loginpage?status=2`);
+            return;
+        }
+        res.redirect(`loginpage?status=1`);
     } catch (error) {
         console.log(error);
-        res.redirect("/dumbcache4658/us-central1/krabs/loginpage?status=0");
+        res.redirect(`loginpage?status=0`);
     }
 });
 

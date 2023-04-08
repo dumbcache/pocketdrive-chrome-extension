@@ -42,6 +42,11 @@ export interface User {
     extoken: string;
 }
 
+export interface HandleUser {
+    status: number;
+    user?: { token: string; root: string };
+}
+
 export interface ImgMeta {
     name?: string;
     mimeType?: string;
