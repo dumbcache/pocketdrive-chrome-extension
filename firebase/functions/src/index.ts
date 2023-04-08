@@ -19,6 +19,9 @@ import {
     OAUTH_STATE,
     generateToken,
     userExists,
+    WebOAuthConsent,
+    handleNewUser,
+    handleExistingUser,
 } from "./utils.js";
 
 /*************** End Points ****************/
@@ -44,7 +47,7 @@ const validateUserMW: RequestHandler = async (req, res, next) => {
         res.status(401).send({ cause: "invalid token" });
         return;
     }
-    const { status, payload, cause } = await validateToken(token);
+    const { status, payload, cause } = await validateToken(token, "EXT");
     if (status !== 200) {
         res.status(status).send({ cause });
         return;
@@ -54,19 +57,22 @@ const validateUserMW: RequestHandler = async (req, res, next) => {
     next();
 };
 
-const html = `<a href="${WebOAuth}" style="font-family:ubuntu;text-decoration:none;background-color:#ddd;padding:1rem;border-radius:5%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">Sign in using Google<a>`;
-const loginSuccessHTML = `<p style="font-family:ubuntu;text-decoration:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">registered successfully. now you can log into chrome extension<p>`;
-const loginFailedHTML = `<div  style="font-family:ubuntu;text-decoration:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"><p>registration failed. try again</p<a href="${WebOAuth}">Sign in using Google</a><div>`;
+const html = (url: string) =>
+    `<a href="${url}" style="font-family:ubuntu;background-color:#ddd;padding:1rem;border-radius:5%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">Sign in using Google<a>`;
+const loginSuccessHTML = `<p style="font-family:ubuntu;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">registered successfully. now you can log into chrome extension<p>`;
+const loginFailedHTML = `<div  style="font-family:ubuntu;text-align:center;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"><p>registration failed. try again</p><p><a href="${WebOAuth}">Sign in using Google</a></p><div>`;
 
 expressApp.get("/loginpage", async (req, res) => {
-    const { status } = req.query;
+    const { status, consent } = req.query;
     if (status) {
-        status === "success"
-            ? res.send(loginSuccessHTML)
-            : res.send(loginFailedHTML);
+        status === "1" ? res.send(loginSuccessHTML) : res.send(loginFailedHTML);
         return;
     }
-    res.send(html);
+    if (consent === "1") {
+        res.send(html(WebOAuthConsent));
+        return;
+    }
+    res.send(html(WebOAuth));
 });
 
 expressApp.get("/login/:app", async (req, res) => {
@@ -83,19 +89,24 @@ expressApp.get("/login/:app", async (req, res) => {
 
 expressApp.get("/redirect", async (req, res) => {
     try {
-        const { code, state } = req.query;
+        const { error, code, state } = req.query;
+        if (error) throw new Error("access_denied");
         if (state !== OAUTH_STATE) throw new Error("invalid oauth state");
         const payload =
             typeof code === "string" && (await GoauthExchangeCode(code));
-        if (!payload) throw new Error("invalid code");
-        res.redirect(
-            "/dumbcache4658/us-central1/krabsv2/loginpage?status=success"
+        if (!payload || payload.error) throw new Error("invalid code");
+        const { status: idStatus, payload: data } = await verifyIdToken(
+            payload.id_token
         );
+        if (idStatus !== 200) throw new Error("Invalid IdToken");
+        const { exists } = await userExists(data!);
+        const { status } = exists
+            ? handleExistingUser(payload, data!)
+            : handleNewUser(payload, data!);
+        res.redirect("/dumbcache4658/us-central1/krabs/loginpage?status=1");
     } catch (error) {
         console.log(error);
-        res.redirect(
-            "/dumbcache4658/us-central1/krabsv2/loginpage?status=failed"
-        );
+        res.redirect("/dumbcache4658/us-central1/krabs/loginpage?status=0");
     }
 });
 
@@ -103,7 +114,7 @@ expressApp.route("/auth").get(async (req, res) => {
     try {
         let token = req.headers.authorization?.split(" ")[1];
         if (!token) return;
-        let { status, cause, payload } = await validateToken(token);
+        let { status, cause, payload } = await validateToken(token, "WEB");
         if (status !== 200) {
             throw new Error("unauthorized error", { cause });
         }
@@ -122,7 +133,7 @@ expressApp.post("/login", async (req, res) => {
             throw new Error("invalid token signature");
         const { exists, email } = await userExists(payload);
         if (!exists) throw new Error("Unauthorized user");
-        const data = await generateToken(email!, 60 * 60 * 24 * 30);
+        const data = await generateToken(email!, "EXT");
         res.status(200).send(data);
     } catch (error) {
         res.status(500).send({ cause: "unable to login user at the moment" });

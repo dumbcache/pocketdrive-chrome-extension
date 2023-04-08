@@ -13,6 +13,7 @@ export interface GOauthTokenReponse {
 export interface GOpenidTokenResponse extends GOauthTokenReponse {
     id_token: string;
     refresh_token?: string;
+    error?: string;
 }
 export interface FSToken {
     accessToken: string;
@@ -37,6 +38,8 @@ export interface UserData {
 export interface User {
     root: string;
     token: string;
+    sub: string;
+    extoken: string;
 }
 
 export interface ImgMeta {

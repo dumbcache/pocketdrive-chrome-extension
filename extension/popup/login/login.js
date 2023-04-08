@@ -21,7 +21,7 @@
         //     "popup=1,left=100,top=100,width=320,height=320"
         // );
         const req = await fetch(
-            "http://127.0.0.1:5001/dumbcache4658/us-central1/krabsv2/login/ext"
+            "http://127.0.0.1:5001/dumbcache4658/us-central1/krabs/login/ext"
         );
         const { url } = await req.json();
         chrome.identity.launchWebAuthFlow(
@@ -30,7 +30,7 @@
                 const url = new URL(redirectURL);
                 const id_token = url.hash.split("&")[0].split("=")[1];
                 let req = await fetch(
-                    "http://127.0.0.1:5001/dumbcache4658/us-central1/krabsv2/login",
+                    "http://127.0.0.1:5001/dumbcache4658/us-central1/krabs/login",
                     {
                         method: "post",
                         headers: {
@@ -40,8 +40,9 @@
                     }
                 );
                 const { token } = await req.json();
+                console.log(token);
                 req = await fetch(
-                    "http://127.0.0.1:5001/dumbcache4658/us-central1/krabsv2/auth",
+                    "http://127.0.0.1:5001/dumbcache4658/us-central1/krabs/auth",
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
                 console.log(await req.json());

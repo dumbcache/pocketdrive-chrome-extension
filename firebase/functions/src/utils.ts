@@ -31,12 +31,42 @@ export const OAUTH_STATE = crypto
     .digest("hex");
 
 export const WebOAuth = encodeURI(
-    `${BaseOAuth}&redirect_uri=${process.env.REDIRECT_URI_WEB}&state=${OAUTH_STATE}&response_type=code&scope=openid email profile https://www.googleapis.com/auth/drive.file`
+    `${BaseOAuth}&redirect_uri=${process.env.REDIRECT_URI_WEB}&state=${OAUTH_STATE}&response_type=code&scope=openid email https://www.googleapis.com/auth/drive.file`
+);
+export const WebOAuthConsent = encodeURI(
+    `${BaseOAuth} consent&redirect_uri=${process.env.REDIRECT_URI_WEB}&state=${OAUTH_STATE}&response_type=code&scope=openid email https://www.googleapis.com/auth/drive.file`
 );
 
 export const ExtOAuth = encodeURI(
     `${BaseOAuth}&response_type=id_token&scope=openid email&redirect_uri=${process.env.REDIRECT_URI_EXT}`
 );
+
+export const colorPalette = {
+    ChocolateIceCream: "#ac725e",
+    OldBrickRed: "#d06b64",
+    Cardinal: "#f83a22",
+    WildStraberries: "#fa573c",
+    MarsOrange: "#ff7537",
+    YellowCab: "#ffad46",
+    Spearmint: "#42d692",
+    VernFern: "#16a765",
+    Asparagus: "#7bd148",
+    SlimeGreen: "#b3dc6c",
+    DesertSand: "#fbe983",
+    Macaroni: "#fad165",
+    SeaFoam: "#92e1c0",
+    Pool: "#9fe1e7",
+    Denim: "#9fc6e7",
+    RainySky: "#4986e7",
+    BlueVelvet: "#9a9cff",
+    PurpleDino: "#b99aff",
+    Mouse: "#8f8f8f",
+    MountainGrey: "#cabdbf",
+    Earthworm: "#cca6ac",
+    BubbleGum: "#f691b2",
+    PurpleRain: "#cd74e6",
+    ToyEggplant: "#a47ae2",
+};
 
 export const saveTokenData = (data: GOpenidTokenResponse) => {};
 
@@ -139,12 +169,34 @@ export const authenticateUser = async (
     }
 };
 
+export const createRootDir = async (accessToken: string) => {
+    const url = "https://www.googleapis.com/drive/v3/files/";
+    let req = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+            name: "krabs",
+            mimeType: "application/vnd.google-apps.folder",
+            folderColorRgb: colorPalette.Cardinal,
+        }),
+    });
+    let { status, statusText } = req;
+    let data = (await req.json()) as CreateResourceResponse;
+    if (status !== 200)
+        console.log(
+            `error while creating root dir ${status} ${statusText}`,
+            data
+        );
+    return data;
+};
 export const patchImgMetaData = async (
     id: string,
     imgMeta: ImgMeta,
     accessToken: string
 ) => {
-    console.log(JSON.stringify(imgMeta));
     const url = "https://www.googleapis.com/drive/v3/files/" + id;
     let req = await fetch(url, {
         method: "Patch",
@@ -261,21 +313,23 @@ export const verifyIdToken = async (token: string) => {
     }
 };
 
-export const generateToken = async (email: string, expiresIn: number) => {
+export const generateToken = async (email: string, app: "WEB" | "EXT") => {
     let query = firestore.doc(`secrets/app`);
     const { secret } = (await query.get()).data() as { secret: string };
+    const expiresIn = app === "EXT" ? 60 * 60 * 24 * 30 : 60 * 69 * 24;
     const token = jwt.sign({ user: email }, secret, {
         expiresIn,
         issuer: process.env.ISSUER,
     });
     query = firestore.doc(`users/${email}`);
     let { root } = (await query.get()).data() as UserData;
-    query.update({ token });
+    app === "EXT" ? query.update({ extoken: token }) : query.update({ token });
     return { token, root };
 };
 
 export const validateToken = async (
-    token: string
+    token: string,
+    app: "WEB" | "EXT"
 ): Promise<{
     status: number;
     payload?: Token;
@@ -288,8 +342,15 @@ export const validateToken = async (
         const payload = jwt.verify(token, secret) as Token;
         const query = firestore.doc(`users/${payload.user}`);
         const user = (await query.get()).data() as User;
-        if (user.token !== token) {
-            return { status: 401, cause: "invalid token" };
+        switch (app) {
+            case "WEB":
+                if (user.token !== token) {
+                    return { status: 401, cause: "invalid token" };
+                }
+            case "EXT":
+                if (user.extoken !== token) {
+                    return { status: 401, cause: "invalid token" };
+                }
         }
         return { status: 200, payload };
     } catch (e) {
@@ -302,4 +363,41 @@ export const removeToken = (user: string) => {
     let query = firestore.doc(`users/${user}`);
     query.update({ jwt: "" });
     return { status: 200 };
+};
+
+export const handleNewUser = async (
+    data: GOpenidTokenResponse,
+    payload: TokenPayload
+) => {
+    const { email } = payload;
+    let query = firestore.doc(`secres/authorized}`);
+    const { users } = (await query.get()).data() as { users: any[] };
+    if (!users.includes(email)) {
+        return { satus: 401 };
+    }
+    const rootDir = await createRootDir(data.access_token);
+    query = firestore.doc(`tokens/${email}`);
+    await query.set({
+        accessToken: data.access_token,
+        exp: Math.floor(Date.now() / 1000 + data.expires_in),
+        refreshToken: data.refresh_token,
+    });
+    query = firestore.doc(`users/${email}`);
+    await query.set({ root: rootDir, sub: payload.sub });
+    const user = await generateToken(email!, "WEB");
+    return { status: 200, user };
+};
+
+export const handleExistingUser = async (
+    data: GOpenidTokenResponse,
+    payload: TokenPayload
+) => {
+    const query = firestore.doc(`tokens/${payload.email}`);
+    query.update({
+        accessToken: data.access_token,
+        exp: Math.floor(Date.now() / 1000 + data.expires_in),
+    });
+    data.refresh_token && query.update({ refreshToken: "1234" });
+    const user = await generateToken(payload.email!, "WEB");
+    return { status: 200, user };
 };
