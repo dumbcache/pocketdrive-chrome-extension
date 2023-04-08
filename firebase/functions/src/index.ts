@@ -6,16 +6,12 @@ import cors from "cors";
 import type { CreateResourceResponse, DirListResponse } from "../types.js";
 import {
     GoauthExchangeCode,
-    authenticateUser,
     createImgMetadata,
-    createJWT,
     fetchImgExternal,
     getFSToken,
     patchImgMetaData,
     removeJWT,
     uploadImg,
-    validateJWT,
-    /////////////////////////
     WebOAuth,
     validateToken,
     ExtOAuth,
@@ -48,39 +44,93 @@ const validateUserMW: RequestHandler = async (req, res, next) => {
         res.status(401).send({ cause: "invalid token" });
         return;
     }
-    const { user } = req.params;
-    const { status, cause } = await validateJWT(user, token);
+    const { status, payload, cause } = await validateToken(token);
     if (status !== 200) {
         res.status(status).send({ cause });
         return;
     }
+    res.locals.user = payload?.user;
+    console.log(res.locals.user);
     next();
 };
 
-expressApp.route("/login").post(validateUserMW, async (req, res) => {
-    try {
-        let { user, pass } = req.body;
-        if (!user || !pass) {
-            console.log("creds missing");
-            res.status(401).send({ cause: "wrong credentials" });
-            return;
-        }
-        const { auth, secret } = await authenticateUser(user, pass);
-        if (!auth) {
-            console.log("user Authentication status", auth);
-            res.status(401).send({ cause: "wrong credentials" });
-            return;
-        }
-        let data = await createJWT(user, secret!);
-        res.status(200).send({ ...data, user });
-    } catch (error) {
-        console.log(error);
-        res.status(500).send({ cause: "unable to verify user at the moment" });
+const html = `<a href="${WebOAuth}" style="font-family:ubuntu;text-decoration:none;background-color:#ddd;padding:1rem;border-radius:5%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">Sign in using Google<a>`;
+const loginSuccessHTML = `<p style="font-family:ubuntu;text-decoration:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">registered successfully. now you can log into chrome extension<p>`;
+const loginFailedHTML = `<div  style="font-family:ubuntu;text-decoration:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"><p>registration failed. try again</p<a href="${WebOAuth}">Sign in using Google</a><div>`;
+
+expressApp.get("/loginpage", async (req, res) => {
+    const { status } = req.query;
+    if (status) {
+        status === "success"
+            ? res.send(loginSuccessHTML)
+            : res.send(loginFailedHTML);
+        return;
+    }
+    res.send(html);
+});
+
+expressApp.get("/login/:app", async (req, res) => {
+    const { app } = req.params;
+    if (app === "web") {
+        res.send({ url: WebOAuth });
+        return;
+    }
+    if (app === "ext") {
+        res.send({ url: ExtOAuth });
+        return;
     }
 });
-expressApp.route("/:user/logout").get(validateUserMW, async (req, res) => {
+
+expressApp.get("/redirect", async (req, res) => {
     try {
-        let { user } = req.params;
+        const { code, state } = req.query;
+        if (state !== OAUTH_STATE) throw new Error("invalid oauth state");
+        const payload =
+            typeof code === "string" && (await GoauthExchangeCode(code));
+        if (!payload) throw new Error("invalid code");
+        res.redirect(
+            "/dumbcache4658/us-central1/krabsv2/loginpage?status=success"
+        );
+    } catch (error) {
+        console.log(error);
+        res.redirect(
+            "/dumbcache4658/us-central1/krabsv2/loginpage?status=failed"
+        );
+    }
+});
+
+expressApp.route("/auth").get(async (req, res) => {
+    try {
+        let token = req.headers.authorization?.split(" ")[1];
+        if (!token) return;
+        let { status, cause, payload } = await validateToken(token);
+        if (status !== 200) {
+            throw new Error("unauthorized error", { cause });
+        }
+        const { accessToken } = await getFSToken(payload!.user);
+        res.send({ accessToken });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ cause: "unable to authenticate at the moment" });
+    }
+});
+expressApp.post("/login", async (req, res) => {
+    try {
+        const { id_token } = req.body;
+        const { status, payload } = await verifyIdToken(id_token);
+        if (status !== 200 || !payload)
+            throw new Error("invalid token signature");
+        const { exists, email } = await userExists(payload);
+        if (!exists) throw new Error("Unauthorized user");
+        const data = await generateToken(email!, 60 * 60 * 24 * 30);
+        res.status(200).send(data);
+    } catch (error) {
+        res.status(500).send({ cause: "unable to login user at the moment" });
+    }
+});
+expressApp.route("/logout").get(validateUserMW, async (req, res) => {
+    try {
+        let { user } = res.locals.user;
         let { status } = removeJWT(user);
         res.status(status).send({});
     } catch (error) {
@@ -89,9 +139,9 @@ expressApp.route("/:user/logout").get(validateUserMW, async (req, res) => {
     }
 });
 
-expressApp.get("/:user/dirs/:parents", validateUserMW, async (req, res) => {
+expressApp.get("/dirs/:parents", validateUserMW, async (req, res) => {
     try {
-        const { user } = req.params;
+        let { user } = res.locals.user;
         const { accessToken } = await getFSToken(user);
         const { parents } = req.params;
         const url = "https://www.googleapis.com/drive/v3/files";
@@ -103,41 +153,47 @@ expressApp.get("/:user/dirs/:parents", validateUserMW, async (req, res) => {
         );
         const { files } = (await dirReq.json()) as DirListResponse;
         res.status(200).send(files);
-    } catch ({ message }) {
-        res.status(500).send({ cause: message });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ cause: "unable to fetch dirs at the moment" });
     }
 });
-expressApp.post("/:user/dirs", validateUserMW, async (req, res) => {
-    const { user } = req.params;
-    const { accessToken } = await getFSToken(user);
-    const url = "https://www.googleapis.com/drive/v3/files";
-    const { dirName, parents } = req.body as {
-        dirName: string;
-        parents: string;
-    };
-    const dirReq = await fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "applications/json",
-            Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-            name: dirName.trim(),
-            mimeType: "application/vnd.google-apps.folder",
-            parents: [parents],
-        }),
-    });
-    if (dirReq.status !== 200) {
-        res.status(dirReq.status).send({ cause: await dirReq.json() });
-        return;
+expressApp.post("/dirs", validateUserMW, async (req, res) => {
+    try {
+        let { user } = res.locals.user;
+        const { accessToken } = await getFSToken(user);
+        const url = "https://www.googleapis.com/drive/v3/files";
+        const { dirName, parents } = req.body as {
+            dirName: string;
+            parents: string;
+        };
+        const dirReq = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "applications/json",
+                Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+                name: dirName.trim(),
+                mimeType: "application/vnd.google-apps.folder",
+                parents: [parents],
+            }),
+        });
+        if (dirReq.status !== 200) {
+            res.status(dirReq.status).send({ cause: await dirReq.json() });
+            return;
+        }
+        const { id, name } = (await dirReq.json()) as CreateResourceResponse;
+        res.status(200).send({ id, name });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ cause: "unable to fetch dirs at the moment" });
     }
-    const { id, name } = (await dirReq.json()) as CreateResourceResponse;
-    res.status(200).send({ id, name });
 });
 
-expressApp.route("/:user/pics").post(validateUserMW, async (req, res) => {
+expressApp.route("/pics").post(validateUserMW, async (req, res) => {
     try {
-        let { user } = req.params;
+        let { user } = res.locals.user;
         let { accessToken } = await getFSToken(user);
         let { imgData, imgMeta } = await fetchImgExternal(req, res);
         let { location } = (await createImgMetadata(imgMeta, accessToken)) as {
@@ -152,93 +208,10 @@ expressApp.route("/:user/pics").post(validateUserMW, async (req, res) => {
         console.log(id);
         patchImgMetaData(id, { appProperties: { origin, src } }, accessToken);
         res.status(status).send();
-    } catch ({ message, cause }) {
-        console.error(message, cause);
+    } catch (error) {
+        console.error(error);
         res.setHeader("Content-type", "application/json");
-        res.status(500).send({ cause });
+        res.status(500).send({ cause: "unable to save img at the moment" });
     }
 });
 export const krabs = functions.https.onRequest(expressApp);
-
-////////////////////////////////////////////////////////////////////
-
-/******* Krabsv2 ********8*/
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-const html = `<a href="${WebOAuth}" style="font-family:ubuntu;text-decoration:none;background-color:#ddd;padding:1rem;border-radius:5%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">Sign in using Google<a>`;
-const loginSuccessHTML = `<p style="font-family:ubuntu;text-decoration:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">registered successfully. now you can log into chrome extension<p>`;
-const loginFailedHTML = `<div  style="font-family:ubuntu;text-decoration:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"><p>registration failed. try again</p<a href="${WebOAuth}">Sign in using Google</a><div>`;
-
-app.get("/loginpage", async (req, res) => {
-    const { status } = req.query;
-    if (status) {
-        status === "success"
-            ? res.send(loginSuccessHTML)
-            : res.send(loginFailedHTML);
-        return;
-    }
-    res.send(html);
-});
-
-app.get("/login/:app", async (req, res) => {
-    const { app } = req.params;
-    if (app === "web") {
-        res.send({ url: WebOAuth });
-        return;
-    }
-    if (app === "ext") {
-        res.send({ url: ExtOAuth });
-        return;
-    }
-});
-app.post("/login", async (req, res) => {
-    try {
-        const { id_token } = req.body;
-        const { status, payload } = await verifyIdToken(id_token);
-        if (status !== 200 || !payload)
-            throw new Error("invalid token signature");
-        const { exists, email } = await userExists(payload);
-        if (!exists) throw new Error("Unauthorized user");
-        const data = await generateToken(email!, 60 * 60 * 24 * 30);
-        res.status(200).send(data);
-    } catch (error) {
-        res.status(401).send({ cause: error.message });
-    }
-});
-
-app.get("/redirect", async (req, res) => {
-    try {
-        const { code, state } = req.query;
-        if (state !== OAUTH_STATE) throw new Error("invalid oauth state");
-        const payload =
-            typeof code === "string" && (await GoauthExchangeCode(code));
-        if (!payload) throw new Error("invalid code");
-        res.redirect(
-            "/dumbcache4658/us-central1/krabsv2/loginpage?status=success"
-        );
-    } catch (error) {
-        if (error instanceof Error) console.log(error.message);
-        res.redirect(
-            "/dumbcache4658/us-central1/krabsv2/loginpage?status=failed"
-        );
-    }
-});
-
-app.route("/auth").get(async (req, res) => {
-    try {
-        let token = req.headers.authorization?.split(" ")[1];
-        if (!token) return;
-        let { status, cause, payload } = await validateToken(token);
-        if (status !== 200) {
-            throw new Error("unauthorized error", { cause });
-        }
-        const { accessToken } = await getFSToken(payload!.user);
-        res.send({ accessToken });
-    } catch (error) {
-        res.status(401).send({ cause: error.message });
-    }
-});
-
-export const krabsv2 = functions.https.onRequest(app);
