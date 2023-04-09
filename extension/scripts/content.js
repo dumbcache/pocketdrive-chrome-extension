@@ -1,5 +1,9 @@
 (async () => {
     try {
+        /**************** Helper functions *****************/
+        /**
+         * @returns {HTMLElement}
+         */
         function createElement(type, attributes = []) {
             let element = document.createElement(type);
             for (let [key, val] of attributes) {
@@ -10,6 +14,9 @@
             return element;
         }
 
+        /**
+         * @returns {HTMLDivElement}
+         */
         function createOptionsElement(dirs, className) {
             let optionWrapper = createElement("div", [
                 ["class", `optionWrapper ${className}`],
@@ -52,6 +59,7 @@
             return optionWrapper;
         }
 
+        /**************** Resource Urls *****************/
         const addIconPath = chrome.runtime.getURL("images/addIcon.svg");
         const sendIconPath = chrome.runtime.getURL("images/sendIcon.svg");
         const cancelIconPath = chrome.runtime.getURL("images/cancelIcon.svg");
@@ -63,16 +71,22 @@
             "images/statusIcon.svg"
         );
         let { root, dirs } = await chrome.storage.local.get(["root", "dirs"]);
+
         dirs = dirs || [];
         let tempDirs = dirs;
         let tempParent = root;
         console.log(tempParent);
 
+        /**************** Element declarations *****************/
         const krabWrapper = createElement("div", [["id", "krabWrapper"]]);
-        krabWrapper.style.display = "none";
+        const krabLoginWrapper = createElement("div", [
+            ["id", "krabLoginWrapper"],
+        ]);
         const krabStatusWrapper = createElement("div", [
             ["id", "krabStatusWrapper"],
         ]);
+        krabLoginWrapper.style.display = "none";
+        krabWrapper.style.display = "none";
         krabStatusWrapper.style.display = "none";
 
         const krabMain = createElement("div", [["class", "krabMain"]]);
@@ -180,6 +194,7 @@
         document.body.appendChild(krabWrapper);
         document.body.appendChild(krabStatusWrapper);
 
+        /**************** Event Listners *****************/
         menuButton.onclick = (e) => {
             e.stopPropagation();
             let recentDirs = document.querySelector(
@@ -367,6 +382,7 @@
             }
         };
 
+        /**************** Popup toggler *****************/
         function toggleKrab(recents) {
             if (recents) {
                 if (recents.length > 0) {
@@ -390,6 +406,7 @@
             krabWrapper.style.display = "initial";
         }
 
+        /**************** Inserting stylesheet *****************/
         let styles = chrome.runtime.getURL("scripts/content.css");
         let styleElement = createElement("link", [
             ["rel", "stylesheet"],
@@ -398,6 +415,7 @@
         let siteHead = document.querySelector("head");
         siteHead.appendChild(styleElement);
 
+        /**************** Chrome message handling *****************/
         chrome.runtime.onMessage.addListener(
             async (message, sender, sendResponse) => {
                 try {

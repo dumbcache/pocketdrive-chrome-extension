@@ -111,9 +111,9 @@ export const getGOatuthToken = async (
 };
 
 export const getFSToken = async (user: string) => {
-    let query = firestore.doc(`tokens/${user}`);
-    let tokenData = (await query.get()).data() as FSToken;
-    let accessToken =
+    const query = firestore.doc(`tokens/${user}`);
+    const tokenData = (await query.get()).data() as FSToken;
+    const accessToken =
         Math.floor(Date.now() / 1000) < tokenData.exp
             ? tokenData.accessToken
             : await getGOatuthToken(tokenData.refreshToken, user);
@@ -231,7 +231,6 @@ export const createImgMetadata = async (
         body: JSON.stringify(imgMeta),
     });
     let { status, statusText } = req;
-    // console.log("creatingImgMetaData", status, statusText);
     if (status !== 200)
         throw new Error(
             `error while creatingImgMetaData ${status} ${statusText}`,
@@ -256,7 +255,6 @@ export const uploadImg = async (
     });
     let { status, statusText } = req;
     let { id } = (await req.json()) as CreateResourceResponse;
-    // console.log("UploadingImg", status, statusText);
     if (status !== 200)
         throw new Error(`error while uploadingImg ${status} ${statusText}`, {
             cause: await req.json(),
@@ -278,7 +276,7 @@ export const fetchImgExternal = async (req: Request, res: Response) => {
     let imgBlob = await imgReq.blob();
     let buffer = await imgBlob.arrayBuffer();
     let imgData = Buffer.from(buffer);
-    console.log(imgBlob.size, imgBlob.type);
+    console.log("-------", imgBlob.size, imgBlob.type, "-------");
 
     let imgMeta: ImgMeta = {
         name: `${Date.now()}`,

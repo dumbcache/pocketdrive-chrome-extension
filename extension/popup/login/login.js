@@ -3,7 +3,6 @@
     const loginButton = document.querySelector(".login");
     const logOutButton = document.querySelector(".logout");
     const warnings = document.querySelector(".warnings");
-    const form = document.querySelector(".loginForm");
     const { loginStatus } = await chrome.storage.local.get("loginStatus");
 
     if (loginStatus === 1) {
@@ -27,6 +26,8 @@
         chrome.identity.launchWebAuthFlow(
             { url, interactive: true },
             async (redirectURL) => {
+                chrome.runtime.lastError && "";
+                if (!redirectURL) return;
                 const url = new URL(redirectURL);
                 const id_token = url.hash.split("&")[0].split("=")[1];
                 let req = await fetch(
@@ -39,20 +40,21 @@
                         body: JSON.stringify({ id_token }),
                     }
                 );
-                const { token } = await req.json();
-                console.log(token);
-                req = await fetch(
-                    "http://127.0.0.1:5001/dumbcache4658/us-central1/krabs/auth",
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-                console.log(await req.json());
+                if (req.status !== 200) return;
+                const { root, token } = await req.json();
+                const mes = await chrome.runtime.sendMessage({
+                    context: "loginSubmit",
+                    root,
+                    token,
+                });
+                console.log(mes);
             }
         );
     };
 
     chrome.runtime.onMessage.addListener((message, sender, sendRes) => {
         if (message.context === "loginSubmit") {
-            if (message.status !== 200) {
+            if (message.status === 200) {
                 warnings.innerText = message.message;
                 return;
             }

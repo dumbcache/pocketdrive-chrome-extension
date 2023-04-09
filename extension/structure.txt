@@ -1,0 +1,10 @@
+krabapp
+    - krabMainWrapper
+        - menu
+        - recentSelect
+        - recentWrapper
+        - dirWrapper
+    - krabStatusWrapper
+    - krabLoginWrapper
+        - loginButton
+        - logoutButton

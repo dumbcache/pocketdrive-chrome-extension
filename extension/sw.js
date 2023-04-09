@@ -13,45 +13,22 @@ try {
         });
     };
 
-    const loginHandler = async (creds) => {
-        let req = await fetch(`${URL}/login`, {
-            method: "POST",
-            headers: { "Content-type": "application/json" },
-            body: JSON.stringify(creds),
-        });
-        if (req.status !== 200) {
-            await chrome.storage.local.set({
-                access_token: "",
-                loginStatus: 0,
-            });
-            chrome.runtime.sendMessage({
-                context: "loginStatus",
-                status: req.status,
-                message: `${req.status} ${req.statusText}`,
-            });
-            return {};
-        }
-        const { token, root, user } = await req.json();
+    const loginHandler = async (token, root) => {
         await chrome.storage.local.set({
-            access_token: token,
-            username: user,
+            token,
             loginStatus: 1,
             root,
-            childDirs: {},
         });
         chrome.action.setIcon({ path: "images/krabs.png" });
         init();
         console.log("session logged in");
-        return req.status;
+        return 200;
     };
     const logoutHandler = async () => {
-        const { username, access_token } = await chrome.storage.local.get([
-            "username",
-            "access_token",
-        ]);
-        let { status } = await fetch(`${URL}/${username}/logout`, {
+        const { token } = await chrome.storage.local.get("token");
+        let { status } = await fetch(`${URL}/logout`, {
             headers: {
-                Authorization: `Bearer ${access_token}`,
+                Authorization: `Bearer ${token}`,
             },
         });
         if (status !== 200) {
@@ -71,7 +48,6 @@ try {
         ]);
         if (loginStatus === 1) {
             await chrome.action.setIcon({ path: "images/krabs.png" });
-            await chrome.action.setBadgeText({ text: username[0] });
             initContextMenus();
             init();
         } else {
@@ -81,16 +57,19 @@ try {
     });
 
     chrome.storage.onChanged.addListener(async (changes) => {
+        console.log(changes);
         if (changes.loginStatus) {
             let { newValue } = changes.loginStatus;
             if (newValue === 1) {
+                console.log("if");
                 let { username } = await chrome.storage.local.get("username");
                 chrome.action.setIcon({ path: "images/krabs.png" });
-                chrome.action.setBadgeText({ text: username[0] });
+                // chrome.action.setBadgeText({ text: username[0] });
                 initContextMenus();
             } else {
+                console.log("else");
                 chrome.action.setIcon({ path: "images/krabsOff.png" });
-                chrome.action.setBadgeText({ text: "" });
+                // chrome.action.setBadgeText({ text: "" });
                 chrome.contextMenus.removeAll();
                 chrome.storage.local.clear();
             }
@@ -116,7 +95,7 @@ try {
         try {
             await refreshDirs();
             refreshChildDirs();
-            let { recents } = await chrome.storage.local.get();
+            let { recents } = await chrome.storage.local.get("recents");
             recents = recents ? [...recents] : [];
             chrome.storage.local.set({ recents });
         } catch (error) {
@@ -128,10 +107,11 @@ try {
     const refreshDirs = async () => {
         try {
             let { root } = await chrome.storage.local.get("root");
+            console.log(root);
             let { data } = await fetchDirs(root);
             await chrome.storage.local.set({ dirs: data });
         } catch (error) {
-            console.warn("Unable to Refresh dirs:", error, error.cause);
+            console.warn("Unable to Refresh dirs:", error);
             let { dirs } = await chrome.storage.local.get();
             dirs = dirs ? [...dirs] : [];
             await chrome.storage.local.set({ dirs });
@@ -143,6 +123,7 @@ try {
                 "childDirs",
                 "dirs",
             ]);
+            if (!childDirs) childDirs = {};
             for (let child of Object.keys(childDirs)) {
                 let status = false;
                 for (let { id } of dirs) {
@@ -158,7 +139,7 @@ try {
                 chrome.storage.local.set({ childDirs });
             }
         } catch (error) {
-            console.warn("Unable to Refresh childDirs:", error, error.cause);
+            console.warn("Unable to Refresh childDirs:", error);
             let { childDirs } = await chrome.storage.local.get("childDirs");
             childDirs = childDirs ? { ...childDirs } : {};
             await chrome.storage.local.set({ childDirs });
@@ -173,13 +154,12 @@ try {
     };
 
     const fetchDirs = async (parent) => {
-        let { username } = await chrome.storage.local.get("username");
-        let url = `${URL}/${username}/dirs/${parent}`;
-        const { access_token } = await chrome.storage.local.get("access_token");
+        let url = `${URL}/dirs/${parent}`;
+        const { token } = await chrome.storage.local.get("token");
         let req = await fetch(url, {
             method: "GET",
             headers: {
-                Authorization: `Bearer ${access_token}`,
+                Authorization: `Bearer ${token}`,
             },
         });
         let { status, statusText } = req;
@@ -213,13 +193,12 @@ try {
         chrome.storage.local.set({ childDirs });
     };
     const createDir = async (name, parents) => {
-        let { username } = await chrome.storage.local.get("username");
-        let url = `${URL}/${username}/dirs/`;
-        const { access_token } = await chrome.storage.local.get("access_token");
+        let url = `${URL}/dirs/`;
+        const { token } = await chrome.storage.local.get("token");
         let req = await fetch(url, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${access_token}`,
+                Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({ dirName: name, parents }),
@@ -242,15 +221,14 @@ try {
     };
 
     const uploadRequest = async (parents, img) => {
-        let { username } = await chrome.storage.local.get("username");
-        let url = `${URL}/${username}/pics`;
-        const { access_token } = await chrome.storage.local.get("access_token");
+        let url = `${URL}/pics`;
+        const { token } = await chrome.storage.local.get("token");
         let body = { ...img, parents };
         let req = await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${access_token}`,
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(body),
         });
@@ -309,21 +287,13 @@ try {
             /******** Related to popup *******/
             try {
                 if (message.context === "loginSubmit") {
-                    const creds = message.creds;
-                    let status = await loginHandler(creds);
-                    chrome.runtime.sendMessage({
-                        context: "loginSubmit",
-                        status,
-                    });
-                    const [tab] = await chrome.tabs.query({ active: true });
+                    const { token, root } = message;
+                    const status = await loginHandler(token, root);
+                    sendResponse(status);
                 }
                 if (message.context === "logoutSubmit") {
                     await logoutHandler();
-                    const [tab] = await chrome.tabs.query({ active: true });
-                    chrome.tabs.sendMessage(tab.id, {
-                        context: "loginStatus",
-                        status: 0,
-                    });
+                    sendResponse(0);
                 }
             } catch (error) {
                 console.warn(error, `cause: ${error?.cause}`);
@@ -387,7 +357,7 @@ try {
                 });
             }
         }
-    );
+    )();
 } catch (error) {
     console.warn(error, `cause: ${error.cause}`);
 }

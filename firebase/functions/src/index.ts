@@ -53,7 +53,6 @@ const validateUserMW: RequestHandler = async (req, res, next) => {
         return;
     }
     res.locals.user = payload?.user;
-    console.log(res.locals.user);
     next();
 };
 
@@ -150,7 +149,7 @@ expressApp.post("/login", async (req, res) => {
 });
 expressApp.route("/logout").get(validateUserMW, async (req, res) => {
     try {
-        let { user } = res.locals.user;
+        let { user } = res.locals;
         let { status } = removeJWT(user);
         res.status(status).send({});
     } catch (error) {
@@ -161,7 +160,7 @@ expressApp.route("/logout").get(validateUserMW, async (req, res) => {
 
 expressApp.get("/dirs/:parents", validateUserMW, async (req, res) => {
     try {
-        let { user } = res.locals.user;
+        let { user } = res.locals;
         const { accessToken } = await getFSToken(user);
         const { parents } = req.params;
         const url = "https://www.googleapis.com/drive/v3/files";
@@ -180,7 +179,7 @@ expressApp.get("/dirs/:parents", validateUserMW, async (req, res) => {
 });
 expressApp.post("/dirs", validateUserMW, async (req, res) => {
     try {
-        let { user } = res.locals.user;
+        let { user } = res.locals;
         const { accessToken } = await getFSToken(user);
         const url = "https://www.googleapis.com/drive/v3/files";
         const { dirName, parents } = req.body as {
@@ -213,7 +212,7 @@ expressApp.post("/dirs", validateUserMW, async (req, res) => {
 
 expressApp.route("/pics").post(validateUserMW, async (req, res) => {
     try {
-        let { user } = res.locals.user;
+        let { user } = res.locals;
         let { accessToken } = await getFSToken(user);
         let { imgData, imgMeta } = await fetchImgExternal(req, res);
         let { location } = (await createImgMetadata(imgMeta, accessToken)) as {
@@ -225,7 +224,6 @@ expressApp.route("/pics").post(validateUserMW, async (req, res) => {
             imgMeta.mimeType!
         );
         let { origin, src } = req.body;
-        console.log(id);
         patchImgMetaData(id, { appProperties: { origin, src } }, accessToken);
         res.status(status).send();
     } catch (error) {
