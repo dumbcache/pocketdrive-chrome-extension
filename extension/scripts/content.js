@@ -1,6 +1,6 @@
 (async () => {
     try {
-        /**************** Helper functions *****************/
+        /**************** Util Functions *****************/
         /**
          * @returns {HTMLElement}
          */
@@ -28,7 +28,7 @@
                     ["data-dir-name", name],
                 ]);
                 div.innerHTML = name;
-                optionWrapper.appendChild(div);
+                optionWrapper.append(div);
             }
             optionWrapper.onclick = async (e) => {
                 e.stopPropagation();
@@ -46,9 +46,9 @@
                     });
                 }
                 tempParent = id;
-                recentSelected.dataset.id = id;
-                recentSelected.dataset.dirName = dirName;
-                recentSelected.innerHTML = dirName;
+                selected.dataset.id = id;
+                selected.dataset.dirName = dirName;
+                selected.innerHTML = dirName;
                 dirInput.value = "";
                 dirInput.focus();
                 if (currentTarget.classList.contains("recentDirs")) {
@@ -75,68 +75,58 @@
         dirs = dirs || [];
         let tempDirs = dirs;
         let tempParent = root;
-        console.log(tempParent);
 
+        const krab = createElement("div", [["id", "krab-chrome-ext"]]);
+        const main = createElement("main", [["id", "krab-main"]]);
+        const connection = createElement("div", [["id", "krab-connection"]]);
+
+        main.style.display = "none";
+        connection.style.display = "none";
+        /**************** Connection declarations *****************/
+        const login = createElement("button", ["class", "login"]);
+        const logout = createElement("button", ["class", "logout"]);
+        login.innerText = "Sign in using Google";
+        logout.innerText = "Logout";
+        login.style.display = "none";
+        logout.style.display = "none";
+        connection.append(login, logout);
         /**************** Element declarations *****************/
-        const krabWrapper = createElement("div", [["id", "krabWrapper"]]);
-        const krabLoginWrapper = createElement("div", [
-            ["id", "krabLoginWrapper"],
-        ]);
-        const krabStatusWrapper = createElement("div", [
-            ["id", "krabStatusWrapper"],
-        ]);
-        krabLoginWrapper.style.display = "none";
-        krabWrapper.style.display = "none";
-        krabStatusWrapper.style.display = "none";
-
-        const krabMain = createElement("div", [["class", "krabMain"]]);
-        const statusText = createElement("div", [["class", "krabStatusText"]]);
-        statusText.textContent = "Uploading...";
 
         const menuIcon = createElement("img", [
             ["class", "menuImg"],
-            ["src", menuIconPath],
-            ["alt", "menuImg"],
+            ["data-src", menuIconPath],
         ]);
         const addIcon = createElement("img", [
             ["class", "addImg"],
-            ["src", addIconPath],
-            ["alt", "addImg"],
+            ["data-src", addIconPath],
         ]);
         const sendIcon = createElement("img", [
             ["class", "sendImg"],
-            ["src", sendIconPath],
-            ["alt", "sendImg"],
+            ["data-src", sendIconPath],
         ]);
         const doneIcon = createElement("img", [
             ["class", "doneImg"],
-            ["src", doneIconPath],
-            ["alt", "doneImg"],
+            ["data-src", doneIconPath],
         ]);
         const cancelIcon = createElement("img", [
             ["class", "cancelImg"],
-            ["src", cancelIconPath],
-            ["alt", "cancelImg"],
+            ["data-src", cancelIconPath],
         ]);
         const successIcon = createElement("img", [
             ["class", "statusImg"],
-            ["src", successIconPath],
-            ["alt", "successImg"],
+            ["data-src", successIconPath],
         ]);
         const errorIcon = createElement("img", [
             ["class", "statusImg"],
-            ["src", errorIconPath],
-            ["alt", "errorImg"],
+            ["data-src", errorIconPath],
         ]);
         const imgStatusIcon = createElement("img", [
             ["class", "statusImg statusScroll"],
-            ["src", imgStatusIconPath],
-            ["alt", "statusImg"],
+            ["data-src", imgStatusIconPath],
         ]);
         const dirStatusIcon = createElement("img", [
             ["class", "statusImg dirStatusScroll"],
-            ["src", imgStatusIconPath],
-            ["alt", "statusImg"],
+            ["data-src", imgStatusIconPath],
         ]);
         const menuButton = createElement("button", [["class", "menuButton"]]);
         const addButton = createElement("button", [["class", "addButton"]]);
@@ -148,51 +138,56 @@
         const rootButton = createElement("button", [["class", "rootButton"]]);
         rootButton.innerText = "/r";
 
-        menuButton.appendChild(menuIcon);
-        addButton.appendChild(addIcon);
-        sendButton.appendChild(sendIcon);
-        doneButton.appendChild(doneIcon);
-        cancelButton.appendChild(cancelIcon);
+        menuButton.append(menuIcon);
+        addButton.append(addIcon);
+        sendButton.append(sendIcon);
+        doneButton.append(doneIcon);
+        cancelButton.append(cancelIcon);
 
-        let recentWrapper = createElement("div", [["class", "recentWrapper"]]);
-        let recentSelected = createElement("div", [
+        let recents = createElement("div", [["class", "recents"]]);
+        let selected = createElement("div", [
             ["class", "recentSelect"],
             ["data-id", root],
             ["data-dir-name", "root"],
         ]);
-        recentSelected.innerHTML = "root";
-        recentWrapper.appendChild(recentSelected);
-        recentWrapper.appendChild(doneButton);
+        selected.innerHTML = "root";
+        recents.append(selected, doneButton);
 
         let dirWrapper = createElement("div", [["class", "dirWrapper"]]);
         let dirInput = createElement("input", [
             ["class", "dirInput"],
             ["placeholder", "Search Directory"],
         ]);
-        let availableDirs = createOptionsElement(dirs, "dirs");
-        let availableChildDirs = createOptionsElement([], "childDirs");
-        dirWrapper.appendChild(dirInput);
-        dirWrapper.appendChild(addButton);
-        dirWrapper.appendChild(sendButton);
-        dirWrapper.appendChild(dirStatusIcon);
-        dirWrapper.appendChild(availableDirs);
-        dirWrapper.appendChild(availableChildDirs);
+        let dirsList = createOptionsElement(dirs, "dirs");
+        let childDirsList = createOptionsElement([], "childDirs");
+        dirWrapper.append(
+            dirInput,
+            addButton,
+            sendButton,
+            dirStatusIcon,
+            dirsList,
+            childDirsList
+        );
 
-        krabMain.appendChild(menuButton);
-        krabMain.appendChild(rootButton);
-        krabMain.appendChild(recentWrapper);
-        krabMain.appendChild(dirWrapper);
+        main.append(menuButton, rootButton, recents, dirWrapper, cancelButton);
 
-        krabWrapper.appendChild(cancelButton);
-        krabWrapper.appendChild(krabMain);
+        krab.append(main, connection);
+        document.body.append(krab);
 
-        krabStatusWrapper.appendChild(statusText);
-        krabStatusWrapper.appendChild(successIcon);
-        krabStatusWrapper.appendChild(errorIcon);
-        krabStatusWrapper.appendChild(imgStatusIcon);
-
-        document.body.appendChild(krabWrapper);
-        document.body.appendChild(krabStatusWrapper);
+        /**************** Helper Functions *****************/
+        /**
+         * @returns {HTMLElement}
+         */
+        function createStatusElement() {
+            const status = createElement("div", [["id", "krab-status"]]);
+            status.append(
+                "Uploading...",
+                successIcon,
+                errorIcon,
+                imgStatusIcon
+            );
+            return status;
+        }
 
         /**************** Event Listners *****************/
         menuButton.onclick = (e) => {
@@ -203,8 +198,8 @@
             recentDirs.style.display = "none";
             dirWrapper.style.display =
                 dirWrapper.style.display === "block" ? "none" : "block";
-            availableDirs.style.display = "block";
-            let availableChildDirs = document.querySelector(
+            dirsList.style.display = "block";
+            let childDirsList = document.querySelector(
                 ".optionWrapper.childDirs"
             );
             if (sendButton.style.display !== "none") {
@@ -216,13 +211,13 @@
             tempParent = root;
             dirInput.value = "";
             dirInput.focus();
-            availableChildDirs.style.display = "none";
+            childDirsList.style.display = "none";
         };
         rootButton.onclick = async (e) => {
             let { root } = await chrome.storage.local.get("root");
-            recentSelected.dataset.id = root;
-            recentSelected.dataset.dirName = "root";
-            recentSelected.innerHTML = "root";
+            selected.dataset.id = root;
+            selected.dataset.dirName = "root";
+            selected.innerHTML = "root";
         };
 
         doneButton.onclick = async (e) => {
@@ -236,37 +231,37 @@
             let recentDirs = document.querySelector(
                 ".optionWrapper.recentDirs"
             );
-            krabWrapper.style.display = "none";
+            main.style.display = "none";
             dirWrapper.style.display = "none";
             recentDirs.style.display = "none";
             krabMain.style.display = "none";
-            krabStatusWrapper.style.display = "block";
+            status.style.display = "block";
         };
         cancelButton.onclick = (e) => {
             e.stopPropagation();
-            krabWrapper.style.display = "none";
+            main.style.display = "none";
             let recentDirs = document.querySelector(".recentDirs");
             dirWrapper.style.display = "none";
             recentDirs.style.display = "none";
-            recentSelected.dataset.id = root;
-            recentSelected.dataset.dirName = "root";
-            recentSelected.innerHTML = "root";
+            selected.dataset.id = root;
+            selected.dataset.dirName = "root";
+            selected.innerHTML = "root";
         };
 
-        krabWrapper.onclick = (e) => {
+        main.onclick = (e) => {
             e.stopPropagation();
             let recentDirs = document.querySelector(
                 ".optionWrapper.recentDirs"
             );
-            let availableChildDirs = document.querySelector(
+            let childDirsList = document.querySelector(
                 ".optionWrapper.childDirs"
             );
             dirWrapper.style.display = "none";
             recentDirs.style.display = "none";
-            availableChildDirs.style.display = "none";
+            childDirsList.style.display = "none";
         };
 
-        recentSelected.onclick = (e) => {
+        selected.onclick = (e) => {
             e.stopPropagation();
             let recentDirs = document.querySelector(
                 ".optionWrapper.recentDirs"
@@ -337,7 +332,7 @@
                 let childDirs = document.querySelector(".childDirs");
                 dirWrapper.removeChild(childDirs);
                 childDirs = createOptionsElement(tempDirs, "childDirs");
-                dirWrapper.appendChild(childDirs);
+                dirWrapper.append(childDirs);
             }
         };
         dirInput.onclick = (e) => {
@@ -358,22 +353,29 @@
             let childDirs = document.querySelector(".childDirs");
             dirWrapper.removeChild(childDirs);
             childDirs = createOptionsElement(filtered, "childDirs");
-            availableDirs.style.display = "none";
-            dirWrapper.appendChild(childDirs);
+            dirsList.style.display = "none";
+            dirWrapper.append(childDirs);
         };
-
+        login.onclick = async (e) => {
+            e.stopPropagation();
+            chrome.runtime.sendMessage({ context: "loginSubmit" });
+        };
+        logout.onclick = async (e) => {
+            e.stopPropagation();
+            chrome.runtime.sendMessage({ context: "logoutSubmit" });
+        };
         window.onclick = () => {
-            if (krabWrapper.style.display !== "none") {
+            if (main.style.display !== "none") {
                 let recentDirs = document.querySelector(
                     ".optionWrapper.recentDirs"
                 );
-                let availableChildDirs = document.querySelector(
+                let childDirsList = document.querySelector(
                     ".optionWrapper.childDirs"
                 );
-                krabWrapper.style.display = "none";
+                main.style.display = "none";
                 dirWrapper.style.display = "none";
                 recentDirs.style.display = "none";
-                availableChildDirs.style.display = "none";
+                childDirsList.style.display = "none";
                 if (sendButton.style.display !== "none") {
                     dirInput.placeholder = "Search Directory";
                     sendButton.style.display = "none";
@@ -383,46 +385,71 @@
         };
 
         /**************** Popup toggler *****************/
-        function toggleKrab(recents) {
+        function toggleLogin(loginStatus) {
+            console.log("inside toggle login");
+            if (loginStatus !== 1) {
+                login.style.display = "initial";
+                logout.style.display = "none";
+            } else {
+                login.style.display = "none";
+                logout.style.display = "initial";
+            }
+            connection.style.display = "initial";
+        }
+        function toggleMain(recents) {
             if (recents) {
                 if (recents.length > 0) {
-                    recentSelected.setAttribute("data-id", recents[0].id);
-                    recentSelected.setAttribute(
-                        "data-dir-name",
-                        recents[0].name
-                    );
-                    recentSelected.innerHTML = recents[0].name;
+                    selected.setAttribute("data-id", recents[0].id);
+                    selected.setAttribute("data-dir-name", recents[0].name);
+                    selected.innerHTML = recents[0].name;
                 }
                 let recentDirs = createOptionsElement(recents, "recentDirs");
                 let previousRecentDirs = document.querySelector(".recentDirs");
-                previousRecentDirs &&
-                    recentWrapper.removeChild(previousRecentDirs);
-                recentWrapper.appendChild(recentDirs);
-                krabWrapper.style.display = "initial";
+                previousRecentDirs && recents.removeChild(previousRecentDirs);
+                // recents.append(recentDirs);
+                main.style.display = "initial";
                 return;
             }
             let recentDirs = createOptionsElement([], "recentDirs");
-            recentWrapper.appendChild(recentDirs);
-            krabWrapper.style.display = "initial";
+            // recents.append(recentDirs);
+            main.style.display = "initial";
         }
 
-        /**************** Inserting stylesheet *****************/
-        let styles = chrome.runtime.getURL("scripts/content.css");
-        let styleElement = createElement("link", [
+        /**************** Inserting scripts *****************/
+        const styles = chrome.runtime.getURL("scripts/content.css");
+        const svgInjectorPath = chrome.runtime.getURL(
+            "scripts/svgInjector.min.js"
+        );
+        const styleElement = createElement("link", [
             ["rel", "stylesheet"],
             ["href", styles],
         ]);
-        let siteHead = document.querySelector("head");
-        siteHead.appendChild(styleElement);
+        const svgScriptElement = createElement("script", [
+            ["src", svgInjectorPath],
+            ["async", true],
+            ["type", "module"],
+        ]);
+        const siteHead = document.querySelector("head");
+        siteHead.append(styleElement, svgScriptElement);
 
         /**************** Chrome message handling *****************/
         chrome.runtime.onMessage.addListener(
             async (message, sender, sendResponse) => {
                 try {
                     switch (message.context) {
+                        case "action":
+                            const { loginStatus } = message;
+                            toggleLogin(loginStatus);
+                            break;
+                        case "loginStatus":
+                            const { status } = message;
+                            if (status === 0 || status === 1)
+                                toggleLogin(status);
+                            else console.log("login failed");
+                            break;
                         case "recents":
                             let recents = message.data;
-                            toggleKrab(recents);
+                            toggleMain(recents);
                             break;
                         case "childDirs":
                             tempDirs = message.childDirs || [];
@@ -433,16 +460,16 @@
                                 tempDirs,
                                 "childDirs"
                             );
-                            availableDirs.style.display = "none";
-                            dirWrapper.appendChild(childDirs);
+                            dirsList.style.display = "none";
+                            dirWrapper.append(childDirs);
                             break;
                         case "dirs":
                             const dirs = message.data || [];
                             tempDirs = dirs;
-                            dirWrapper.removeChild(availableDirs);
-                            availableDirs = createOptionsElement(dirs, "dirs");
-                            availableDirs.style.display = "none";
-                            dirWrapper.appendChild(availableDirs);
+                            dirWrapper.removeChild(dirsList);
+                            dirsList = createOptionsElement(dirs, "dirs");
+                            dirsList.style.display = "none";
+                            dirWrapper.append(dirsList);
                             break;
                         case "createDir":
                             if (message.status !== 200) {
@@ -481,7 +508,7 @@
                                 errorIcon.style.display = "initial";
                             }
                             setTimeout(() => {
-                                krabStatusWrapper.style.display = "none";
+                                status.style.display = "none";
                                 statusText.textContent = "Uploading...";
                                 imgStatusIcon.style.display = "initial";
                                 successIcon.style.display = "none";

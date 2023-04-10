@@ -1,3 +1,5 @@
+import { login, logout } from "./utils/connection.js";
+
 try {
     const URL = "http://127.0.0.1:5001/dumbcache4658/us-central1/krabs";
     const initContextMenus = () => {
@@ -13,63 +15,18 @@ try {
         });
     };
 
-    const loginHandler = async (token, root) => {
-        await chrome.storage.local.set({
-            token,
-            loginStatus: 1,
-            root,
-        });
-        chrome.action.setIcon({ path: "images/krabs.png" });
-        init();
-        console.log("session logged in");
-        return 200;
-    };
-    const logoutHandler = async () => {
-        const { token } = await chrome.storage.local.get("token");
-        let { status } = await fetch(`${URL}/logout`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        if (status !== 200) {
-            throw new Error("unable to logout", { cause });
-        }
-        chrome.storage.local.set({ loginStatus: 0 });
-        console.log("session logged out");
-    };
-
     chrome.runtime.onInstalled.addListener(async () => {
-        // chrome.tabs.create({
-        //     url: "http://127.0.0.1:5001/dumbcache4658/us-central1/krabsv2/login",
-        // });
-        let { loginStatus, username } = await chrome.storage.local.get([
-            "loginStatus",
-            "username",
-        ]);
-        if (loginStatus === 1) {
-            await chrome.action.setIcon({ path: "images/krabs.png" });
-            initContextMenus();
-            init();
-        } else {
-            await chrome.action.setIcon({ path: "images/krabsOff.png" });
-            await chrome.storage.local.set({ loginStatus: 0 });
-        }
+        await chrome.storage.local.set({ loginStatus: 0 });
     });
-
     chrome.storage.onChanged.addListener(async (changes) => {
         console.log(changes);
         if (changes.loginStatus) {
             let { newValue } = changes.loginStatus;
             if (newValue === 1) {
-                console.log("if");
-                let { username } = await chrome.storage.local.get("username");
                 chrome.action.setIcon({ path: "images/krabs.png" });
-                // chrome.action.setBadgeText({ text: username[0] });
                 initContextMenus();
             } else {
-                console.log("else");
                 chrome.action.setIcon({ path: "images/krabsOff.png" });
-                // chrome.action.setBadgeText({ text: "" });
                 chrome.contextMenus.removeAll();
                 chrome.storage.local.clear();
             }
@@ -275,8 +232,8 @@ try {
             const { loginStatus } = await chrome.storage.local.get(
                 "loginStatus"
             );
-            if (loginStatus === 0) {
-            }
+            console.log(loginStatus);
+            chrome.tabs.sendMessage(tab.id, { context: "action", loginStatus });
         } catch (error) {
             console.error("error", error);
         }
@@ -287,13 +244,10 @@ try {
             /******** Related to popup *******/
             try {
                 if (message.context === "loginSubmit") {
-                    const { token, root } = message;
-                    const status = await loginHandler(token, root);
-                    sendResponse(status);
+                    login(sender.tab.id);
                 }
                 if (message.context === "logoutSubmit") {
-                    await logoutHandler();
-                    sendResponse(0);
+                    logout(sender.tab.id);
                 }
             } catch (error) {
                 console.warn(error, `cause: ${error?.cause}`);

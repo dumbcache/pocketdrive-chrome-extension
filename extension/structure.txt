@@ -1,10 +1,10 @@
 krabapp
-    - krabMainWrapper
+    - main(krab-main)
         - menu
         - recentSelect
         - recentWrapper
         - dirWrapper
-    - krabStatusWrapper
-    - krabLoginWrapper
-        - loginButton
-        - logoutButton
+    - status(krab-status)
+    - connection(krab-connection)
+        - login
+        - logout
