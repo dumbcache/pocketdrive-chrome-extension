@@ -19,7 +19,7 @@ try {
         await chrome.storage.local.set({ loginStatus: 0 });
     });
     chrome.storage.onChanged.addListener(async (changes) => {
-        console.log(changes);
+        // console.log(changes);
         if (changes.loginStatus) {
             let { newValue } = changes.loginStatus;
             if (newValue === 1) {
@@ -232,7 +232,6 @@ try {
             const { loginStatus } = await chrome.storage.local.get(
                 "loginStatus"
             );
-            console.log(loginStatus);
             chrome.tabs.sendMessage(tab.id, { context: "action", loginStatus });
         } catch (error) {
             console.error("error", error);

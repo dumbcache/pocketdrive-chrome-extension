@@ -18,6 +18,7 @@
          * @returns {HTMLDivElement}
          */
         function createOptionsElement(dirs, className) {
+            // const optionWrapper = document.createDocumentFragment();
             let optionWrapper = createElement("div", [
                 ["class", `optionWrapper ${className}`],
             ]);
@@ -76,9 +77,18 @@
         let tempDirs = dirs;
         let tempParent = root;
 
-        const krab = createElement("div", [["id", "krab-chrome-ext"]]);
-        const main = createElement("main", [["id", "krab-main"]]);
-        const connection = createElement("div", [["id", "krab-connection"]]);
+        const krab = createElement("div", [
+            ["id", "krab-chrome-ext"],
+            ["class", "toggle"],
+        ]);
+        const main = createElement("main", [
+            ["id", "krab-main"],
+            ["class", "toggle"],
+        ]);
+        const connection = createElement("div", [
+            ["id", "krab-connection"],
+            ["class", "toggle"],
+        ]);
 
         main.style.display = "none";
         connection.style.display = "none";
@@ -94,39 +104,39 @@
 
         const menuIcon = createElement("img", [
             ["class", "menuImg"],
-            ["data-src", menuIconPath],
+            ["src", menuIconPath],
         ]);
         const addIcon = createElement("img", [
             ["class", "addImg"],
-            ["data-src", addIconPath],
+            ["src", addIconPath],
         ]);
         const sendIcon = createElement("img", [
             ["class", "sendImg"],
-            ["data-src", sendIconPath],
+            ["src", sendIconPath],
         ]);
         const doneIcon = createElement("img", [
             ["class", "doneImg"],
-            ["data-src", doneIconPath],
+            ["src", doneIconPath],
         ]);
         const cancelIcon = createElement("img", [
             ["class", "cancelImg"],
-            ["data-src", cancelIconPath],
+            ["src", cancelIconPath],
         ]);
         const successIcon = createElement("img", [
             ["class", "statusImg"],
-            ["data-src", successIconPath],
+            ["src", successIconPath],
         ]);
         const errorIcon = createElement("img", [
             ["class", "statusImg"],
-            ["data-src", errorIconPath],
+            ["src", errorIconPath],
         ]);
         const imgStatusIcon = createElement("img", [
             ["class", "statusImg statusScroll"],
-            ["data-src", imgStatusIconPath],
+            ["src", imgStatusIconPath],
         ]);
         const dirStatusIcon = createElement("img", [
             ["class", "statusImg dirStatusScroll"],
-            ["data-src", imgStatusIconPath],
+            ["src", imgStatusIconPath],
         ]);
         const menuButton = createElement("button", [["class", "menuButton"]]);
         const addButton = createElement("button", [["class", "addButton"]]);
@@ -386,7 +396,6 @@
 
         /**************** Popup toggler *****************/
         function toggleLogin(loginStatus) {
-            console.log("inside toggle login");
             if (loginStatus !== 1) {
                 login.style.display = "initial";
                 logout.style.display = "none";
@@ -417,20 +426,12 @@
 
         /**************** Inserting scripts *****************/
         const styles = chrome.runtime.getURL("scripts/content.css");
-        const svgInjectorPath = chrome.runtime.getURL(
-            "scripts/svgInjector.min.js"
-        );
         const styleElement = createElement("link", [
             ["rel", "stylesheet"],
             ["href", styles],
         ]);
-        const svgScriptElement = createElement("script", [
-            ["src", svgInjectorPath],
-            ["async", true],
-            ["type", "module"],
-        ]);
         const siteHead = document.querySelector("head");
-        siteHead.append(styleElement, svgScriptElement);
+        siteHead.append(styleElement);
 
         /**************** Chrome message handling *****************/
         chrome.runtime.onMessage.addListener(
