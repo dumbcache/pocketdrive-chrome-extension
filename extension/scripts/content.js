@@ -18,10 +18,10 @@
          * @returns {HTMLDivElement}
          */
         function createOptionsElement(dirs, className) {
-            // const optionWrapper = document.createDocumentFragment();
-            let optionWrapper = createElement("div", [
-                ["class", `optionWrapper ${className}`],
-            ]);
+            const optionWrapper = document.createDocumentFragment();
+            // let optionWrapper = createElement("div", [
+            //     ["class", `optionWrapper ${className}`],
+            // ]);
             for (let { id, name } of dirs) {
                 let div = createElement("div", [
                     ["class", `option`],
@@ -77,18 +77,9 @@
         let tempDirs = dirs;
         let tempParent = root;
 
-        const krab = createElement("div", [
-            ["id", "krab-chrome-ext"],
-            ["class", "toggle"],
-        ]);
-        const main = createElement("main", [
-            ["id", "krab-main"],
-            ["class", "toggle"],
-        ]);
-        const connection = createElement("div", [
-            ["id", "krab-connection"],
-            ["class", "toggle"],
-        ]);
+        const krab = createElement("div", [["id", "krab-ext"]]);
+        const main = createElement("main", [["class", "krab-main"]]);
+        const connection = createElement("div", [["class", "krab-connection"]]);
 
         main.style.display = "none";
         connection.style.display = "none";

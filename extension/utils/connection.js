@@ -1,6 +1,6 @@
 import { ENDPOINT } from "./utils.js";
 
-export async function login(tabid) {
+export const login = async (tabid) => {
     console.log(ENDPOINT);
     const req = await fetch(`${ENDPOINT}/login/ext`);
     const { url } = await req.json();
@@ -39,9 +39,9 @@ export async function login(tabid) {
             });
         }
     );
-}
+};
 
-export async function logout(tabid) {
+export const logout = async (tabid) => {
     const { token } = await chrome.storage.local.get("token");
     let { status } = await fetch(`${ENDPOINT}/logout`, {
         headers: {
@@ -55,4 +55,4 @@ export async function logout(tabid) {
     await chrome.tabs.sendMessage(tabid, { context: "loginStatus", status: 0 });
     await chrome.storage.local.set({ loginStatus: 0 });
     console.log("session logged out");
-}
+};
