@@ -1,36 +1,146 @@
 @import url("https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 
-#krabWrapper .krab,
-#krabStatusWrapper .krab {
+:host {
     font-family: "Ubuntu", sans-serif;
-    line-height: 1;
+    position: relative;
     font-size: 16px;
+    line-height: 1.5;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     background: none;
 }
 
-#krabWrapper .div {
-    user-select: none;
+*,
+*:after,
+*:before {
+    padding: 0;
+    margin: 0;
+    box-sizing: inherit;
+    font: inherit;
 }
 
-#krabWrapper {
-    box-sizing: border-box;
+img,
+button,
+input {
+    background: none;
+    outline: none;
+    border: none;
+}
+
+img {
+    max-width: 20px;
+    max-height: 20px;
+}
+
+button {
+    width: fit-content;
+}
+
+button:has(img) {
+    text-decoration: none;
+    line-height: 0;
+    border: none;
+    outline: none;
+    border-radius: 5px;
+}
+
+img:hover,
+img:hover::after,
+img:hover::before {
+    background: none;
+    background-color: none;
+    box-shadow: none;
+    filter: invert(0.5);
+}
+
+button:hover,
+button:hover::after,
+button:hover::before {
+    background: none;
+    box-shadow: none;
+    cursor: pointer;
+}
+
+/*************** main component styles ******************/
+.main {
     position: fixed;
     top: 10px;
     right: 10px;
     padding: 20px;
     z-index: 1000000000;
-    font-size: 16px;
     background-color: #fff;
     border-radius: 5px;
     color: #000;
     box-shadow: 0 0 5px 1px #0005;
     width: 300px;
     height: 75px;
+    max-width: 300px;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: space-between;
 }
-#krabStatusWrapper {
+
+.done-button {
+    position: absolute;
+    top: 50%;
+    right: 3px;
+    transform: translate(0%, -50%);
+    padding: 2px;
+}
+
+.cancel-button {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 16px;
+}
+
+.recents {
+    width: 200px;
+    max-height: 150px;
+    position: relative;
+}
+
+.list {
+    display: none;
+    position: absolute;
+    top: 0px;
+    right: 301px;
+    border-radius: 5px;
+    width: 200px;
+    background: #fff;
+    box-shadow: 0 0 5px 1px #0005;
+}
+
+.selected,
+.search {
+    width: 100%;
+    height: 35px;
+    padding: 5px;
+    text-decoration: none;
+    outline: none;
+    border: none;
+    border-radius: 5px;
+    background-color: #ddd;
+    color: inherit;
+}
+
+.search::placeholder {
+    color: #444;
+}
+
+.selected {
+    cursor: pointer;
+    padding-right: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 25px;
+}
+
+.status {
     position: fixed;
     z-index: 10000000000;
     top: 10px;
@@ -42,14 +152,14 @@
     box-shadow: 0 0 5px 1px #0005;
     padding: 20px;
 }
-#krabStatusWrapper .krabStatusText {
+.status-text {
     border-radius: 5px;
     width: 100%;
     text-decoration: none;
     outline: none;
     border: none;
 }
-#krabStatusWrapper .statusImg {
+.status-img {
     max-width: 24px;
     max-height: 24px;
     background: none;
@@ -71,103 +181,37 @@
     animation: spin 1.5s linear 0s infinite;
 }
 
-#krabWrapper .krabMain {
-    width: 100%;
-    background: none;
-    display: flex;
-    flex-flow: row nowrap;
-    align-items: center;
-    justify-content: space-between;
-}
-
-#krabWrapper .menuImg {
+.menu-img {
     max-width: 30px;
     max-height: 30px;
-    background: none;
-}
-#krabWrapper .addImg {
-    max-width: 20px;
-    max-height: 20px;
-    background: none;
-}
-#krabWrapper .sendImg {
-    max-width: 20px;
-    max-height: 20px;
-    background: none;
 }
 
-#krabWrapper .doneImg {
-    max-width: 20px;
-    max-height: 20px;
-    background: none;
-}
-#krabWrapper .cancelImg {
+.cancel-img {
     max-width: 16px;
     max-height: 16px;
-    background: none;
 }
 
-#krabWrapper .statusImg:hover,
-#krabWrapper .statusImg:hover::after,
-#krabWrapper .statusImg:hover::before {
-    background: none;
-    box-shadow: none;
+.status-img:hover {
     filter: none;
 }
-#krabWrapper .sendImg:hover,
-#krabWrapper .img:hover,
-#krabWrapper .img:hover::after,
-#krabWrapper .img:hover::before {
-    background: none;
-    background-color: none;
-    box-shadow: none;
-    filter: invert(0.5);
-}
 
-#krabWrapper .button:hover,
-#krabWrapper .button:hover::after,
-#krabWrapper .button:hover::before {
-    background: none;
-    box-shadow: none;
-}
-
-#krabWrapper .menuButton,
-#krabWrapper .rootButton,
-#krabWrapper .addButton,
-#krabWrapper .sendButton,
-#krabWrapper .doneButton,
-#krabWrapper .cancelButton {
-    text-decoration: none;
-    padding: 0;
-    margin: 0;
-    line-height: 1.5;
-    min-width: fit-content;
-    height: fit-content;
-    line-height: 0;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    border-radius: 5px;
-    background: none !important;
-    box-shadow: none;
-}
-#krabWrapper .krab.rootButton {
+.root-button {
     color: #f00;
 }
-#krabWrapper .rootButton:hover {
+.root-button:hover {
     color: #0005;
 }
 
-#krabWrapper .addButton,
-#krabWrapper .sendButton {
+.add-button,
+.send-button,
+.dir-progress {
     position: absolute;
     top: 50%;
     right: 3px;
     transform: translate(0%, -50%);
     width: 16px;
-    padding: 2px;
 }
-#krabWrapper .sendButton {
+.send-button {
     display: none;
 }
 @keyframes spin2 {
@@ -175,54 +219,26 @@
         transform: translate(0%, -50%) rotate(360deg);
     }
 }
-#krabWrapper .dirStatusScroll {
+.dir-progress {
     max-width: 20px;
     max-height: 20px;
-    background: none;
-    box-shadow: none;
-    position: absolute;
-    top: 50%;
-    right: 3px;
-    transform: translate(0%, -50%);
     filter: none;
     display: none;
     animation: spin2 1.5s linear 0s infinite;
 }
 
-#krabWrapper .doneButton {
-    position: absolute;
-    top: 50%;
-    right: 3px;
-    transform: translate(0%, -50%);
-    width: 16px;
-    padding: 2px;
-}
-#krabWrapper .cancelButton {
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    width: 16px;
-}
-
-#krabWrapper .recentWrapper {
-    display: initial;
-    position: relative;
-    width: 200px;
-}
-
-#krabWrapper .dirWrapper {
-    display: none;
-    position: absolute;
-    top: 0px;
-    right: 301px;
+.connection {
+    width: fit-content;
+    position: fixed;
+    top: 1px;
+    right: 1px;
+    background-color: #fff;
     border-radius: 5px;
-    width: 200px;
-    background: #fff;
     box-shadow: 0 0 5px 1px #0005;
+    /* z-index: 1000000000; */
 }
-#krabWrapper .childDirs,
-#krabWrapper .dirs,
-#krabWrapper .recentDirs {
+
+.options {
     display: none;
     position: absolute;
     top: 21px;
@@ -234,45 +250,14 @@
     backdrop-filter: blur(10px);
     box-shadow: 0 0 5px 1px #0005;
 }
-#krabWrapper .dirs,
-#krabWrapper .childDirs {
+.parents,
+.childs {
     display: block;
     top: 36px;
     max-height: 300px;
 }
-#krabWrapper .recentDirs {
-    top: 35px;
-    max-height: 150px;
-}
 
-#krabWrapper .recentSelect,
-#krabWrapper .dirInput {
-    width: 100%;
-    height: 35px;
-    padding: 5px;
-    background: inherit;
-    text-decoration: none;
-    outline: none;
-    border: none;
-    border-radius: 5px;
-    background-color: #ddd;
-    color: inherit;
-}
-#krabWrapper .dirInput::placeholder {
-    color: #444;
-}
-
-#krabWrapper .recentSelect {
-    width: 100%;
-    cursor: pointer;
-    padding-right: 20px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    line-height: 25px;
-}
-
-#krabWrapper .option {
+.option {
     padding: 7px 5px;
     cursor: pointer;
     overflow: hidden;
@@ -280,27 +265,46 @@
     white-space: nowrap;
     background: none;
 }
-#krabWrapper .option:hover {
+.option:hover {
     background-color: #0005;
 }
-#krabWrapper .option:first-child {
+.option:first-child {
     padding-top: 10px;
 }
-#krabWrapper .option:last-child {
+.option:last-child {
     padding-bottom: 10px;
 }
+.options * {
+    user-select: none;
+}
+/*************** connection component styles ******************/
+.connection *:hover {
+    background-color: #0555;
+}
+.login,
+.logout {
+    max-width: initial;
+    max-height: initial;
+    text-decoration: none;
+    border: none;
+    background-color: #0557;
+    padding: 5px;
+    border-radius: 5px;
+}
 
-#krabWrapper ::-webkit-scrollbar {
+/*************** scrollbar component styles ******************/
+
+::-webkit-scrollbar {
     width: 5px;
 }
-#krabWrapper ::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
     background: #0002;
     backdrop-filter: blur(10px);
 }
-#krabWrapper ::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
     background: #1459;
     border-radius: 5px;
 }
-#krabWrapper ::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover {
     background: #022;
 }

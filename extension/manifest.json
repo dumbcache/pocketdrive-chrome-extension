@@ -7,7 +7,7 @@
         "default_title": "Krabs - Be eaten by me"
     },
     "icons": {
-        "48": "images/krabsOff.png"
+        "48": "images/krabs.png"
     },
     "content_scripts": [
         {

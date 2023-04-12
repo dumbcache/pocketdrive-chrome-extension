@@ -14,11 +14,6 @@
         return;
     }
     loginButton.onclick = async () => {
-        // window.open(
-        //     "http://127.0.0.1:5001/dumbcache4658/us-central1/krabsv2/login",
-        //     "",
-        //     "popup=1,left=100,top=100,width=320,height=320"
-        // );
         const req = await fetch(
             "http://127.0.0.1:5001/dumbcache4658/us-central1/krabs/login/ext"
         );
@@ -53,7 +48,8 @@
     };
 
     chrome.runtime.onMessage.addListener((message, sender, sendRes) => {
-        if (message.context === "loginSubmit") {
+        console.log(message);
+        if (message.context === "loginStatus") {
             if (message.status === 200) {
                 warnings.innerText = message.message;
                 return;

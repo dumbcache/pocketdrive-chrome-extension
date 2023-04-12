@@ -29,7 +29,6 @@ export const init = async () => {
 export const refreshDirs = async () => {
     try {
         let { root } = await chrome.storage.local.get("root");
-        console.log(root);
         let { data } = await fetchDirs(root);
         await chrome.storage.local.set({ dirs: data });
     } catch (error) {
@@ -86,7 +85,7 @@ export const fetchDirs = async (parent) => {
     });
     let { status, statusText } = req;
     if (status === 401) {
-        await chrome.storage.local.set({ loginStatus: 0 });
+        await chrome.storage.local.set({ status: 0 });
         throw new Error("error while fetching dirs", {
             cause: `${status} ${statusText} ${await req.text()}`,
         });
@@ -127,7 +126,7 @@ export const createDir = async (name, parents) => {
     });
     let { status, statusText } = req;
     if (status === 401) {
-        await chrome.storage.local.set({ loginStatus: 0 });
+        await chrome.storage.local.set({ status: 0 });
         throw new Error("error while creating dirs", {
             cause: `${status} ${statusText} ${await req.text()}`,
         });
@@ -156,7 +155,7 @@ export const uploadRequest = async (parents, img) => {
     });
     let { status, statusText } = req;
     if (status === 401) {
-        await chrome.storage.local.set({ loginStatus: 0 });
+        await chrome.storage.local.set({ status: 0 });
         throw new Error("error while uploading img", {
             cause: `${status} ${statusText} ${await req.text()}`,
         });

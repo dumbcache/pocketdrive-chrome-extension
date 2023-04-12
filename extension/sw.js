@@ -11,12 +11,21 @@ import {
 
 try {
     chrome.runtime.onInstalled.addListener(async () => {
-        await chrome.storage.local.set({ loginStatus: 0 });
+        const { status, token } = await chrome.storage.local.get([
+            "status",
+            "token",
+        ]);
+        if (status !== 1 || !token) {
+            chrome.action.setIcon({ path: "images/krabsOff.png" });
+            return;
+        }
+        initContextMenus();
+        chrome.action.setIcon({ path: "images/krabs.png" });
     });
     chrome.storage.onChanged.addListener(async (changes) => {
         // console.log(changes);
-        if (changes.loginStatus) {
-            let { newValue } = changes.loginStatus;
+        if (changes.status) {
+            let { newValue } = changes.status;
             if (newValue === 1) {
                 chrome.action.setIcon({ path: "images/krabs.png" });
                 initContextMenus();
@@ -67,10 +76,11 @@ try {
 
     chrome.action.onClicked.addListener(async (tab) => {
         try {
-            const { loginStatus } = await chrome.storage.local.get(
-                "loginStatus"
-            );
-            chrome.tabs.sendMessage(tab.id, { context: "action", loginStatus });
+            const { status } = await chrome.storage.local.get("status");
+            chrome.tabs.sendMessage(tab.id, {
+                context: "action",
+                status,
+            });
         } catch (error) {
             console.error("error", error);
         }
