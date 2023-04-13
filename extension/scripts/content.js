@@ -126,13 +126,6 @@
         const sendIcon = createImgElement(sendIconPath, "send-img");
         const doneIcon = createImgElement(doneIconPath, "done-img");
         const cancelIcon = createImgElement(cancelIconPath, "cancel-img");
-        const okIcon = createImgElement(okIconPath, "status-img");
-        const errorIcon = createImgElement(errorIconPath, "status-img");
-        const imgStatusIcon = createImgElement(
-            statusIconPath,
-            "status-img",
-            "img-progress"
-        );
         const dirStatusIcon = createImgElement(
             statusIconPath,
             "status-img",
@@ -192,18 +185,10 @@
 
         main.append(listButton, rootButton, selection, list, cancelButton);
 
-        shadow.append(main, connection);
+        shadow.append(connection, main);
         document.body.append(krab);
 
         /**************** Helper Functions *****************/
-        /**
-         * @returns {HTMLElement}
-         */
-        function createStatusElement(text) {
-            const status = createElement("div", [["class", "status"]]);
-            status.append(text, okIcon, errorIcon, imgStatusIcon);
-            return status;
-        }
 
         /**************** Event Listners *****************/
 
@@ -238,16 +223,48 @@
             selected.innerText = "root";
         };
 
+        /**
+         * @returns {HTMLDivElement}
+         */
+        async function createStatusElement(text) {
+            const { img } = await chrome.storage.local.get("img");
+            const status = createElement("div", [["class", "status"]]);
+            const image = createImgElement(img.src, "pic");
+            const okIcon = createImgElement(okIconPath, "status-img", "ok-img");
+            const errorIcon = createImgElement(
+                errorIconPath,
+                "status-img",
+                "error-img"
+            );
+            const imgStatusIcon = createImgElement(
+                statusIconPath,
+                "status-img",
+                "img-progress"
+            );
+            status.append(image, text, okIcon, errorIcon, imgStatusIcon);
+            return status;
+        }
         doneButton.onclick = async (e) => {
             e.stopPropagation();
             let { id, dirName } = selected.dataset;
-            await chrome.runtime.sendMessage({
+            const status = await createStatusElement("Uploading...");
+            hideToggles();
+            shadow.insertBefore(status, main);
+            const { code } = await chrome.runtime.sendMessage({
                 context: "save",
                 data: { id, dirName },
             });
-            main.style.display = "none";
-            hideToggles();
-            // status.style.display = "block";
+            console.log(code);
+            setTimeout(() => shadow.removeChild(status), 2000);
+            if (code !== 200) {
+                status.style.backgroundColor = "#fa5";
+                status.querySelector(".img-progress").style.display = "none";
+                status.querySelector(".error-img").style.display = "initial";
+                return;
+            }
+            status.style.backgroundColor = "#5a5";
+            status.querySelector(".img-progress").style.display = "none";
+            status.querySelector(".ok-img").style.display = "initial";
         };
 
         selected.onclick = (e) => {

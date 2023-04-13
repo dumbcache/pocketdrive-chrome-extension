@@ -86,27 +86,27 @@ try {
         }
     });
 
-    chrome.runtime.onMessage.addListener(
-        async (message, sender, sendResponse) => {
-            /******** Related to popup *******/
-            try {
-                if (message.context === "loginSubmit") {
-                    login(sender.tab.id);
-                }
-                if (message.context === "logoutSubmit") {
-                    logout(sender.tab.id);
-                }
-            } catch (error) {
-                console.warn(error, `cause: ${error?.cause}`);
-                chrome.runtime.sendMessage({
-                    context: message.context,
-                    status: 500,
-                });
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        /******** Related to popup *******/
+        try {
+            if (message.context === "loginSubmit") {
+                login(sender.tab.id);
             }
+            if (message.context === "logoutSubmit") {
+                logout(sender.tab.id);
+            }
+        } catch (error) {
+            console.warn(error, `cause: ${error?.cause}`);
+            chrome.runtime.sendMessage({
+                context: message.context,
+                status: 500,
+            });
+        }
 
-            /******** Related to content scripts *******/
-            try {
-                if (message.context === "childDirs") {
+        /******** Related to content scripts *******/
+        try {
+            if (message.context === "childDirs") {
+                (async () => {
                     let { parents } = message.data;
                     let { childDirs } = await chrome.storage.local.get(
                         "childDirs"
@@ -128,20 +128,26 @@ try {
                         status: 200,
                         childDirs: childDirs[parents],
                     });
-                }
-                if (message.context === "save") {
-                    const { img } = await chrome.storage.local.get("img");
-                    const { id, dirName } = message.data;
-                    let { status } = await uploadRequest([id], img);
-                    chrome.tabs.sendMessage(sender.tab.id, {
-                        context: "save",
-                        status,
-                    });
-                    updateRecents(id, dirName);
-                    chrome.storage.local.remove("img");
-                }
+                })();
+            }
+            if (message.context === "save") {
+                (async () => {
+                    try {
+                        const { img } = await chrome.storage.local.get("img");
+                        const { id, dirName } = message.data;
+                        let { status } = await uploadRequest([id], img);
+                        sendResponse({ code: status });
+                        updateRecents(id, dirName);
+                        chrome.storage.local.remove("img");
+                    } catch (error) {
+                        sendResponse({ status: 500 });
+                    }
+                })();
+                return true;
+            }
 
-                if (message.context === "createDir") {
+            if (message.context === "createDir") {
+                (async () => {
                     const { name, parents } = message.data;
                     const { status, data } = await createDir(name, parents);
                     chrome.tabs.sendMessage(sender.tab.id, {
@@ -149,16 +155,16 @@ try {
                         status,
                         data,
                     });
-                }
-            } catch (error) {
-                console.warn(error, `cause: ${error.cause}`);
-                chrome.tabs.sendMessage(sender.tab.id, {
-                    context: message.context,
-                    status: 500,
-                });
+                })();
             }
+        } catch (error) {
+            console.warn(error, `cause: ${error.cause}`);
+            chrome.tabs.sendMessage(sender.tab.id, {
+                context: message.context,
+                status: 500,
+            });
         }
-    )();
+    })();
 } catch (error) {
     console.warn(error, `cause: ${error.cause}`);
 }

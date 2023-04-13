@@ -12,7 +12,7 @@
     top: 10px;
     right: 10px;
     z-index: 1000000000;
-    box-shadow: 0 0 5px 1px #0005;
+
     border-radius: 5px;
 }
 
@@ -69,8 +69,10 @@ button:hover::before {
 
 /*************** main component styles ******************/
 .main {
+    position: relative;
     padding: 20px;
     background-color: #fff;
+    box-shadow: 0 0 10px 1px #0005;
     border-radius: 5px;
     color: #000;
     width: 300px;
@@ -141,23 +143,28 @@ button:hover::before {
 }
 
 .status {
-    position: fixed;
-    z-index: 10000000000;
-    top: 10px;
-    right: 10px;
-    width: 250px;
+    width: 300px;
+    padding: 10px;
+    display: flex;
+    position: relative;
+    flex-flow: row nowrap;
+    justify-content: left;
+    gap: 20px;
+    align-items: center;
     background-color: #fff;
     border-radius: 5px;
-    color: #000;
     box-shadow: 0 0 5px 1px #0005;
-    padding: 20px;
+    margin-bottom: 5px;
+}
+.pic {
+    max-width: 45px;
+    min-height: 45px;
+    object-fit: cover;
+    border-radius: 5px;
 }
 .status-text {
-    border-radius: 5px;
     width: 100%;
     text-decoration: none;
-    outline: none;
-    border: none;
 }
 .status-img {
     max-width: 24px;
@@ -171,12 +178,16 @@ button:hover::before {
     filter: none;
     display: none;
 }
+.pic:hover,
+.status-img:hover {
+    filter: none;
+}
 @keyframes spin {
     100% {
         transform: translate(-50%, -50%) rotate(360deg);
     }
 }
-#krabStatusWrapper .statusScroll {
+.img-progress {
     display: initial;
     animation: spin 1.5s linear 0s infinite;
 }
@@ -189,10 +200,6 @@ button:hover::before {
 .cancel-img {
     max-width: 16px;
     max-height: 16px;
-}
-
-.status-img:hover {
-    filter: none;
 }
 
 .root-button {
@@ -229,13 +236,7 @@ button:hover::before {
 
 .connection {
     width: fit-content;
-    position: fixed;
-    top: 1px;
-    right: 1px;
-    background-color: #fff;
     border-radius: 5px;
-    box-shadow: 0 0 5px 1px #0005;
-    /* z-index: 1000000000; */
 }
 
 .options {
