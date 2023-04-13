@@ -14,12 +14,12 @@
         /**
          * @returns {HTMLElement}
          */
-        function createElement(type, attributes = [], childNodes) {
+        function createElement(type, attributes = [], ...childNodes) {
             const element = document.createElement(type);
             for (let [key, val] of attributes) {
                 element.setAttribute(key, val);
             }
-            childNodes && element.append(childNodes);
+            childNodes.length !== 0 && element.append(...childNodes);
             return element;
         }
         /**
@@ -156,7 +156,12 @@
             ],
             "root"
         );
-        selection.append(selected, doneButton);
+        const recents = createElement(
+            "div",
+            [["class", "recents"]],
+            createOptionsElement([])
+        );
+        selection.append(selected, doneButton, recents);
 
         const list = createElement("div", [["class", "list"]]);
         /**
@@ -166,10 +171,16 @@
             ["class", "search"],
             ["placeholder", "Search Directory"],
         ]);
-        const parents = createElement("div", [["class", `parents`]]);
-        parents.append(createOptionsElement(dirs));
-        const childs = createElement("div", [["class", "childs"]]);
-        childs.append(createOptionsElement([]));
+        const parents = createElement(
+            "div",
+            [["class", `parents`]],
+            createOptionsElement(dirs)
+        );
+        const childs = createElement(
+            "div",
+            [["class", "childs"]],
+            createOptionsElement([])
+        );
         list.append(
             search,
             addButton,
@@ -196,14 +207,18 @@
 
         /**************** Event Listners *****************/
 
-        listButton.addEventListener("click", (e) => {
+        function hideToggles() {
+            list.style.display = "none";
+            recents && (recents.style.display = "none");
+            childs && (childs.style.display = "none");
+        }
+
+        listButton.onclick = (e) => {
             e.stopPropagation();
-            let recentDirs = document.querySelector(".selection.options");
-            recentDirs && (recentDirs.style.display = "none");
+            recents && (recents.style.display = "none");
             list.style.display =
                 list.style.display === "block" ? "none" : "block";
             parents.style.display = "block";
-            let childs = document.querySelector(".childs");
             if (sendButton.style.display !== "none") {
                 search.placeholder = "Search Directory";
                 sendButton.style.display = "none";
@@ -214,7 +229,8 @@
             search.value = "";
             search.focus();
             childs && (childs.style.display = "none");
-        });
+        };
+
         rootButton.onclick = async (e) => {
             let { root } = await chrome.storage.local.get("root");
             selected.dataset.id = root;
@@ -224,45 +240,23 @@
 
         doneButton.onclick = async (e) => {
             e.stopPropagation();
-            let { id, dirName } =
-                document.querySelector(".selectionelect").dataset;
+            let { id, dirName } = selected.dataset;
             await chrome.runtime.sendMessage({
                 context: "save",
                 data: { id, dirName },
             });
-            let recentDirs = document.querySelector(".options.recentDirs");
             main.style.display = "none";
-            list.style.display = "none";
-            recentDirs.style.display = "none";
-            krabMain.style.display = "none";
-            status.style.display = "block";
-        };
-        cancelButton.onclick = (e) => {
-            e.stopPropagation();
-            main.style.display = "none";
-            let recentDirs = document.querySelector(".options.selection");
-            list.style.display = "none";
-            recentDirs.style.display = "none";
-            selected.dataset.id = root;
-            selected.dataset.dirName = "root";
-            selected.innerHTML = "root";
+            hideToggles();
+            // status.style.display = "block";
         };
 
-        main.onclick = (e) => {
-            e.stopPropagation();
-            const recents = document.querySelector(".recents");
-            const childs = document.querySelector(".childs");
-            list.style.display = "none";
-            recents.style.display = "none";
-            childs.style.display = "none";
-        };
         selected.onclick = (e) => {
             e.stopPropagation();
-            let recentDirs = document.querySelector(".options.recentDirs");
             list.style.display = "none";
-            recentDirs.style.display =
-                recentDirs.style.display === "block" ? "none" : "block";
+            recents.style.display =
+                recents.style.display === "block" ? "none" : "block";
         };
+
         const inputInvalidate = (text) => {
             search.placeholder = text;
             search.style.backgroundColor = "#f005";
@@ -272,6 +266,7 @@
                 search.style.backgroundColor = "#ddd";
             }, 1000);
         };
+
         const checkDirPresent = () => {
             let name = search.value;
             for (let dir of tempDirs) {
@@ -279,6 +274,7 @@
             }
             return false;
         };
+
         const dirCreateHandler = async () => {
             if (search.value === "") {
                 inputInvalidate("Cannot be empty");
@@ -301,11 +297,13 @@
             });
             search.removeEventListener("keyup", enterButtonHandler);
         };
+
         const enterButtonHandler = (e) => {
             if (e.key === "Enter") {
                 dirCreateHandler();
             }
         };
+
         addButton.onclick = async (e) => {
             e.stopPropagation();
             addButton.style.display = "none";
@@ -314,10 +312,12 @@
             search.focus();
             search.addEventListener("keyup", enterButtonHandler);
         };
+
         sendButton.onclick = async (e) => {
             e.stopPropagation();
             dirCreateHandler();
         };
+
         search.onkeyup = (e) => {
             if (e.ctrlKey && e.key === "Enter") {
                 addButton.style.display = "none";
@@ -328,10 +328,12 @@
                 list.append(childDirs);
             }
         };
+
         search.onclick = (e) => {
             e.stopPropagation();
         };
-        search.addEventListener("input", (e) => {
+
+        search.oninput = (e) => {
             let val = e.target.value.toLowerCase().trimLeft();
             console.log(val);
             let filtered = [];
@@ -349,35 +351,44 @@
             childDirs = createOptionsElement(filtered, "childDirs");
             parents.style.display = "none";
             list.append(childDirs);
-        });
+        };
+
         login.onclick = async (e) => {
             e.stopPropagation();
             console.log(e);
             chrome.runtime.sendMessage({ context: "loginSubmit" });
             connection.style.display = "none";
         };
+
         logout.onclick = async (e) => {
             e.stopPropagation();
             chrome.runtime.sendMessage({ context: "logoutSubmit" });
             connection.style.display = "none";
         };
-        window.addEventListener("click", () => {
+
+        cancelButton.onclick = (e) => {
+            e.stopPropagation();
+            main.style.display = "none";
+            hideToggles();
+        };
+
+        main.onclick = (e) => {
+            e.stopPropagation();
+            hideToggles();
+        };
+
+        window.onclick = () => {
             connection.style.display !== "none" &&
                 (connection.style.display = "none");
             if (main.style.display !== "none") {
-                let recentDirs = document.querySelector(".options.selection");
-                let childs = document.querySelector(".childs");
-                main.style.display = "none";
-                list.style.display = "none";
-                recentDirs && (recentDirs.style.display = "none");
-                childs && (childs.style.display = "none");
+                hideToggles();
                 if (sendButton.style.display !== "none") {
                     search.placeholder = "Search Directory";
                     sendButton.style.display = "none";
                     addButton.style.display = "initial";
                 }
             }
-        });
+        };
 
         /**************** Popup toggler *****************/
         function toggleLogin(loginStatus) {
