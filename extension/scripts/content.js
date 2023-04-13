@@ -2,7 +2,7 @@
     try {
         /**************** Inserting scripts *****************/
         const krab = createElement("div", [["id", "krab-ext"]]);
-        const shadow = krab.attachShadow({ mode: "closed" });
+        const shadow = krab.attachShadow({ mode: "open" });
 
         const styles = chrome.runtime.getURL("scripts/content.css");
         const styleElement = createElement("link", [
@@ -14,30 +14,51 @@
         /**
          * @returns {HTMLElement}
          */
-        function createElement(type, attributes = []) {
-            let element = document.createElement(type);
+        function createElement(type, attributes = [], childNodes) {
+            const element = document.createElement(type);
             for (let [key, val] of attributes) {
                 element.setAttribute(key, val);
             }
-            // element.classList.add(type);
+            childNodes && element.append(childNodes);
             return element;
+        }
+        /**
+         *
+         * @param {string} className
+         * @param {HTMLImageElement | string} childNode
+         * @returns {HTMLButtonElement}
+         */
+        function createButtonElement(childNode, ...classNames) {
+            const button = document.createElement("button");
+            button.classList.add(...classNames);
+            childNode && button.append(childNode);
+            return button;
+        }
+        /**
+         * @param {string}
+         * @param {string}
+         * @returns {HTMLImageElement}
+         */
+        function createImgElement(src, ...classNames) {
+            const img = document.createElement("img");
+            img.src = src;
+            img.classList.add(...classNames);
+            return img;
         }
 
         /**
          * @returns {HTMLDivElement}
          */
-        function createOptionsElement(dirs, className) {
-            let options = createElement("div", [
-                ["class", `options ${className}`],
-            ]);
+        function createOptionsElement(dirs) {
+            const options = document.createDocumentFragment();
             for (let { id, name } of dirs) {
-                let div = createElement("div", [
+                const option = createElement("div", [
                     ["class", `option`],
                     ["data-id", id],
                     ["data-dir-name", name],
                 ]);
-                div.innerText = name;
-                options.append(div);
+                option.innerText = name;
+                options.append(option);
             }
             options.onclick = async (e) => {
                 e.stopPropagation();
@@ -100,74 +121,55 @@
         connection.append(login, logout);
         /**************** Element declarations *****************/
 
-        const listIcon = createElement("img", [
-            ["class", "menu-img"],
-            ["src", listIconPath],
-        ]);
-        const addIcon = createElement("img", [
-            ["class", "add-img"],
-            ["src", addIconPath],
-        ]);
-        const sendIcon = createElement("img", [
-            ["class", "send-img"],
-            ["src", sendIconPath],
-        ]);
-        const doneIcon = createElement("img", [
-            ["class", "done-img"],
-            ["src", doneIconPath],
-        ]);
-        const cancelIcon = createElement("img", [
-            ["class", "cancel-img"],
-            ["src", cancelIconPath],
-        ]);
-        const okIcon = createElement("img", [
-            ["class", "status-img"],
-            ["src", okIconPath],
-        ]);
-        const errorIcon = createElement("img", [
-            ["class", "status-img"],
-            ["src", errorIconPath],
-        ]);
-        const imgStatusIcon = createElement("img", [
-            ["class", "status-img img-progress"],
-            ["src", statusIconPath],
-        ]);
-        const dirStatusIcon = createElement("img", [
-            ["class", "status-img dir-progress"],
-            ["src", statusIconPath],
-        ]);
-        const listButton = createElement("button", [["class", "list-button"]]);
-        const addButton = createElement("button", [["class", "add-button"]]);
-        const sendButton = createElement("button", [["class", "send-button"]]);
-        const cancelButton = createElement("button", [
-            ["class", "cancel-button"],
-        ]);
-        const doneButton = createElement("button", [["class", "done-button"]]);
-        const rootButton = createElement("button", [["class", "root-button"]]);
-        rootButton.innerText = "/r";
+        const listIcon = createImgElement(listIconPath, "menu-img");
+        const addIcon = createImgElement(addIconPath, "add-img");
+        const sendIcon = createImgElement(sendIconPath, "send-img");
+        const doneIcon = createImgElement(doneIconPath, "done-img");
+        const cancelIcon = createImgElement(cancelIconPath, "cancel-img");
+        const okIcon = createImgElement(okIconPath, "status-img");
+        const errorIcon = createImgElement(errorIconPath, "status-img");
+        const imgStatusIcon = createImgElement(
+            statusIconPath,
+            "status-img",
+            "img-progress"
+        );
+        const dirStatusIcon = createImgElement(
+            statusIconPath,
+            "status-img",
+            "dir-progress"
+        );
 
-        listButton.append(listIcon);
-        addButton.append(addIcon);
-        sendButton.append(sendIcon);
-        doneButton.append(doneIcon);
-        cancelButton.append(cancelIcon);
+        const listButton = createButtonElement(listIcon, "list-button");
+        const addButton = createButtonElement(addIcon, "add-button");
+        const sendButton = createButtonElement(sendIcon, "send-button");
+        const doneButton = createButtonElement(doneIcon, "done-button");
+        const cancelButton = createButtonElement(cancelIcon, "cancel-button");
+        const rootButton = createButtonElement("/r", "root-button");
 
-        let recents = createElement("div", [["class", "recents"]]);
-        let selected = createElement("div", [
-            ["class", "selected"],
-            ["data-id", root],
-            ["data-dir-name", "root"],
-        ]);
-        selected.innerText = "root";
-        recents.append(selected, doneButton);
+        const selection = createElement("div", [["class", "selection"]]);
+        const selected = createElement(
+            "div",
+            [
+                ["class", "selected"],
+                ["data-id", root],
+                ["data-dir-name", "root"],
+            ],
+            "root"
+        );
+        selection.append(selected, doneButton);
 
-        let list = createElement("div", [["class", "list"]]);
+        const list = createElement("div", [["class", "list"]]);
+        /**
+         * @type {HTMLInputElement}
+         */
         let search = createElement("input", [
             ["class", "search"],
             ["placeholder", "Search Directory"],
         ]);
-        let parents = createOptionsElement(dirs, "parents");
-        let childs = createOptionsElement([], "childs");
+        const parents = createElement("div", [["class", `parents`]]);
+        parents.append(createOptionsElement(dirs));
+        const childs = createElement("div", [["class", "childs"]]);
+        childs.append(createOptionsElement([]));
         list.append(
             search,
             addButton,
@@ -177,7 +179,7 @@
             childs
         );
 
-        main.append(listButton, rootButton, recents, list, cancelButton);
+        main.append(listButton, rootButton, selection, list, cancelButton);
 
         shadow.append(main, connection);
         document.body.append(krab);
@@ -193,14 +195,15 @@
         }
 
         /**************** Event Listners *****************/
-        listButton.onclick = (e) => {
+
+        listButton.addEventListener("click", (e) => {
             e.stopPropagation();
-            let recentDirs = document.querySelector(".recents.options");
+            let recentDirs = document.querySelector(".selection.options");
             recentDirs && (recentDirs.style.display = "none");
             list.style.display =
                 list.style.display === "block" ? "none" : "block";
             parents.style.display = "block";
-            let childs = document.querySelector(".options.childDirs");
+            let childs = document.querySelector(".childs");
             if (sendButton.style.display !== "none") {
                 search.placeholder = "Search Directory";
                 sendButton.style.display = "none";
@@ -210,8 +213,8 @@
             tempParent = root;
             search.value = "";
             search.focus();
-            childs.style.display = "none";
-        };
+            childs && (childs.style.display = "none");
+        });
         rootButton.onclick = async (e) => {
             let { root } = await chrome.storage.local.get("root");
             selected.dataset.id = root;
@@ -222,7 +225,7 @@
         doneButton.onclick = async (e) => {
             e.stopPropagation();
             let { id, dirName } =
-                document.querySelector(".recentSelect").dataset;
+                document.querySelector(".selectionelect").dataset;
             await chrome.runtime.sendMessage({
                 context: "save",
                 data: { id, dirName },
@@ -237,7 +240,7 @@
         cancelButton.onclick = (e) => {
             e.stopPropagation();
             main.style.display = "none";
-            let recentDirs = document.querySelector(".recentDirs");
+            let recentDirs = document.querySelector(".options.selection");
             list.style.display = "none";
             recentDirs.style.display = "none";
             selected.dataset.id = root;
@@ -247,13 +250,12 @@
 
         main.onclick = (e) => {
             e.stopPropagation();
-            let recentDirs = document.querySelector(".options.recentDirs");
-            let childs = document.querySelector(".options.childDirs");
+            const recents = document.querySelector(".recents");
+            const childs = document.querySelector(".childs");
             list.style.display = "none";
-            recentDirs.style.display = "none";
+            recents.style.display = "none";
             childs.style.display = "none";
         };
-
         selected.onclick = (e) => {
             e.stopPropagation();
             let recentDirs = document.querySelector(".options.recentDirs");
@@ -329,8 +331,9 @@
         search.onclick = (e) => {
             e.stopPropagation();
         };
-        search.oninput = (e) => {
+        search.addEventListener("input", (e) => {
             let val = e.target.value.toLowerCase().trimLeft();
+            console.log(val);
             let filtered = [];
             if (val === "") {
                 e.target.value = "";
@@ -342,11 +345,11 @@
                 );
             }
             let childDirs = document.querySelector(".childDirs");
-            list.removeChild(childDirs);
+            childDirs && list.removeChild(childDirs);
             childDirs = createOptionsElement(filtered, "childDirs");
             parents.style.display = "none";
             list.append(childDirs);
-        };
+        });
         login.onclick = async (e) => {
             e.stopPropagation();
             console.log(e);
@@ -358,23 +361,23 @@
             chrome.runtime.sendMessage({ context: "logoutSubmit" });
             connection.style.display = "none";
         };
-        window.onclick = () => {
+        window.addEventListener("click", () => {
             connection.style.display !== "none" &&
                 (connection.style.display = "none");
             if (main.style.display !== "none") {
-                let recentDirs = document.querySelector(".options.recentDirs");
-                let childs = document.querySelector(".options.childDirs");
+                let recentDirs = document.querySelector(".options.selection");
+                let childs = document.querySelector(".childs");
                 main.style.display = "none";
                 list.style.display = "none";
-                recentDirs.style.display = "none";
-                childs.style.display = "none";
+                recentDirs && (recentDirs.style.display = "none");
+                childs && (childs.style.display = "none");
                 if (sendButton.style.display !== "none") {
                     search.placeholder = "Search Directory";
                     sendButton.style.display = "none";
                     addButton.style.display = "initial";
                 }
             }
-        };
+        });
 
         /**************** Popup toggler *****************/
         function toggleLogin(loginStatus) {
@@ -387,22 +390,22 @@
             }
             connection.style.display = "initial";
         }
-        function toggleMain(recents) {
-            if (recents) {
-                if (recents.length > 0) {
-                    selected.setAttribute("data-id", recents[0].id);
-                    selected.setAttribute("data-dir-name", recents[0].name);
-                    selected.innerHTML = recents[0].name;
+        function toggleMain(selection) {
+            if (selection) {
+                if (selection.length > 0) {
+                    selected.setAttribute("data-id", selection[0].id);
+                    selected.setAttribute("data-dir-name", selection[0].name);
+                    selected.innerHTML = selection[0].name;
                 }
-                let recentDirs = createOptionsElement(recents, "recentDirs");
+                let recentDirs = createOptionsElement(selection, "recentDirs");
                 let previousRecentDirs = document.querySelector(".recentDirs");
-                previousRecentDirs && recents.removeChild(previousRecentDirs);
-                // recents.append(recentDirs);
+                previousRecentDirs && selection.removeChild(previousRecentDirs);
+                // selection.append(recentDirs);
                 main.style.display = "flex";
                 return;
             }
             let recentDirs = createOptionsElement([], "recentDirs");
-            // recents.append(recentDirs);
+            // selection.append(recentDirs);
             main.style.display = "flex";
         }
 
@@ -420,9 +423,9 @@
                                 toggleLogin(status);
                             else console.log("login failed");
                             break;
-                        case "recents":
-                            let recents = message.data;
-                            toggleMain(recents);
+                        case "selection":
+                            let selection = message.data;
+                            toggleMain(selection);
                             break;
                         case "childDirs":
                             tempDirs = message.childDirs || [];

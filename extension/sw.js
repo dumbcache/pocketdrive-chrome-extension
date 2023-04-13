@@ -64,7 +64,7 @@ try {
                 });
                 let { recents } = await chrome.storage.local.get("recents");
                 await chrome.tabs.sendMessage(tab.id, {
-                    context: "recents",
+                    context: "selection",
                     status: 200,
                     data: recents,
                 });
