@@ -104,7 +104,6 @@ button:hover::before {
     max-height: 150px;
     position: relative;
 }
-
 .list {
     display: none;
     position: absolute;
@@ -239,27 +238,23 @@ button:hover::before {
     border-radius: 5px;
 }
 
-.options {
-    display: none;
-    position: absolute;
-    top: 21px;
-    right: 0px;
-    width: 200px;
-    border-radius: 5px;
-    overflow-y: scroll;
-    background-color: #fff;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 0 5px 1px #0005;
-}
+.recents,
 .parents,
 .childs {
-    display: block;
-    top: 36px;
+    background-color: #fff;
+    display: none;
+    overflow-y: scroll;
+    position: absolute;
+    top: 35px;
     max-height: 300px;
+    min-width: 200px;
+    box-shadow: 0 0 5px 1px #0005;
+    border-radius: 0px 0px 5px 5px;
 }
 
 .option {
-    padding: 7px 5px;
+    width: 100%;
+    padding: 5px 5px;
     cursor: pointer;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -270,10 +265,10 @@ button:hover::before {
     background-color: #0005;
 }
 .option:first-child {
-    padding-top: 10px;
+    /* padding-top: 7px; */
 }
 .option:last-child {
-    padding-bottom: 10px;
+    /* padding-bottom: 7px; */
 }
 .options * {
     user-select: none;
@@ -296,7 +291,7 @@ button:hover::before {
 /*************** scrollbar component styles ******************/
 
 ::-webkit-scrollbar {
-    width: 5px;
+    width: 3px;
 }
 ::-webkit-scrollbar-track {
     background: #0002;

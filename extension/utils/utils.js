@@ -69,6 +69,10 @@ export const refreshChildDirs = async () => {
 
 export const updateRecents = async (id, dirName) => {
     let { recents } = await chrome.storage.local.get("recents");
+    if (!recents) {
+        chrome.storage.local.set({ recents: [{ id, name: dirName }] });
+        return;
+    }
     recents = recents.filter((item) => item.id !== id);
     recents.unshift({ id, name: dirName });
     chrome.storage.local.set({ recents });

@@ -47,7 +47,7 @@
         }
 
         /**
-         * @returns {HTMLDivElement}
+         * @returns {DocumentFragment}
          */
         function createOptionsElement(dirs) {
             const options = document.createDocumentFragment();
@@ -60,32 +60,6 @@
                 option.innerText = name;
                 options.append(option);
             }
-            options.onclick = async (e) => {
-                e.stopPropagation();
-                let currentTarget = e.currentTarget;
-                let target = e.target;
-                if (target === currentTarget) return;
-                let { id, dirName } = target.dataset;
-                if (
-                    currentTarget.classList.contains("dirs") ||
-                    currentTarget.classList.contains("childDirs")
-                ) {
-                    chrome.runtime.sendMessage({
-                        context: "childDirs",
-                        data: { parents: id },
-                    });
-                }
-                tempParent = id;
-                selected.dataset.id = id;
-                selected.dataset.dirName = dirName;
-                selected.innerText = dirName;
-                search.value = "";
-                search.focus();
-                if (currentTarget.classList.contains("recentDirs")) {
-                    const recentDirs = document.querySelector(".recentDirs");
-                    recentDirs.style.display = "none";
-                }
-            };
             return options;
         }
 
@@ -229,6 +203,11 @@
         async function createStatusElement(text) {
             const { img } = await chrome.storage.local.get("img");
             const status = createElement("div", [["class", "status"]]);
+            const statusText = createElement(
+                "div",
+                [["class", "status-text"]],
+                text
+            );
             const image = createImgElement(img.src, "pic");
             const okIcon = createImgElement(okIconPath, "status-img", "ok-img");
             const errorIcon = createImgElement(
@@ -241,9 +220,10 @@
                 "status-img",
                 "img-progress"
             );
-            status.append(image, text, okIcon, errorIcon, imgStatusIcon);
+            status.append(image, statusText, okIcon, errorIcon, imgStatusIcon);
             return status;
         }
+
         doneButton.onclick = async (e) => {
             e.stopPropagation();
             let { id, dirName } = selected.dataset;
@@ -254,15 +234,16 @@
                 context: "save",
                 data: { id, dirName },
             });
-            console.log(code);
             setTimeout(() => shadow.removeChild(status), 2000);
             if (code !== 200) {
                 status.style.backgroundColor = "#fa5";
+                status.querySelector(".status-text").innerText = "failed";
                 status.querySelector(".img-progress").style.display = "none";
                 status.querySelector(".error-img").style.display = "initial";
                 return;
             }
             status.style.backgroundColor = "#5a5";
+            status.querySelector(".status-text").innerText = "uploaded";
             status.querySelector(".img-progress").style.display = "none";
             status.querySelector(".ok-img").style.display = "initial";
         };
@@ -389,8 +370,39 @@
             hideToggles();
         };
 
+        const optionHandle = async (e) => {
+            let { id, dirName } = e.target.dataset;
+            tempParent = id;
+            selected.dataset.id = id;
+            selected.dataset.dirName = dirName;
+            selected.innerText = dirName;
+            if (e.composedPath().includes(recents)) {
+                recents.style.display = "none";
+                return;
+            }
+
+            const { status, childDirs } = await chrome.runtime.sendMessage({
+                context: "childDirs",
+                data: { parents: id },
+            });
+            if (status !== 200) {
+                console.log("unable to fetch childs");
+                return;
+            }
+            search.value = "";
+            search.focus();
+            childs.innerHTML = "";
+            tempDirs = childDirs || [];
+            createOptionsElement(tempDirs);
+            parents.style.display = "none";
+        };
+
         main.onclick = (e) => {
             e.stopPropagation();
+            if (e.target.classList.contains("option")) {
+                optionHandle(e);
+                return;
+            }
             hideToggles();
         };
 
@@ -418,22 +430,15 @@
             }
             connection.style.display = "initial";
         }
-        function toggleMain(selection) {
-            if (selection) {
-                if (selection.length > 0) {
-                    selected.setAttribute("data-id", selection[0].id);
-                    selected.setAttribute("data-dir-name", selection[0].name);
-                    selected.innerHTML = selection[0].name;
-                }
-                let recentDirs = createOptionsElement(selection, "recentDirs");
-                let previousRecentDirs = document.querySelector(".recentDirs");
-                previousRecentDirs && selection.removeChild(previousRecentDirs);
-                // selection.append(recentDirs);
-                main.style.display = "flex";
-                return;
+        function toggleMain(recentDirs) {
+            if (recentDirs?.length > 0) {
+                selected.setAttribute("data-id", recentDirs[0].id);
+                selected.setAttribute("data-dir-name", recentDirs[0].name);
+                selected.innerHTML = recentDirs[0].name;
+                const options = createOptionsElement(recentDirs);
+                recents.innerHTML = "";
+                recents.append(options);
             }
-            let recentDirs = createOptionsElement([], "recentDirs");
-            // selection.append(recentDirs);
             main.style.display = "flex";
         }
 
@@ -452,21 +457,21 @@
                             else console.log("login failed");
                             break;
                         case "selection":
-                            let selection = message.data;
-                            toggleMain(selection);
+                            let recents = message.data;
+                            toggleMain(recents);
                             break;
-                        case "childDirs":
-                            tempDirs = message.childDirs || [];
-                            let childDirs =
-                                document.querySelector(".childDirs");
-                            list.removeChild(childDirs);
-                            childDirs = createOptionsElement(
-                                tempDirs,
-                                "childDirs"
-                            );
-                            parents.style.display = "none";
-                            list.append(childDirs);
-                            break;
+                        // case "childDirs":
+                        //     tempDirs = message.childDirs || [];
+                        //     let childDirs =
+                        //         document.querySelector(".childDirs");
+                        //     list.removeChild(childDirs);
+                        //     childDirs = createOptionsElement(
+                        //         tempDirs,
+                        //         "childDirs"
+                        //     );
+                        //     parents.style.display = "none";
+                        //     list.append(childDirs);
+                        //     break;
                         case "dirs":
                             const dirs = message.data || [];
                             tempDirs = dirs;

@@ -7,6 +7,7 @@ import {
     updateRecents,
     uploadRequest,
     initContextMenus,
+    init,
 } from "./utils/utils.js";
 
 try {
@@ -20,6 +21,7 @@ try {
             return;
         }
         initContextMenus();
+        init();
         chrome.action.setIcon({ path: "images/krabs.png" });
     });
     chrome.storage.onChanged.addListener(async (changes) => {
@@ -107,34 +109,42 @@ try {
         try {
             if (message.context === "childDirs") {
                 (async () => {
-                    let { parents } = message.data;
-                    let { childDirs } = await chrome.storage.local.get(
-                        "childDirs"
-                    );
+                    try {
+                        throw new Error("");
+                        let { parents } = message.data;
+                        let { childDirs } = await chrome.storage.local.get(
+                            "childDirs"
+                        );
 
-                    if (childDirs[parents] === undefined) {
-                        let { status, data } = await fetchDirs(parents);
-                        childDirs[parents] = data;
-                        chrome.storage.local.set({ childDirs });
-                        chrome.tabs.sendMessage(sender.tab.id, {
-                            context: "childDirs",
-                            status,
-                            childDirs: data,
+                        if (childDirs[parents] === undefined) {
+                            let { status, data } = await fetchDirs(parents);
+                            childDirs[parents] = data;
+                            chrome.storage.local.set({ childDirs });
+                            sendResponse({
+                                status,
+                                childDirs: data,
+                            });
+                            return;
+                        }
+                        sendResponse({
+                            status: 200,
+                            childDirs: childDirs[parents],
                         });
-                        return;
+                    } catch (error) {
+                        sendResponse({
+                            status: 500,
+                        });
                     }
-                    chrome.tabs.sendMessage(sender.tab.id, {
-                        context: "childDirs",
-                        status: 200,
-                        childDirs: childDirs[parents],
-                    });
                 })();
+                return true;
             }
             if (message.context === "save") {
                 (async () => {
                     try {
+                        throw new error("");
                         const { img } = await chrome.storage.local.get("img");
                         const { id, dirName } = message.data;
+                        console.log(message.data);
                         let { status } = await uploadRequest([id], img);
                         sendResponse({ code: status });
                         updateRecents(id, dirName);
