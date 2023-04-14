@@ -59,6 +59,7 @@ try {
             if (info.menuItemId === "refresh") {
                 await refreshDirs();
                 refreshChildDirs();
+                await chrome.storage.local.set({ recents: [] });
             }
             if (info.menuItemId === "save") {
                 await chrome.storage.local.set({
@@ -110,7 +111,6 @@ try {
             if (message.context === "childDirs") {
                 (async () => {
                     try {
-                        throw new Error("");
                         let { parents } = message.data;
                         let { childDirs } = await chrome.storage.local.get(
                             "childDirs"
@@ -141,10 +141,8 @@ try {
             if (message.context === "save") {
                 (async () => {
                     try {
-                        // throw new error("");
                         const { img } = await chrome.storage.local.get("img");
                         const { id, dirName } = message.data;
-                        console.log(message.data);
                         let { status } = await uploadRequest([id], img);
                         sendResponse({ code: status });
                         updateRecents(id, dirName);

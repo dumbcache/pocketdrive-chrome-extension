@@ -476,7 +476,6 @@
                             parents.append(createOptionsElement(dirs));
                             break;
                         case "createDir":
-                            console.log(message);
                             if (message.status !== 200) {
                                 search.style.backgroundColor = "#f005";
                                 search.placeholder = "failed";
@@ -503,24 +502,24 @@
                             search.focus();
                             search.value = "";
                             break;
-                        case "save":
-                            imgStatusIcon.style.display = "none";
-                            if (message.status === 200) {
-                                statusText.textContent = "ok";
-                                okIcon.style.display = "initial";
-                            } else {
-                                statusText.textContent = "failed";
-                                errorIcon.style.display = "initial";
-                            }
-                            setTimeout(() => {
-                                status.style.display = "none";
-                                statusText.textContent = "Uploading...";
-                                imgStatusIcon.style.display = "initial";
-                                okIcon.style.display = "none";
-                                errorIcon.style.display = "none";
-                                krabMain.style.display = "flex";
-                            }, 2000);
-                            break;
+                        // case "save":
+                        //     imgStatusIcon.style.display = "none";
+                        //     if (message.status === 200) {
+                        //         statusText.textContent = "ok";
+                        //         okIcon.style.display = "initial";
+                        //     } else {
+                        //         statusText.textContent = "failed";
+                        //         errorIcon.style.display = "initial";
+                        //     }
+                        //     setTimeout(() => {
+                        //         status.style.display = "none";
+                        //         statusText.textContent = "Uploading...";
+                        //         imgStatusIcon.style.display = "initial";
+                        //         okIcon.style.display = "none";
+                        //         errorIcon.style.display = "none";
+                        //         krabMain.style.display = "flex";
+                        //     }, 2000);
+                        //     break;
                         case "loginStatus":
                             break;
                     }
