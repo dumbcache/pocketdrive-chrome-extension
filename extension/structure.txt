@@ -2,8 +2,11 @@ krabapp(#krab-ext)
     - main(krab-main)
         - menu
         - recentSelect
-        - recents
+            - recents
+            - selected
+            - 
         - dirs
+            - search
             - parents
             - childs
     - status(krab-status)

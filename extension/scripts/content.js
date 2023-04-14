@@ -393,6 +393,7 @@
             search.value = "";
             search.focus();
             childs.innerHTML = "";
+            childs.style.display = "block";
             tempDirs = childDirs || [];
             childs.append(createOptionsElement(tempDirs));
             parents.style.display = "none";
@@ -450,6 +451,7 @@
                 selected.dataset.id = root;
                 selected.dataset.dirName = "root";
                 selected.innerText = "root";
+                recents.innerHTML = "";
             }
             main.style.display = "flex";
         }
