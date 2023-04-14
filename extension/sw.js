@@ -141,7 +141,7 @@ try {
             if (message.context === "save") {
                 (async () => {
                     try {
-                        throw new error("");
+                        // throw new error("");
                         const { img } = await chrome.storage.local.get("img");
                         const { id, dirName } = message.data;
                         console.log(message.data);

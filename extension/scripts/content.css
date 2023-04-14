@@ -89,7 +89,6 @@ button:hover::before {
     top: 50%;
     right: 3px;
     transform: translate(0%, -50%);
-    padding-left: 2px;
 }
 
 .cancel-button {
@@ -215,9 +214,9 @@ button:hover::before {
     top: 50%;
     right: 3px;
     transform: translate(0%, -50%);
-    padding-left: 2px;
 }
-.send-button {
+.send-button,
+.dir-progress {
     display: none;
 }
 @keyframes spin2 {
@@ -226,10 +225,7 @@ button:hover::before {
     }
 }
 .dir-progress {
-    max-width: 20px;
-    max-height: 20px;
     filter: none;
-    display: none;
     animation: spin2 1.5s linear 0s infinite;
 }
 

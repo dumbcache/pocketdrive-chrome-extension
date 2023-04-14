@@ -150,11 +150,11 @@
         );
         list.append(
             search,
-            addButton,
             sendButton,
             dirStatusIcon,
-            parents,
-            childs
+            addButton,
+            childs,
+            parents
         );
 
         main.append(listButton, rootButton, selection, list, cancelButton);
@@ -220,7 +220,7 @@
                 "status-img",
                 "img-progress"
             );
-            status.append(image, statusText, okIcon, errorIcon, imgStatusIcon);
+            status.append(image, statusText, errorIcon, imgStatusIcon, okIcon);
             return status;
         }
 
@@ -230,6 +230,7 @@
             const status = await createStatusElement("Uploading...");
             hideToggles();
             shadow.insertBefore(status, main);
+            main.style.display = "none";
             const { code } = await chrome.runtime.sendMessage({
                 context: "save",
                 data: { id, dirName },
@@ -320,10 +321,8 @@
             if (e.ctrlKey && e.key === "Enter") {
                 addButton.style.display = "none";
                 dirCreateHandler();
-                let childDirs = document.querySelector(".childDirs");
-                list.removeChild(childDirs);
-                childDirs = createOptionsElement(tempDirs, "childDirs");
-                list.append(childDirs);
+                childs.innerHTML = "";
+                childs.append(createOptionsElement(tempDirs));
             }
         };
 
@@ -333,7 +332,6 @@
 
         search.oninput = (e) => {
             let val = e.target.value.toLowerCase().trimLeft();
-            console.log(val);
             let filtered = [];
             if (val === "") {
                 e.target.value = "";
@@ -344,11 +342,10 @@
                     element.name.toLowerCase().includes(val)
                 );
             }
-            let childDirs = document.querySelector(".childDirs");
-            childDirs && list.removeChild(childDirs);
-            childDirs = createOptionsElement(filtered, "childDirs");
+            childs.innerHTML = "";
+            childs.append(createOptionsElement(filtered));
+            childs.style.display = "block";
             parents.style.display = "none";
-            list.append(childDirs);
         };
 
         login.onclick = async (e) => {
@@ -386,14 +383,19 @@
                 data: { parents: id },
             });
             if (status !== 200) {
-                console.log("unable to fetch childs");
+                search.style.backgroundColor = "#f005";
+                search.placeholder = "unable to fetch childs";
+                setTimeout(() => {
+                    search.style.backgroundColor = "#ddd";
+                    search.placeholder = "Search Directory";
+                }, 1000);
                 return;
             }
             search.value = "";
             search.focus();
             childs.innerHTML = "";
             tempDirs = childDirs || [];
-            createOptionsElement(tempDirs);
+            childs.append(createOptionsElement(tempDirs));
             parents.style.display = "none";
         };
 
@@ -403,6 +405,12 @@
                 optionHandle(e);
                 return;
             }
+            if (
+                e.target.classList.contains("recents") ||
+                e.target.classList.contains("parents") ||
+                e.target.classList.contains("childs")
+            )
+                return;
             hideToggles();
         };
 
@@ -410,6 +418,7 @@
             connection.style.display !== "none" &&
                 (connection.style.display = "none");
             if (main.style.display !== "none") {
+                main.style.display = "none";
                 hideToggles();
                 if (sendButton.style.display !== "none") {
                     search.placeholder = "Search Directory";
@@ -460,27 +469,14 @@
                             let recents = message.data;
                             toggleMain(recents);
                             break;
-                        // case "childDirs":
-                        //     tempDirs = message.childDirs || [];
-                        //     let childDirs =
-                        //         document.querySelector(".childDirs");
-                        //     list.removeChild(childDirs);
-                        //     childDirs = createOptionsElement(
-                        //         tempDirs,
-                        //         "childDirs"
-                        //     );
-                        //     parents.style.display = "none";
-                        //     list.append(childDirs);
-                        //     break;
                         case "dirs":
                             const dirs = message.data || [];
                             tempDirs = dirs;
-                            list.removeChild(parents);
-                            parents = createOptionsElement(dirs, "dirs");
-                            parents.style.display = "none";
-                            list.append(parents);
+                            parents.innerHTML = "";
+                            parents.append(createOptionsElement(dirs));
                             break;
                         case "createDir":
+                            console.log(message);
                             if (message.status !== 200) {
                                 search.style.backgroundColor = "#f005";
                                 search.placeholder = "failed";
@@ -495,9 +491,9 @@
                                 ["data-id", id],
                                 ["data-dir-name", name],
                             ]);
-                            div.innerHTML = name;
+                            div.innerText = name;
                             div.style.backgroundColor = "#0f05";
-                            document.querySelector(".childDirs").prepend(div);
+                            childs.prepend(div);
                             tempDirs.unshift(message.data);
                             setTimeout(() => {
                                 div.style.backgroundColor = "initial";
