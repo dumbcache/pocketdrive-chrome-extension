@@ -350,7 +350,6 @@
 
         login.onclick = async (e) => {
             e.stopPropagation();
-            console.log(e);
             chrome.runtime.sendMessage({ context: "loginSubmit" });
             connection.style.display = "none";
         };
@@ -443,10 +442,14 @@
             if (recentDirs?.length > 0) {
                 selected.setAttribute("data-id", recentDirs[0].id);
                 selected.setAttribute("data-dir-name", recentDirs[0].name);
-                selected.innerHTML = recentDirs[0].name;
+                selected.innerText = recentDirs[0].name;
                 const options = createOptionsElement(recentDirs);
                 recents.innerHTML = "";
                 recents.append(options);
+            } else {
+                selected.dataset.id = root;
+                selected.dataset.dirName = "root";
+                selected.innerText = "root";
             }
             main.style.display = "flex";
         }

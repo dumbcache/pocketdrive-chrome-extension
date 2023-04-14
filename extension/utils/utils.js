@@ -106,7 +106,7 @@ export const fetchDirs = async (parent) => {
 export const addtoLocalDirs = async (data, parents) => {
     const { root } = await chrome.storage.local.get("root");
     if (root === parents) {
-        let { dirs } = await chrome.storage.local.get("dirs");
+        let { dirs = [] } = await chrome.storage.local.get("dirs");
         dirs.unshift(data);
         chrome.storage.local.set({ dirs });
         return;
