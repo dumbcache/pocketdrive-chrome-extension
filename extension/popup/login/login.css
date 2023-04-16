@@ -4,15 +4,11 @@
     box-sizing: border-box;
     font-size: 13px;
 }
-.connection {
-    width: max-content;
-}
-.connection *:hover {
-    background-color: #0555;
-}
+
 .login,
 .logout {
     text-decoration: none;
+    width: max-content;
     border: none;
     background-color: #0557;
     padding: 5px;

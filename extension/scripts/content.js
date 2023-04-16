@@ -24,8 +24,8 @@
         }
         /**
          *
-         * @param {string} className
          * @param {HTMLImageElement | string} childNode
+         * @param {...string} classNames
          * @returns {HTMLButtonElement}
          */
         function createButtonElement(childNode, ...classNames) {
@@ -35,8 +35,8 @@
             return button;
         }
         /**
-         * @param {string}
-         * @param {string}
+         * @param {string} string
+         * @param {...string} classNames
          * @returns {HTMLImageElement}
          */
         function createImgElement(src, ...classNames) {
@@ -163,40 +163,11 @@
         document.body.append(krab);
 
         /**************** Helper Functions *****************/
-
-        /**************** Event Listners *****************/
-
         function hideToggles() {
             list.style.display = "none";
             recents && (recents.style.display = "none");
             childs && (childs.style.display = "none");
         }
-
-        listButton.onclick = (e) => {
-            e.stopPropagation();
-            recents && (recents.style.display = "none");
-            list.style.display =
-                list.style.display === "block" ? "none" : "block";
-            parents.style.display = "block";
-            if (sendButton.style.display !== "none") {
-                search.placeholder = "Search Directory";
-                sendButton.style.display = "none";
-                addButton.style.display = "initial";
-            }
-            tempDirs = dirs;
-            tempParent = root;
-            search.value = "";
-            search.focus();
-            childs && (childs.style.display = "none");
-        };
-
-        rootButton.onclick = async (e) => {
-            let { root } = await chrome.storage.local.get("root");
-            selected.dataset.id = root;
-            selected.dataset.dirName = "root";
-            selected.innerText = "root";
-        };
-
         /**
          * @returns {HTMLDivElement}
          */
@@ -223,40 +194,7 @@
             status.append(image, statusText, errorIcon, imgStatusIcon, okIcon);
             return status;
         }
-
-        doneButton.onclick = async (e) => {
-            e.stopPropagation();
-            let { id, dirName } = selected.dataset;
-            const status = await createStatusElement("Uploading...");
-            hideToggles();
-            shadow.insertBefore(status, main);
-            main.style.display = "none";
-            const { code } = await chrome.runtime.sendMessage({
-                context: "save",
-                data: { id, dirName },
-            });
-            setTimeout(() => shadow.removeChild(status), 2000);
-            if (code !== 200) {
-                status.style.backgroundColor = "#fa5";
-                status.querySelector(".status-text").innerText = "failed";
-                status.querySelector(".img-progress").style.display = "none";
-                status.querySelector(".error-img").style.display = "initial";
-                return;
-            }
-            status.style.backgroundColor = "#5a5";
-            status.querySelector(".status-text").innerText = "uploaded";
-            status.querySelector(".img-progress").style.display = "none";
-            status.querySelector(".ok-img").style.display = "initial";
-        };
-
-        selected.onclick = (e) => {
-            e.stopPropagation();
-            list.style.display = "none";
-            recents.style.display =
-                recents.style.display === "block" ? "none" : "block";
-        };
-
-        const inputInvalidate = (text) => {
+        function inputInvalidate(text) {
             search.placeholder = text;
             search.style.backgroundColor = "#f005";
             search.value = "";
@@ -264,17 +202,18 @@
                 search.placeholder = "Enter Dir to Create";
                 search.style.backgroundColor = "#ddd";
             }, 1000);
-        };
+        }
 
-        const checkDirPresent = () => {
+        function checkDirPresent() {
             let name = search.value;
             for (let dir of tempDirs) {
                 if (dir.name === name) return true;
             }
             return false;
-        };
+        }
 
-        const dirCreateHandler = async () => {
+        /**************** Event Handler Functions *****************/
+        async function dirCreateHandler() {
             if (search.value === "") {
                 inputInvalidate("Cannot be empty");
                 return;
@@ -294,79 +233,15 @@
                     parents: tempParent,
                 },
             });
-            search.removeEventListener("keyup", enterButtonHandler);
-        };
+            search.removeEventListener("keyup", ListenForEnterInCreateMode);
+        }
 
-        const enterButtonHandler = (e) => {
+        function ListenForEnterInCreateMode(e) {
             if (e.key === "Enter") {
                 dirCreateHandler();
             }
-        };
-
-        addButton.onclick = async (e) => {
-            e.stopPropagation();
-            addButton.style.display = "none";
-            sendButton.style.display = "initial";
-            search.placeholder = "Enter Dir to Create";
-            search.focus();
-            search.addEventListener("keyup", enterButtonHandler);
-        };
-
-        sendButton.onclick = async (e) => {
-            e.stopPropagation();
-            dirCreateHandler();
-        };
-
-        search.onkeyup = (e) => {
-            if (e.ctrlKey && e.key === "Enter") {
-                addButton.style.display = "none";
-                dirCreateHandler();
-                childs.innerHTML = "";
-                childs.append(createOptionsElement(tempDirs));
-            }
-        };
-
-        search.onclick = (e) => {
-            e.stopPropagation();
-        };
-
-        search.oninput = (e) => {
-            let val = e.target.value.toLowerCase().trimLeft();
-            let filtered = [];
-            if (val === "") {
-                e.target.value = "";
-                filtered = tempDirs;
-                console.log("filtered");
-            } else {
-                filtered = tempDirs.filter((element) =>
-                    element.name.toLowerCase().includes(val)
-                );
-            }
-            childs.innerHTML = "";
-            childs.append(createOptionsElement(filtered));
-            childs.style.display = "block";
-            parents.style.display = "none";
-        };
-
-        login.onclick = async (e) => {
-            e.stopPropagation();
-            chrome.runtime.sendMessage({ context: "loginSubmit" });
-            connection.style.display = "none";
-        };
-
-        logout.onclick = async (e) => {
-            e.stopPropagation();
-            chrome.runtime.sendMessage({ context: "logoutSubmit" });
-            connection.style.display = "none";
-        };
-
-        cancelButton.onclick = (e) => {
-            e.stopPropagation();
-            main.style.display = "none";
-            hideToggles();
-        };
-
-        const optionHandle = async (e) => {
+        }
+        async function optionClickHandler(e) {
             let { id, dirName } = e.target.dataset;
             tempParent = id;
             selected.dataset.id = id;
@@ -397,12 +272,133 @@
             tempDirs = childDirs || [];
             childs.append(createOptionsElement(tempDirs));
             parents.style.display = "none";
-        };
+        }
+        /**************** Event Listners *****************/
 
-        main.onclick = (e) => {
+        listButton.addEventListener("click", (e) => {
+            e.stopPropagation();
+            recents && (recents.style.display = "none");
+            list.style.display =
+                list.style.display === "block" ? "none" : "block";
+            parents.style.display = "block";
+            if (sendButton.style.display !== "none") {
+                search.placeholder = "Search Directory";
+                sendButton.style.display = "none";
+                addButton.style.display = "initial";
+            }
+            tempDirs = dirs;
+            tempParent = root;
+            search.value = "";
+            search.focus();
+            childs && (childs.style.display = "none");
+        });
+
+        rootButton.addEventListener("click", async (e) => {
+            let { root } = await chrome.storage.local.get("root");
+            selected.dataset.id = root;
+            selected.dataset.dirName = "root";
+            selected.innerText = "root";
+        });
+
+        doneButton.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            let { id, dirName } = selected.dataset;
+            const status = await createStatusElement("Uploading...");
+            hideToggles();
+            shadow.insertBefore(status, main);
+            main.style.display = "none";
+            const { code } = await chrome.runtime.sendMessage({
+                context: "save",
+                data: { id, dirName },
+            });
+            setTimeout(() => shadow.removeChild(status), 2000);
+            if (code !== 200) {
+                status.style.backgroundColor = "#fa5";
+                status.querySelector(".status-text").innerText = "failed";
+                status.querySelector(".img-progress").style.display = "none";
+                status.querySelector(".error-img").style.display = "initial";
+                return;
+            }
+            status.style.backgroundColor = "#5a5";
+            status.querySelector(".status-text").innerText = "uploaded";
+            status.querySelector(".img-progress").style.display = "none";
+            status.querySelector(".ok-img").style.display = "initial";
+        });
+
+        selected.addEventListener("click", (e) => {
+            e.stopPropagation();
+            list.style.display = "none";
+            recents.style.display =
+                recents.style.display === "block" ? "none" : "block";
+        });
+
+        addButton.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            addButton.style.display = "none";
+            sendButton.style.display = "initial";
+            search.placeholder = "Enter Dir to Create";
+            search.focus();
+            search.addEventListener("keyup", ListenForEnterInCreateMode);
+        });
+
+        sendButton.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            dirCreateHandler();
+        });
+
+        search.addEventListener("keyup", (e) => {
+            if (e.ctrlKey && e.key === "Enter") {
+                addButton.style.display = "none";
+                dirCreateHandler();
+                childs.innerHTML = "";
+                childs.append(createOptionsElement(tempDirs));
+            }
+        });
+
+        search.addEventListener("click", (e) => {
+            e.stopPropagation();
+        });
+
+        search.addEventListener("input", (e) => {
+            let val = e.target.value.toLowerCase().trimLeft();
+            let filtered = [];
+            if (val === "") {
+                e.target.value = "";
+                filtered = tempDirs;
+                console.log("filtered");
+            } else {
+                filtered = tempDirs.filter((element) =>
+                    element.name.toLowerCase().includes(val)
+                );
+            }
+            childs.innerHTML = "";
+            childs.append(createOptionsElement(filtered));
+            childs.style.display = "block";
+            parents.style.display = "none";
+        });
+
+        login.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            chrome.runtime.sendMessage({ context: "loginSubmit" });
+            connection.style.display = "none";
+        });
+
+        logout.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            chrome.runtime.sendMessage({ context: "logoutSubmit" });
+            connection.style.display = "none";
+        });
+
+        cancelButton.addEventListener("click", (e) => {
+            e.stopPropagation();
+            main.style.display = "none";
+            hideToggles();
+        });
+
+        main.addEventListener("click", (e) => {
             e.stopPropagation();
             if (e.target.classList.contains("option")) {
-                optionHandle(e);
+                optionClickHandler(e);
                 return;
             }
             if (
@@ -412,9 +408,9 @@
             )
                 return;
             hideToggles();
-        };
+        });
 
-        window.onclick = () => {
+        window.addEventListener("click", () => {
             connection.style.display !== "none" &&
                 (connection.style.display = "none");
             if (main.style.display !== "none") {
@@ -426,7 +422,7 @@
                     addButton.style.display = "initial";
                 }
             }
-        };
+        });
 
         /**************** Popup toggler *****************/
         function toggleLogin(loginStatus) {
@@ -507,32 +503,20 @@
                             search.focus();
                             search.value = "";
                             break;
-                        // case "save":
-                        //     imgStatusIcon.style.display = "none";
-                        //     if (message.status === 200) {
-                        //         statusText.textContent = "ok";
-                        //         okIcon.style.display = "initial";
-                        //     } else {
-                        //         statusText.textContent = "failed";
-                        //         errorIcon.style.display = "initial";
-                        //     }
-                        //     setTimeout(() => {
-                        //         status.style.display = "none";
-                        //         statusText.textContent = "Uploading...";
-                        //         imgStatusIcon.style.display = "initial";
-                        //         okIcon.style.display = "none";
-                        //         errorIcon.style.display = "none";
-                        //         krabMain.style.display = "flex";
-                        //     }, 2000);
-                        //     break;
-                        case "loginStatus":
-                            break;
                     }
                 } catch (error) {
                     console.warn("krabs:", error);
                 }
             }
         );
+        window.oncontextmenu = () => {
+            if (window.location.host === "www.instagram.com") {
+                const ele = document.querySelectorAll("._aagw");
+                for (let i of ele) {
+                    i.style.display = "none";
+                }
+            }
+        };
     } catch (error) {
         console.warn("krabs:", error);
     }

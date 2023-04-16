@@ -11,6 +11,11 @@ export const initContextMenus = () => {
         title: "KrabRefresh",
         contexts: ["page"],
     });
+    chrome.contextMenus.create({
+        id: "video",
+        title: "KrabVideo",
+        contexts: ["video"],
+    });
 };
 
 export const init = async () => {
