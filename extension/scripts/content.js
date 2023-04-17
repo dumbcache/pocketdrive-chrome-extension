@@ -113,6 +113,7 @@
         const cancelButton = createButtonElement(cancelIcon, "cancel-button");
         const listButton = createButtonElement(listIcon, "list-button");
         const rootButton = createButtonElement("/r", "root-button");
+        rootButton.title = "save to root directory";
 
         const menu = createElement(
             "div",
