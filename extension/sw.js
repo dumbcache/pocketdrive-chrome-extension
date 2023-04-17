@@ -89,11 +89,7 @@ try {
 
     chrome.action.onClicked.addListener(async (tab) => {
         try {
-            const { status } = await chrome.storage.local.get("status");
-            chrome.tabs.sendMessage(tab.id, {
-                context: "action",
-                status,
-            });
+            console.log("clicked");
         } catch (error) {
             console.error("error", error);
         }

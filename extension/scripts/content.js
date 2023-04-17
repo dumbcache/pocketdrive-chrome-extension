@@ -430,16 +430,6 @@
         });
 
         /**************** Popup toggler *****************/
-        function toggleLogin(loginStatus) {
-            if (loginStatus !== 1) {
-                login.style.display = "initial";
-                logout.style.display = "none";
-            } else {
-                login.style.display = "none";
-                logout.style.display = "initial";
-            }
-            connection.style.display = "initial";
-        }
         function toggleMain(recentDirs) {
             if (recentDirs?.length > 0) {
                 selected.setAttribute("data-id", recentDirs[0].id);
@@ -462,15 +452,6 @@
             async (message, sender, sendResponse) => {
                 try {
                     switch (message.context) {
-                        case "action":
-                            toggleLogin(message.status);
-                            break;
-                        case "loginStatus":
-                            const { status } = message;
-                            if (status === 0 || status === 1)
-                                toggleLogin(status);
-                            else console.log("login failed");
-                            break;
                         case "selection":
                             let { recents, src } = message;
                             mainImg.src = src;
