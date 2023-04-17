@@ -63,11 +63,9 @@ try {
                 await chrome.storage.local.set({ recents: [] });
             }
             if (info.menuItemId === "login") {
-                console.log("login");
                 login(tab.id);
             }
             if (info.menuItemId === "logout") {
-                console.log("logout");
                 logout(tab.id);
             }
             if (info.menuItemId === "save") {
@@ -89,29 +87,21 @@ try {
 
     chrome.action.onClicked.addListener(async (tab) => {
         try {
-            console.log("clicked");
+            const { status } = await chrome.storage.local.get("status");
+            chrome.tabs.sendMessage(
+                tab.id,
+                {
+                    context: "action",
+                    status,
+                },
+                () => chrome.runtime.lastError
+            );
         } catch (error) {
             console.error("error", error);
         }
     });
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        /******** Related to popup *******/
-        try {
-            if (message.context === "loginSubmit") {
-                login(sender.tab.id);
-            }
-            if (message.context === "logoutSubmit") {
-                logout(sender.tab.id);
-            }
-        } catch (error) {
-            console.warn(error, `cause: ${error?.cause}`);
-            chrome.runtime.sendMessage({
-                context: message.context,
-                status: 500,
-            });
-        }
-
         /******** Related to content scripts *******/
         try {
             if (message.context === "childDirs") {
