@@ -69,7 +69,8 @@ try {
                 await chrome.tabs.sendMessage(tab.id, {
                     context: "selection",
                     status: 200,
-                    data: recents,
+                    recents,
+                    src: info.srcUrl,
                 });
             }
         } catch (error) {

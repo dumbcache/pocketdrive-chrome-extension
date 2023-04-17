@@ -79,6 +79,7 @@
         ]);
         let tempDirs = dirs;
         let tempParent = root;
+        let tempImg = "";
 
         const main = createElement("main", [["class", "main"]]);
         const connection = createElement("div", [["class", "connection"]]);
@@ -106,13 +107,20 @@
             "dir-progress"
         );
 
-        const listButton = createButtonElement(listIcon, "list-button");
         const addButton = createButtonElement(addIcon, "add-button");
         const sendButton = createButtonElement(sendIcon, "send-button");
         const doneButton = createButtonElement(doneIcon, "done-button");
         const cancelButton = createButtonElement(cancelIcon, "cancel-button");
+        const listButton = createButtonElement(listIcon, "list-button");
         const rootButton = createButtonElement("/r", "root-button");
 
+        const menu = createElement(
+            "div",
+            [["class", "menu"]],
+            listButton,
+            rootButton
+        );
+        const mainImg = createImgElement("", "pic");
         const selection = createElement("div", [["class", "selection"]]);
         const selected = createElement(
             "div",
@@ -157,7 +165,7 @@
             parents
         );
 
-        main.append(listButton, rootButton, selection, list, cancelButton);
+        main.append(menu, mainImg, selection, list, cancelButton);
 
         shadow.append(connection, main);
         document.body.append(krab);
@@ -172,14 +180,13 @@
          * @returns {HTMLDivElement}
          */
         async function createStatusElement(text) {
-            const { img } = await chrome.storage.local.get("img");
             const status = createElement("div", [["class", "status"]]);
             const statusText = createElement(
                 "div",
                 [["class", "status-text"]],
                 text
             );
-            const image = createImgElement(img.src, "pic");
+            const image = createImgElement(tempImg, "pic");
             const okIcon = createImgElement(okIconPath, "status-img", "ok-img");
             const errorIcon = createImgElement(
                 errorIconPath,
@@ -410,9 +417,28 @@
             hideToggles();
         });
 
+        main.addEventListener("contextmenu", (e) => e.stopPropagation());
+
         window.addEventListener("click", () => {
             connection.style.display !== "none" &&
                 (connection.style.display = "none");
+            if (main.style.display !== "none") {
+                main.style.display = "none";
+                hideToggles();
+                if (sendButton.style.display !== "none") {
+                    search.placeholder = "Search Directory";
+                    sendButton.style.display = "none";
+                    addButton.style.display = "initial";
+                }
+            }
+        });
+        window.addEventListener("contextmenu", () => {
+            if (window.location.host === "www.instagram.com") {
+                const ele = document.querySelectorAll("._aagw");
+                for (let i of ele) {
+                    i.style.display = "none";
+                }
+            }
             if (main.style.display !== "none") {
                 main.style.display = "none";
                 hideToggles();
@@ -467,8 +493,10 @@
                             else console.log("login failed");
                             break;
                         case "selection":
-                            let recents = message.data;
-                            toggleMain(recents);
+                            let { recents, src } = message;
+                            mainImg.src = src;
+                            tempImg = src;
+                            setTimeout(() => toggleMain(recents), 100);
                             break;
                         case "dirs":
                             const dirs = message.data || [];
@@ -509,14 +537,6 @@
                 }
             }
         );
-        window.oncontextmenu = () => {
-            if (window.location.host === "www.instagram.com") {
-                const ele = document.querySelectorAll("._aagw");
-                for (let i of ele) {
-                    i.style.display = "none";
-                }
-            }
-        };
     } catch (error) {
         console.warn("krabs:", error);
     }

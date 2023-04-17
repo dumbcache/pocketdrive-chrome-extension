@@ -3,18 +3,13 @@ export const ENDPOINT = `http://127.0.0.1:5001/dumbcache4658/us-central1/krabs`;
 export const initContextMenus = () => {
     chrome.contextMenus.create({
         id: "save",
-        title: "KrabSave",
+        title: "Save",
         contexts: ["image"],
     });
     chrome.contextMenus.create({
         id: "refresh",
-        title: "KrabRefresh",
+        title: "Refresh",
         contexts: ["page"],
-    });
-    chrome.contextMenus.create({
-        id: "video",
-        title: "KrabVideo",
-        contexts: ["video"],
     });
 };
 
