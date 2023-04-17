@@ -1,16 +1,45 @@
 export const ENDPOINT = `http://127.0.0.1:5001/dumbcache4658/us-central1/krabs`;
 
-export const initContextMenus = () => {
-    chrome.contextMenus.create({
-        id: "save",
-        title: "Save",
-        contexts: ["image"],
-    });
-    chrome.contextMenus.create({
-        id: "refresh",
-        title: "Refresh",
-        contexts: ["page"],
-    });
+export const initContextMenus = async () => {
+    chrome.contextMenus.removeAll(() => chrome.runtime.lastError);
+
+    const { token } = await chrome.storage.local.get("token");
+    if (!token) {
+        chrome.contextMenus.create(
+            {
+                id: "login",
+                title: "Login",
+                contexts: ["action"],
+            },
+            () => chrome.runtime.lastError
+        );
+        return;
+    } else {
+        chrome.contextMenus.create(
+            {
+                id: "save",
+                title: "Save",
+                contexts: ["image"],
+            },
+            () => chrome.runtime.lastError
+        );
+        chrome.contextMenus.create(
+            {
+                id: "refresh",
+                title: "Refresh",
+                contexts: ["action"],
+            },
+            () => chrome.runtime.lastError
+        );
+        chrome.contextMenus.create(
+            {
+                id: "logout",
+                title: "Logout",
+                contexts: ["action"],
+            },
+            () => chrome.runtime.lastError
+        );
+    }
 };
 
 export const init = async () => {

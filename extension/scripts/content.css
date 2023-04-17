@@ -240,11 +240,6 @@ button:hover::before {
     animation: spin2 1.5s linear 0s infinite;
 }
 
-.connection {
-    width: fit-content;
-    border-radius: 5px;
-}
-
 .recents,
 .parents,
 .childs {
@@ -279,20 +274,6 @@ button:hover::before {
 }
 .options * {
     user-select: none;
-}
-/*************** connection component styles ******************/
-.connection *:hover {
-    background-color: #0555;
-}
-.login,
-.logout {
-    max-width: initial;
-    max-height: initial;
-    text-decoration: none;
-    border: none;
-    background-color: #0557;
-    padding: 5px;
-    border-radius: 5px;
 }
 
 /*************** scrollbar component styles ******************/

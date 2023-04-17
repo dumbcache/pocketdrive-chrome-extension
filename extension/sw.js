@@ -18,6 +18,7 @@ try {
         ]);
         if (status !== 1 || !token) {
             chrome.action.setIcon({ path: "images/krabsOff.png" });
+            initContextMenus();
             return;
         }
         initContextMenus();
@@ -30,12 +31,12 @@ try {
             let { newValue } = changes.status;
             if (newValue === 1) {
                 chrome.action.setIcon({ path: "images/krabs.png" });
-                initContextMenus();
             } else {
                 chrome.action.setIcon({ path: "images/krabsOff.png" });
                 chrome.contextMenus.removeAll();
                 chrome.storage.local.clear();
             }
+            initContextMenus();
         }
         if (changes.dirs) {
             let { newValue } = changes.dirs;
@@ -60,6 +61,14 @@ try {
                 await refreshDirs();
                 refreshChildDirs();
                 await chrome.storage.local.set({ recents: [] });
+            }
+            if (info.menuItemId === "login") {
+                console.log("login");
+                login(tab.id);
+            }
+            if (info.menuItemId === "logout") {
+                console.log("logout");
+                logout(tab.id);
             }
             if (info.menuItemId === "save") {
                 await chrome.storage.local.set({

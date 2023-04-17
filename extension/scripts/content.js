@@ -82,18 +82,8 @@
         let tempImg = "";
 
         const main = createElement("main", [["class", "main"]]);
-        const connection = createElement("div", [["class", "connection"]]);
-
         main.style.display = "none";
-        connection.style.display = "none";
-        /**************** Connection declarations *****************/
-        const login = createElement("button", [["class", "login"]]);
-        const logout = createElement("button", [["class", "logout"]]);
-        login.innerText = "Sign in using Google";
-        logout.innerText = "Logout";
-        login.style.display = "none";
-        logout.style.display = "none";
-        connection.append(login, logout);
+
         /**************** Element declarations *****************/
 
         const listIcon = createImgElement(listIconPath, "menu-img");
@@ -168,7 +158,7 @@
 
         main.append(menu, mainImg, selection, list, cancelButton);
 
-        shadow.append(connection, main);
+        shadow.append(main);
         document.body.append(krab);
 
         /**************** Helper Functions *****************/
@@ -383,18 +373,6 @@
             childs.append(createOptionsElement(filtered));
             childs.style.display = "block";
             parents.style.display = "none";
-        });
-
-        login.addEventListener("click", async (e) => {
-            e.stopPropagation();
-            chrome.runtime.sendMessage({ context: "loginSubmit" });
-            connection.style.display = "none";
-        });
-
-        logout.addEventListener("click", async (e) => {
-            e.stopPropagation();
-            chrome.runtime.sendMessage({ context: "logoutSubmit" });
-            connection.style.display = "none";
         });
 
         cancelButton.addEventListener("click", (e) => {

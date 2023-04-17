@@ -1,4 +1,4 @@
-import { ENDPOINT } from "./utils.js";
+import { ENDPOINT, initContextMenus } from "./utils.js";
 
 export const login = async (tabid) => {
     const req = await fetch(`${ENDPOINT}/login/ext`);
@@ -31,11 +31,8 @@ export const login = async (tabid) => {
                 return;
             }
             const { root, token } = await req.json();
-            chrome.storage.local.set({ root, token, status: 1 });
-            await chrome.tabs.sendMessage(tabid, {
-                context: "loginStatus",
-                status: 1,
-            });
+            await chrome.storage.local.set({ root, token, status: 1 });
+            await initContextMenus();
         }
     );
 };
@@ -51,7 +48,6 @@ export const logout = async (tabid) => {
         chrome.tabs.sendMessage(tabid, { context: "loginStatus", status: 2 });
         return;
     }
-    await chrome.tabs.sendMessage(tabid, { context: "loginStatus", status: 0 });
     await chrome.storage.local.set({ status: 0 });
     console.log("session logged out");
 };
