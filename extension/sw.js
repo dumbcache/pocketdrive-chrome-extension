@@ -89,9 +89,10 @@ try {
     chrome.action.onClicked.addListener(async (tab) => {
         try {
             if (isSystemPage(tab)) return;
-            await chrome.tabs.sendMessage(tab.id, {
+            const exits = await chrome.tabs.sendMessage(tab.id, {
                 context: "action",
             });
+            if (exits) return;
             chrome.scripting.executeScript({
                 target: { tabId: tab.id },
                 files: ["scripts/bulk.js"],
