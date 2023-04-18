@@ -88,6 +88,7 @@ try {
 
     chrome.action.onClicked.addListener(async (tab) => {
         try {
+            console.log(tab.url);
             if (isSystemPage(tab)) return;
             const exits = await chrome.tabs.sendMessage(tab.id, {
                 context: "action",
