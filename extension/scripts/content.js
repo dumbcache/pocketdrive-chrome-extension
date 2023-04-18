@@ -399,8 +399,6 @@
         main.addEventListener("contextmenu", (e) => e.stopPropagation());
 
         window.addEventListener("click", () => {
-            connection.style.display !== "none" &&
-                (connection.style.display = "none");
             if (main.style.display !== "none") {
                 main.style.display = "none";
                 hideToggles();
@@ -449,9 +447,14 @@
 
         /**************** Chrome message handling *****************/
         chrome.runtime.onMessage.addListener(
-            async (message, sender, sendResponse) => {
+            (message, sender, sendResponse) => {
                 try {
                     switch (message.context) {
+                        case "action":
+                            const ele = document.getElementById("krab-bulk");
+                            if (ele) document.body.removeChild(ele);
+                            sendResponse(true);
+                            break;
                         case "selection":
                             let { recents, src } = message;
                             mainImg.src = src;

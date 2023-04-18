@@ -1,0 +1,55 @@
+@import url("https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+:host {
+    font-family: "Ubuntu", sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 0;
+    padding: 10px;
+    box-sizing: border-box;
+    background: none;
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 99999999999;
+    border-radius: 5px;
+    width: 50%;
+    height: 90%;
+    background-color: #5505;
+    backdrop-filter: blur(10px);
+    overflow-y: scroll;
+}
+
+*,
+*:after,
+*:before {
+    padding: 0px;
+    margin: 0;
+    box-sizing: inherit;
+    font: inherit;
+    user-select: none;
+}
+
+img {
+    width: 100%;
+}
+
+.pic {
+    width: 50%;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+::-webkit-scrollbar-track {
+    background: #0002;
+    backdrop-filter: blur(10px);
+}
+::-webkit-scrollbar-thumb {
+    background: #1459;
+    border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #022;
+}

@@ -8,6 +8,7 @@ import {
     uploadRequest,
     initContextMenus,
     init,
+    isSystemPage,
 } from "./utils/utils.js";
 
 try {
@@ -87,15 +88,14 @@ try {
 
     chrome.action.onClicked.addListener(async (tab) => {
         try {
-            const { status } = await chrome.storage.local.get("status");
-            chrome.tabs.sendMessage(
-                tab.id,
-                {
-                    context: "action",
-                    status,
-                },
-                () => chrome.runtime.lastError
-            );
+            if (isSystemPage(tab)) return;
+            await chrome.tabs.sendMessage(tab.id, {
+                context: "action",
+            });
+            chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                files: ["scripts/bulk.js"],
+            });
         } catch (error) {
             console.error("error", error);
         }
@@ -104,6 +104,7 @@ try {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         /******** Related to content scripts *******/
         try {
+            if (isSystemPage(tab)) return;
             if (message.context === "childDirs") {
                 (async () => {
                     try {
@@ -163,10 +164,14 @@ try {
             }
         } catch (error) {
             console.warn(error, `cause: ${error.cause}`);
-            chrome.tabs.sendMessage(sender.tab.id, {
-                context: message.context,
-                status: 500,
-            });
+            chrome.tabs.sendMessage(
+                sender.tab.id,
+                {
+                    context: message.context,
+                    status: 500,
+                },
+                () => chrome.runtime.lastError
+            );
         }
     })();
 } catch (error) {

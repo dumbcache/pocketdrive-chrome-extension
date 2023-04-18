@@ -1,5 +1,16 @@
 export const ENDPOINT = `http://127.0.0.1:5001/dumbcache4658/us-central1/krabs`;
 
+export function isSystemPage(tab) {
+    return tab.active && isSystemLink(tab.url);
+}
+function isSystemLink(link) {
+    return (
+        link.startsWith("chrome://") ||
+        link.startsWith("chrome-extension://") ||
+        link.startsWith("chrome-search://")
+    );
+}
+
 export const initContextMenus = async () => {
     chrome.contextMenus.removeAll(() => chrome.runtime.lastError);
 
