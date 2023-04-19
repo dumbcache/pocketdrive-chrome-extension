@@ -35,7 +35,7 @@ input {
 
 img {
     max-width: 20px;
-    max-height: 20px;
+    /* max-height: 20px; */
 }
 
 button {
@@ -274,6 +274,65 @@ button:hover::before {
 }
 .options * {
     user-select: none;
+}
+
+/*************** bulk component styles ******************/
+.bulk {
+    padding: 10px;
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 999999999991;
+    border-radius: 5px;
+    max-width: 300px;
+    height: 90%;
+    background-color: #5505;
+    backdrop-filter: blur(50px);
+    padding-top: 50px;
+}
+.count {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+.bulk-cancel-button,
+.bulk-ok-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    background: none;
+    outline: none;
+    border: none;
+    user-select: none;
+}
+.bulk-ok-button {
+    right: 50px;
+}
+.bulk-cancel-button:hover,
+.bulk-ok-button:hover {
+    filter: invert(0.5);
+    cursor: pointer;
+}
+.bulk-wrapper {
+    height: 100%;
+    overflow-y: scroll;
+}
+.bulk img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.bulk-pic {
+    max-width: 50%;
+    padding: 5px;
+}
+.bulk-pic:hover {
+    cursor: pointer;
+    filter: brightness(0.5);
+}
+.bulk-pic[data-toggle="1"] {
+    filter: brightness(0.3);
 }
 
 /*************** scrollbar component styles ******************/

@@ -70,6 +70,9 @@ try {
                 logout(tab.id);
             }
             if (info.menuItemId === "save") {
+                const exits = await chrome.tabs.sendMessage(tab.id, {
+                    context: "CHECK_IF_ROOT_EXISTS",
+                });
                 await chrome.storage.local.set({
                     img: { origin: info.pageUrl, src: info.srcUrl },
                 });
@@ -88,16 +91,14 @@ try {
 
     chrome.action.onClicked.addListener(async (tab) => {
         try {
-            console.log(tab.url);
             if (isSystemPage(tab)) return;
             const exits = await chrome.tabs.sendMessage(tab.id, {
-                context: "action",
+                context: "CHECK_IF_ROOT_EXISTS",
             });
-            if (exits) return;
-            chrome.scripting.executeScript({
-                target: { tabId: tab.id },
-                files: ["scripts/bulk.js"],
-            });
+            if (exits)
+                chrome.tabs.sendMessage(tab.id, {
+                    context: "action",
+                });
         } catch (error) {
             console.error("error", error);
         }
@@ -106,7 +107,7 @@ try {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         /******** Related to content scripts *******/
         try {
-            if (isSystemPage(tab)) return;
+            if (isSystemPage(sender.tab)) return;
             if (message.context === "childDirs") {
                 (async () => {
                     try {

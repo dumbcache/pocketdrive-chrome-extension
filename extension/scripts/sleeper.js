@@ -1,0 +1,22 @@
+(async () => {
+    function sleepListner(message, sender, sendResponse) {
+        console.log(message);
+        if (message.context === "CHECK_IF_ROOT_EXISTS") {
+            const root = document.getElementById("krab-ext");
+            if (root) {
+                sendResponse(true);
+                return;
+            }
+            import(chrome.runtime.getURL("scripts/content.js"));
+            setTimeout(() => {
+                sendResponse(true);
+            }, 500);
+            return true;
+        }
+    }
+    chrome.runtime.onMessage.addListener(sleepListner);
+
+    addEventListener("beforeunload", (e) => {
+        chrome.runtime.onMessage.removeListener(sleepListner);
+    });
+})();

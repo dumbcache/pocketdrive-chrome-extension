@@ -1,3 +1,14 @@
+// @ts-check
+import {
+    createButtonElement,
+    createElement,
+    createImgElement,
+    createOptionsElement,
+    iconPath,
+    initMain,
+    initBulk,
+} from "./utils.js";
+
 (async () => {
     try {
         /**************** Inserting scripts *****************/
@@ -10,69 +21,8 @@
             ["href", styles],
         ]);
         shadow.append(styleElement);
-        /**************** Util Functions *****************/
-        /**
-         * @returns {HTMLElement}
-         */
-        function createElement(type, attributes = [], ...childNodes) {
-            const element = document.createElement(type);
-            for (let [key, val] of attributes) {
-                element.setAttribute(key, val);
-            }
-            childNodes.length !== 0 && element.append(...childNodes);
-            return element;
-        }
-        /**
-         *
-         * @param {HTMLImageElement | string} childNode
-         * @param {...string} classNames
-         * @returns {HTMLButtonElement}
-         */
-        function createButtonElement(childNode, ...classNames) {
-            const button = document.createElement("button");
-            button.classList.add(...classNames);
-            childNode && button.append(childNode);
-            return button;
-        }
-        /**
-         * @param {string} string
-         * @param {...string} classNames
-         * @returns {HTMLImageElement}
-         */
-        function createImgElement(src, ...classNames) {
-            const img = document.createElement("img");
-            img.src = src;
-            img.classList.add(...classNames);
-            return img;
-        }
-
-        /**
-         * @returns {DocumentFragment}
-         */
-        function createOptionsElement(dirs) {
-            const options = document.createDocumentFragment();
-            for (let { id, name } of dirs) {
-                const option = createElement("div", [
-                    ["class", `option`],
-                    ["data-id", id],
-                    ["data-dir-name", name],
-                ]);
-                option.innerText = name;
-                options.append(option);
-            }
-            return options;
-        }
 
         /**************** Resource Urls *****************/
-        const addIconPath = chrome.runtime.getURL("images/addIcon.svg");
-        const sendIconPath = chrome.runtime.getURL("images/sendIcon.svg");
-        const cancelIconPath = chrome.runtime.getURL("images/cancelIcon.svg");
-        const doneIconPath = chrome.runtime.getURL("images/doneIcon.svg");
-        const listIconPath = chrome.runtime.getURL("images/listIcon.svg");
-        const errorIconPath = chrome.runtime.getURL("images/errorIcon.svg");
-        const okIconPath = chrome.runtime.getURL("images/okIcon.svg");
-        const statusIconPath = chrome.runtime.getURL("images/statusIcon.svg");
-
         let { root = "", dirs = [] } = await chrome.storage.local.get([
             "root",
             "dirs",
@@ -80,85 +30,29 @@
         let tempDirs = dirs;
         let tempParent = root;
         let tempImg = "";
-
-        const main = createElement("main", [["class", "main"]]);
-        main.style.display = "none";
-
         /**************** Element declarations *****************/
 
-        const listIcon = createImgElement(listIconPath, "menu-img");
-        const addIcon = createImgElement(addIconPath, "add-img");
-        const sendIcon = createImgElement(sendIconPath, "send-img");
-        const doneIcon = createImgElement(doneIconPath, "done-img");
-        const cancelIcon = createImgElement(cancelIconPath, "cancel-img");
-        const dirStatusIcon = createImgElement(
-            statusIconPath,
-            "status-img",
-            "dir-progress"
-        );
-
-        const addButton = createButtonElement(addIcon, "add-button");
-        const sendButton = createButtonElement(sendIcon, "send-button");
-        const doneButton = createButtonElement(doneIcon, "done-button");
-        const cancelButton = createButtonElement(cancelIcon, "cancel-button");
-        const listButton = createButtonElement(listIcon, "list-button");
-        const rootButton = createButtonElement("/r", "root-button");
-        rootButton.title = "save to root directory";
-
-        const menu = createElement(
-            "div",
-            [["class", "menu"]],
-            listButton,
-            rootButton
-        );
-        const mainImg = createImgElement("", "pic");
-        const selection = createElement("div", [["class", "selection"]]);
-        const selected = createElement(
-            "div",
-            [
-                ["class", "selected"],
-                ["data-id", root],
-                ["data-dir-name", "root"],
-            ],
-            "root"
-        );
-        const recents = createElement(
-            "div",
-            [["class", "recents"]],
-            createOptionsElement([])
-        );
-        selection.append(selected, doneButton, recents);
-
-        const list = createElement("div", [["class", "list"]]);
-        /**
-         * @type {HTMLInputElement}
-         */
-        let search = createElement("input", [
-            ["class", "search"],
-            ["placeholder", "Search Directory"],
-        ]);
-        const parents = createElement(
-            "div",
-            [["class", `parents`]],
-            createOptionsElement(dirs)
-        );
-        const childs = createElement(
-            "div",
-            [["class", "childs"]],
-            createOptionsElement([])
-        );
-        list.append(
-            search,
-            sendButton,
-            dirStatusIcon,
+        const {
             addButton,
+            cancelButton,
+            dirStatusIcon,
+            doneButton,
+            main,
+            recents,
+            search,
+            selected,
+            sendButton,
+            list,
             childs,
-            parents
-        );
+            parents,
+            listButton,
+            mainImg,
+            rootButton,
+        } = initMain(root, dirs);
 
-        main.append(menu, mainImg, selection, list, cancelButton);
+        const { bulk, bulkOkButton } = initBulk();
 
-        shadow.append(main);
+        shadow.append(main, bulk);
         document.body.append(krab);
 
         /**************** Helper Functions *****************/
@@ -178,14 +72,18 @@
                 text
             );
             const image = createImgElement(tempImg, "pic");
-            const okIcon = createImgElement(okIconPath, "status-img", "ok-img");
+            const okIcon = createImgElement(
+                iconPath("okIcon"),
+                "status-img",
+                "ok-img"
+            );
             const errorIcon = createImgElement(
-                errorIconPath,
+                iconPath("errorIcon"),
                 "status-img",
                 "error-img"
             );
             const imgStatusIcon = createImgElement(
-                statusIconPath,
+                iconPath("statusIcon"),
                 "status-img",
                 "img-progress"
             );
@@ -444,12 +342,26 @@
             }
             main.style.display = "flex";
         }
+        function scrapImages() {
+            const images = document.images;
+            const wrapper = bulk.querySelector(".bulk-wrapper");
+            wrapper.innerHTML = "";
+            for (let i of images) {
+                const img = createImgElement(i.src, "bulk-pic");
+                img.dataset.toggle = "0";
+                wrapper.append(img);
+            }
+            bulk.style.display = "initial";
+        }
 
         /**************** Chrome message handling *****************/
         chrome.runtime.onMessage.addListener(
             (message, sender, sendResponse) => {
                 try {
                     switch (message.context) {
+                        case "action":
+                            scrapImages();
+                            break;
                         case "selection":
                             let { recents, src } = message;
                             mainImg.src = src;

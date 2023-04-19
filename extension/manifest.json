@@ -11,7 +11,7 @@
     },
     "content_scripts": [
         {
-            "js": ["scripts/content.js"],
+            "js": ["scripts/sleeper.js"],
             "matches": ["https://*/*"]
         }
     ],
@@ -39,7 +39,7 @@
     },
     "web_accessible_resources": [
         {
-            "resources": ["images/*", "popup/popup.html", "scripts/*"],
+            "resources": ["images/*", "assets/*", "scripts/*"],
             "matches": ["https://*/*"]
         }
     ]
