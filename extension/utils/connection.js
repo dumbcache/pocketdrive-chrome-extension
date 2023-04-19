@@ -8,6 +8,7 @@ export const login = async (tabid) => {
         async (redirectURL) => {
             chrome.runtime.lastError && "";
             if (!redirectURL) {
+                console.log("redirect failed");
                 return;
             }
             const url = new URL(redirectURL);
@@ -19,6 +20,7 @@ export const login = async (tabid) => {
                 },
                 body: JSON.stringify({ id_token }),
             });
+            console.log(req.status);
             if (req.status !== 200) {
                 console.log("login failed");
                 return;
