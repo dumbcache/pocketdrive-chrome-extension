@@ -23,6 +23,7 @@
     box-sizing: inherit;
     font: inherit;
     user-select: none;
+    text-align: initial;
 }
 
 img,

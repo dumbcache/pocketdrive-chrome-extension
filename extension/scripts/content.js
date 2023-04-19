@@ -333,8 +333,10 @@ import {
         });
 
         /**************** Popup toggler *****************/
-        async function toggleMain(recentDirs) {
-            let { recents } = await chrome.storage.local.get("recents");
+        async function toggleMain() {
+            let { recents: recentDirs } = await chrome.storage.local.get(
+                "recents"
+            );
             if (recentDirs?.length > 0) {
                 selected.setAttribute("data-id", recentDirs[0].id);
                 selected.setAttribute("data-dir-name", recentDirs[0].name);
