@@ -399,8 +399,8 @@ export const handleExistingUser = async (
     query.update({
         accessToken: data.access_token,
         exp: Math.floor(Date.now() / 1000 + data.expires_in),
-        refreshToken: data.refresh_token,
     });
+    if (data.refresh_token) query.update({ refreshToken: data.refresh_token });
     const user = await generateToken(payload.email!, "WEB");
     return { status: 200, user };
 };

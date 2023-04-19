@@ -32,10 +32,7 @@ expressApp.use(express.json());
 const validateUserMW: RequestHandler = async (req, res, next) => {
     console.log(req.path);
     if (req.path === "/login") {
-        if (
-            req.get("origin") !== process.env.ORIGIN &&
-            req.get("origin") !== process.env.ORIGINDEV
-        ) {
+        if (req.get("origin") !== process.env.ORIGIN) {
             res.status(401).send({ cause: "invalid origin" });
             return;
         }

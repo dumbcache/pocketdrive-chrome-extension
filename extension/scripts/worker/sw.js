@@ -1,4 +1,4 @@
-import { login, logout } from "./utils/connection.js";
+import { login, logout } from "./connection.js";
 import {
     createDir,
     fetchDirs,
@@ -10,38 +10,38 @@ import {
     init,
     isSystemPage,
     isLoggedIn,
-} from "./utils/utils.js";
+} from "./utils.js";
 
 try {
     chrome.runtime.onInstalled.addListener(async () => {
-        const { status, token } = await chrome.storage.local.get([
-            "status",
-            "token",
-        ]);
-        if (status !== 1 || !token) {
-            chrome.action.setIcon({ path: "images/krabsOff.png" });
+        const { token } = await isLoggedIn();
+        if (!token) {
+            chrome.action.setIcon({ path: "/images/krabsOff.png" });
             initContextMenus();
             return;
         }
         initContextMenus();
         init();
-        chrome.action.setIcon({ path: "images/krabs.png" });
+        chrome.action.setIcon({ path: "/images/krabs.png" });
     });
 
     chrome.storage.onChanged.addListener(async (changes) => {
-        if (changes.status) {
-            let { newValue } = changes.status;
-            if (newValue === 1) {
-                chrome.action.setIcon({ path: "images/krabs.png" });
+        if (changes.token) {
+            let { newValue } = changes.token;
+            if (newValue) {
+                chrome.action.setIcon({ path: "/images/krabs.png" });
             } else {
-                chrome.action.setIcon({ path: "images/krabsOff.png" });
+                chrome.action.setIcon({ path: "/images/krabsOff.png" });
                 chrome.storage.local.clear();
             }
             initContextMenus();
         }
         if (changes.dirs) {
             let { newValue } = changes.dirs;
-            const [tab] = await chrome.tabs.query({ active: true });
+            const [tab] = await chrome.tabs.query({
+                active: true,
+            });
+            if (isSystemPage(tab)) return;
             chrome.tabs.sendMessage(tab.id, {
                 context: "DIRS",
                 data: newValue,
@@ -51,7 +51,7 @@ try {
             let { newValue } = changes.recents;
             if (newValue?.length > 10) {
                 newValue.pop();
-                chrome.storage.local.set({ recents: newValue });
+                await chrome.storage.local.set({ recents: newValue });
             }
         }
     });
@@ -59,15 +59,16 @@ try {
     chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         try {
             if (info.menuItemId === "refresh") {
-                await refreshDirs();
-                refreshChildDirs();
-                await chrome.storage.local.set({ recents: [] });
+                init();
+                return;
             }
             if (info.menuItemId === "login") {
                 login(tab.id);
+                return;
             }
             if (info.menuItemId === "logout") {
                 logout(tab.id);
+                return;
             }
             if (info.menuItemId === "save") {
                 if (isSystemPage(tab)) return;
@@ -80,6 +81,7 @@ try {
                         status: 200,
                         src: info.srcUrl,
                     });
+                return;
             }
         } catch (error) {
             console.error("error", error);
@@ -88,7 +90,8 @@ try {
 
     chrome.action.onClicked.addListener(async (tab) => {
         try {
-            if (!(await isLoggedIn())) {
+            const { token } = await isLoggedIn();
+            if (!token) {
                 login(tab.id);
                 return;
             }
@@ -104,7 +107,6 @@ try {
             console.error("error", error);
         }
     });
-
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         /******** Related to content scripts *******/
         try {
@@ -116,7 +118,6 @@ try {
                         let { childDirs } = await chrome.storage.local.get(
                             "childDirs"
                         );
-
                         if (childDirs[parents] === undefined) {
                             let { status, data } = await fetchDirs(parents);
                             childDirs[parents] = data;
@@ -157,7 +158,6 @@ try {
                 })();
                 return true;
             }
-
             if (message.context === "CREATE_DIR") {
                 (async () => {
                     const { name, parents } = message.data;
@@ -180,7 +180,7 @@ try {
                 () => chrome.runtime.lastError
             );
         }
-    })();
+    });
 } catch (error) {
     console.warn(error, `cause: ${error.cause}`);
 }

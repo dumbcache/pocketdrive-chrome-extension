@@ -1,6 +1,7 @@
 import { ENDPOINT, initContextMenus } from "./utils.js";
 
 export const login = async (tabid) => {
+    console.log(ENDPOINT);
     const req = await fetch(`${ENDPOINT}/login/ext`);
     const { url } = await req.json();
     chrome.identity.launchWebAuthFlow(
@@ -25,8 +26,9 @@ export const login = async (tabid) => {
                 return;
             }
             const { root, token } = await req.json();
-            await chrome.storage.local.set({ root, token, status: 1 });
+            await chrome.storage.local.set({ root, token });
             await initContextMenus();
+            console.log("session logged in");
         }
     );
 };
@@ -42,6 +44,6 @@ export const logout = async (tabid) => {
         console.log("logout failed");
         return;
     }
-    await chrome.storage.local.set({ status: 0 });
+    await chrome.storage.local.set({ token: null });
     console.log("session logged out");
 };

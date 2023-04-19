@@ -6,7 +6,7 @@
                 sendResponse(true);
                 return;
             }
-            import(chrome.runtime.getURL("scripts/content.js"));
+            import(chrome.runtime.getURL("scripts/content/content.js"));
             setTimeout(() => {
                 sendResponse(true);
             }, 500);
@@ -14,8 +14,4 @@
         }
     }
     chrome.runtime.onMessage.addListener(sleepListner);
-
-    addEventListener("beforeunload", (e) => {
-        chrome.runtime.onMessage.removeListener(sleepListner);
-    });
 })();

@@ -11,16 +11,18 @@
     },
     "content_scripts": [
         {
-            "js": ["scripts/sleeper.js"],
+            "js": ["scripts/content/sleeper.js"],
             "matches": ["https://*/*"]
         }
     ],
+    "minimum_chrome_version": "93",
     "background": {
-        "service_worker": "sw.js",
+        "service_worker": "scripts/worker/sw.js",
         "type": "module"
     },
     "permissions": [
         "activeTab",
+        "tabs",
         "scripting",
         "contextMenus",
         "storage",
@@ -37,10 +39,10 @@
             }
         }
     },
-    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqID4E3VVpFGq3IXF+i1kGH/wKt9YMDZPaWqhxhWcep5PnLawUEppP6CBEm8w+6ZDGUb55VivTJmFM05ncRvQf6FU/Ad92EgchyUmD8J7OM0S41wzVc7brViAU5CNdnJTlxdStnnflWzwhimPUVzvX9WZfvlGKcBEEFN7D0GkdL3tChSESPC/IaTPneQDDRUYpQTL8j/m6qHpUeTPnQOR3Jl44xOFdvGIIX6aNFIqP82Cq2otcBHYGUTBmXOOU87j7VuQyYLj58YFFa6a4SZBI4TZYItrbCKYlLzAEYFhJjvkl9IsLUPm7d1vPTanp0ng4aU2J0PiphiLwqPdcY7w2wIDAQAB",
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApp3y+uSkWCfxhvmFIes3r5Po98ZwLKGR3NXdXKJPpT/npSZJpfJOfUvc0X0DDlVIfNbelIQtooGbn25k990Vq1nj0ZP6opk1fzAXbkFlfFCKYcbx/udPeuW+TGojkGhDAV3Dpfz/xq7eF6MX3FZ+5fj2NkwhFNjpqj6UHZLMdyo4/EEEqHbD2KEsarwo7Um5OwmbUCWHU9EfDktg+1nENoI8xaNxVG1VVUTrAff/9FsguDpcvINfPFYiQCJA42dOi+7VQGg2Fe8MeCjkWUtBJV+koo7ce69+ddsfWKS4Lq7he56D2UQ85j1SNDE0JngHE/6EI6P23MpNP/feaMxtGwIDAQAB",
     "web_accessible_resources": [
         {
-            "resources": ["images/*", "assets/*", "scripts/*"],
+            "resources": ["images/*", "assets/*", "scripts/content/*"],
             "matches": ["https://*/*"]
         }
     ]

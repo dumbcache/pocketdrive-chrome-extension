@@ -5,7 +5,7 @@ import {
     iconPath,
     initMain,
     initBulk,
-} from "./utils.js";
+} from "./helper.js";
 
 (async () => {
     try {

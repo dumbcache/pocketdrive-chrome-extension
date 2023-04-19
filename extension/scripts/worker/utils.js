@@ -1,8 +1,5 @@
 export const ENDPOINT = `http://127.0.0.1:5001/dumbcache4658/us-central1/krabs`;
 
-export function isSystemPage(tab) {
-    return tab.active && isSystemLink(tab.url);
-}
 function isSystemLink(link) {
     return (
         link.startsWith("chrome://") ||
@@ -10,19 +7,19 @@ function isSystemLink(link) {
         link.startsWith("chrome-search://")
     );
 }
-export async function isLoggedIn() {
-    const { token, status } = await chrome.storage.local.get([
-        "token",
-        "status",
-    ]);
-    if (status === 1 && token !== "") return true;
-    return false;
+
+export function isSystemPage(tab) {
+    return tab.active && isSystemLink(tab.url);
+}
+
+export function isLoggedIn() {
+    return chrome.storage.local.get("token");
 }
 
 export const initContextMenus = async () => {
     chrome.contextMenus.removeAll(() => chrome.runtime.lastError);
 
-    const { token } = await chrome.storage.local.get("token");
+    const { token } = await isLoggedIn();
     if (!token) {
         chrome.contextMenus.create(
             {
@@ -65,9 +62,7 @@ export const init = async () => {
     try {
         await refreshDirs();
         refreshChildDirs();
-        let { recents } = await chrome.storage.local.get("recents");
-        recents = recents ? [...recents] : [];
-        chrome.storage.local.set({ recents });
+        await chrome.storage.local.set({ recents: [] });
     } catch (error) {
         console.warn(error);
         console.log("cause:", error.cause);
@@ -105,7 +100,7 @@ export const refreshChildDirs = async () => {
                 const { data } = await fetchDirs(parent);
                 childDirs[parent] = data;
             }
-            chrome.storage.local.set({ childDirs });
+            await chrome.storage.local.set({ childDirs });
         }
     } catch (error) {
         console.warn("Unable to Refresh childDirs:", error);
@@ -137,7 +132,7 @@ export const fetchDirs = async (parent) => {
     });
     let { status, statusText } = req;
     if (status === 401) {
-        await chrome.storage.local.set({ status: 0 });
+        await chrome.storage.local.set({ token: null });
         throw new Error("error while fetching dirs", {
             cause: `${status} ${statusText} ${await req.text()}`,
         });
@@ -178,7 +173,7 @@ export const createDir = async (name, parents) => {
     });
     let { status, statusText } = req;
     if (status === 401) {
-        await chrome.storage.local.set({ status: 0 });
+        await chrome.storage.local.set({ token: null });
         throw new Error("error while creating dirs", {
             cause: `${status} ${statusText} ${await req.text()}`,
         });
@@ -207,7 +202,7 @@ export const uploadRequest = async (parents, img) => {
     });
     let { status, statusText } = req;
     if (status === 401) {
-        await chrome.storage.local.set({ status: 0 });
+        await chrome.storage.local.set({ token: null });
         throw new Error("error while uploading img", {
             cause: `${status} ${statusText} ${await req.text()}`,
         });
