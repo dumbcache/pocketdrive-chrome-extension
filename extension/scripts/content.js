@@ -1,6 +1,4 @@
-// @ts-check
 import {
-    createButtonElement,
     createElement,
     createImgElement,
     createOptionsElement,
@@ -30,6 +28,7 @@ import {
         let tempDirs = dirs;
         let tempParent = root;
         let tempImg = "";
+        const tempBulk = new Set();
         /**************** Element declarations *****************/
 
         const {
@@ -50,7 +49,7 @@ import {
             rootButton,
         } = initMain(root, dirs);
 
-        const { bulk, bulkOkButton } = initBulk();
+        const { bulk, bulkOkButton, selectedCount } = initBulk();
 
         shadow.append(main, bulk);
         document.body.append(krab);
@@ -64,14 +63,14 @@ import {
         /**
          * @returns {HTMLDivElement}
          */
-        async function createStatusElement(text) {
+        async function createStatusElement(text, src) {
             const status = createElement("div", [["class", "status"]]);
             const statusText = createElement(
                 "div",
                 [["class", "status-text"]],
                 text
             );
-            const image = createImgElement(tempImg, "pic");
+            const image = createImgElement(src, "pic");
             const okIcon = createImgElement(
                 iconPath("okIcon"),
                 "status-img",
@@ -123,7 +122,7 @@ import {
             dirStatusIcon.style.display = "initial";
 
             await chrome.runtime.sendMessage({
-                context: "createDir",
+                context: "CREATE_DIR",
                 data: {
                     name: search.value.trim(),
                     parents: tempParent,
@@ -149,7 +148,7 @@ import {
             }
 
             const { status, childDirs } = await chrome.runtime.sendMessage({
-                context: "childDirs",
+                context: "CHILD_DIRS",
                 data: { parents: id },
             });
             if (status !== 200) {
@@ -199,12 +198,12 @@ import {
         doneButton.addEventListener("click", async (e) => {
             e.stopPropagation();
             let { id, dirName } = selected.dataset;
-            const status = await createStatusElement("Uploading...");
+            const status = await createStatusElement("Uploading...", tempImg);
             hideToggles();
             shadow.insertBefore(status, main);
             main.style.display = "none";
             const { code } = await chrome.runtime.sendMessage({
-                context: "save",
+                context: "SAVE",
                 data: { id, dirName },
             });
             setTimeout(() => shadow.removeChild(status), 2000);
@@ -306,6 +305,7 @@ import {
                     addButton.style.display = "initial";
                 }
             }
+            if (bulk.style.display !== "none") bulk.style.display = "none";
         });
         window.addEventListener("contextmenu", () => {
             if (window.location.host === "www.instagram.com") {
@@ -342,6 +342,25 @@ import {
             }
             main.style.display = "flex";
         }
+        bulk.addEventListener("click", (e) => {
+            e.stopPropagation();
+            /**
+             * @type {HTMLImageElement}
+             */
+            const target = e.target;
+            if (!target.classList.contains("bulk-pic")) return;
+            if (target.dataset.toggle === "0") {
+                target.dataset.toggle = "1";
+                selectedCount.innerText = Number(selectedCount.innerText) + 1;
+            } else {
+                target.dataset.toggle = "0";
+                tempBulk.delete(target.src);
+                selectedCount.innerText = Number(selectedCount.innerText) - 1;
+            }
+        });
+        bulkOkButton.addEventListener("click", () => {
+            console.log(tempBulk);
+        });
         function scrapImages() {
             const images = document.images;
             const wrapper = bulk.querySelector(".bulk-wrapper");
@@ -359,22 +378,22 @@ import {
             (message, sender, sendResponse) => {
                 try {
                     switch (message.context) {
-                        case "action":
+                        case "ACTION":
                             scrapImages();
                             break;
-                        case "selection":
+                        case "SELECTION":
                             let { recents, src } = message;
                             mainImg.src = src;
                             tempImg = src;
                             setTimeout(() => toggleMain(recents), 100);
                             break;
-                        case "dirs":
+                        case "DIRS":
                             const dirs = message.data || [];
                             tempDirs = dirs;
                             parents.innerHTML = "";
                             parents.append(createOptionsElement(dirs));
                             break;
-                        case "createDir":
+                        case "CREATE_DIR":
                             if (message.status !== 200) {
                                 search.style.backgroundColor = "#f005";
                                 search.placeholder = "failed";

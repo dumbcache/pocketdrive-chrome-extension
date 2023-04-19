@@ -182,25 +182,9 @@ export function initBulk() {
     const wrapper = createElement("div", [["class", "bulk-wrapper"]]);
     bulk.append(ele, bulkOkButton, bulkCancelButton, wrapper);
 
-    bulk.addEventListener("click", (e) => {
-        e.stopPropagation();
-        /**
-         * @type {HTMLImageElement}
-         */
-        const target = e.target;
-        if (!target.classList.contains("pic")) return;
-        if (target.dataset.toggle === "0") {
-            target.dataset.toggle = "1";
-            selectedCount.innerText = Number(selectedCount.innerText) + 1;
-        } else {
-            target.dataset.toggle = "0";
-            selectedCount.innerText = Number(selectedCount.innerText) - 1;
-        }
-    });
-
     bulkCancelButton.addEventListener("click", () => {
         bulk.style.display = "none";
     });
 
-    return { bulk, bulkOkButton };
+    return { bulk, bulkOkButton, selectedCount };
 }

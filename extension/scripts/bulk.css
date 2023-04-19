@@ -47,34 +47,19 @@
     height: 100%;
     overflow-y: scroll;
 }
-img {
+.bulk img {
     width: 100%;
     border-radius: 10px;
 }
 
-.pic {
+.bulk-pic {
     width: 50%;
     padding: 5px;
 }
-.pic:hover {
+.bulk-pic:hover {
     cursor: pointer;
     filter: brightness(0.5);
 }
-.pic[data-toggle="1"] {
+.bulk-pic[data-toggle="1"] {
     filter: brightness(0.3);
-}
-
-::-webkit-scrollbar {
-    width: 5px;
-}
-::-webkit-scrollbar-track {
-    background: #0002;
-    backdrop-filter: blur(10px);
-}
-::-webkit-scrollbar-thumb {
-    background: #1459;
-    border-radius: 5px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: #022;
 }

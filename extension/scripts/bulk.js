@@ -32,7 +32,6 @@ import {
             img.dataset.toggle = "0";
             wrapper.append(img);
         }
-        shadow.append(wrapper);
         bulk.style.display = "initial";
     }
     bulk.addEventListener("click", (e) => {

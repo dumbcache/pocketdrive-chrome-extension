@@ -8,10 +8,6 @@ export const login = async (tabid) => {
         async (redirectURL) => {
             chrome.runtime.lastError && "";
             if (!redirectURL) {
-                await chrome.tabs.sendMessage(tabid, {
-                    context: "loginStatus",
-                    status: 2,
-                });
                 return;
             }
             const url = new URL(redirectURL);
@@ -24,10 +20,7 @@ export const login = async (tabid) => {
                 body: JSON.stringify({ id_token }),
             });
             if (req.status !== 200) {
-                await chrome.tabs.sendMessage(tabid, {
-                    context: "loginStatus",
-                    status: 2,
-                });
+                console.log("login failed");
                 return;
             }
             const { root, token } = await req.json();
@@ -45,7 +38,7 @@ export const logout = async (tabid) => {
         },
     });
     if (status !== 200) {
-        chrome.tabs.sendMessage(tabid, { context: "loginStatus", status: 2 });
+        console.log("logout failed");
         return;
     }
     await chrome.storage.local.set({ status: 0 });

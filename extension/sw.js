@@ -43,7 +43,7 @@ try {
             let { newValue } = changes.dirs;
             const [tab] = await chrome.tabs.query({ active: true });
             chrome.tabs.sendMessage(tab.id, {
-                context: "dirs",
+                context: "DIRS",
                 data: newValue,
             });
         }
@@ -78,7 +78,7 @@ try {
                 });
                 let { recents } = await chrome.storage.local.get("recents");
                 await chrome.tabs.sendMessage(tab.id, {
-                    context: "selection",
+                    context: "SELECTION",
                     status: 200,
                     recents,
                     src: info.srcUrl,
@@ -97,7 +97,7 @@ try {
             });
             if (exits)
                 chrome.tabs.sendMessage(tab.id, {
-                    context: "action",
+                    context: "ACTION",
                 });
         } catch (error) {
             console.error("error", error);
@@ -108,7 +108,7 @@ try {
         /******** Related to content scripts *******/
         try {
             if (isSystemPage(sender.tab)) return;
-            if (message.context === "childDirs") {
+            if (message.context === "CHILD_DIRs") {
                 (async () => {
                     try {
                         let { parents } = message.data;
@@ -138,7 +138,7 @@ try {
                 })();
                 return true;
             }
-            if (message.context === "save") {
+            if (message.context === "SAVE") {
                 (async () => {
                     try {
                         const { img } = await chrome.storage.local.get("img");
@@ -154,12 +154,12 @@ try {
                 return true;
             }
 
-            if (message.context === "createDir") {
+            if (message.context === "CREATE_DIR") {
                 (async () => {
                     const { name, parents } = message.data;
                     const { status, data } = await createDir(name, parents);
                     chrome.tabs.sendMessage(sender.tab.id, {
-                        context: "createDir",
+                        context: "CREATE_DIR",
                         status,
                         data,
                     });
