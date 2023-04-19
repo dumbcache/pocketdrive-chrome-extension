@@ -27,7 +27,6 @@ import {
         ]);
         let tempDirs = dirs;
         let tempParent = root;
-        let tempImg = "";
         const tempBulk = new Set();
         /**************** Element declarations *****************/
 
@@ -49,7 +48,8 @@ import {
             rootButton,
         } = initMain(root, dirs);
 
-        const { bulk, bulkOkButton, selectedCount } = initBulk();
+        const { bulk, bulkOkButton, bulkCancelButton, selectedCount } =
+            initBulk();
 
         shadow.append(main, bulk);
         document.body.append(krab);
@@ -195,31 +195,6 @@ import {
             selected.innerText = "root";
         });
 
-        doneButton.addEventListener("click", async (e) => {
-            e.stopPropagation();
-            let { id, dirName } = selected.dataset;
-            const status = await createStatusElement("Uploading...", tempImg);
-            hideToggles();
-            shadow.insertBefore(status, main);
-            main.style.display = "none";
-            const { code } = await chrome.runtime.sendMessage({
-                context: "SAVE",
-                data: { id, dirName },
-            });
-            setTimeout(() => shadow.removeChild(status), 2000);
-            if (code !== 200) {
-                status.style.backgroundColor = "#fa5";
-                status.querySelector(".status-text").innerText = "failed";
-                status.querySelector(".img-progress").style.display = "none";
-                status.querySelector(".error-img").style.display = "initial";
-                return;
-            }
-            status.style.backgroundColor = "#5a5";
-            status.querySelector(".status-text").innerText = "uploaded";
-            status.querySelector(".img-progress").style.display = "none";
-            status.querySelector(".ok-img").style.display = "initial";
-        });
-
         selected.addEventListener("click", (e) => {
             e.stopPropagation();
             list.style.display = "none";
@@ -277,6 +252,35 @@ import {
             main.style.display = "none";
             hideToggles();
         });
+        async function toggleStatus(id, dirName, src) {
+            const status = await createStatusElement("Uploading...", src);
+            hideToggles();
+            shadow.insertBefore(status, main);
+            main.style.display = "none";
+            const { code } = await chrome.runtime.sendMessage({
+                context: "SAVE",
+                data: { id, dirName, src },
+            });
+            setTimeout(() => shadow.removeChild(status), 2000);
+            if (code !== 200) {
+                status.style.backgroundColor = "#fa5";
+                status.querySelector(".status-text").innerText = "failed";
+                status.querySelector(".img-progress").style.display = "none";
+                status.querySelector(".error-img").style.display = "initial";
+                return;
+            }
+            status.style.backgroundColor = "#5a5";
+            status.querySelector(".status-text").innerText = "uploaded";
+            status.querySelector(".img-progress").style.display = "none";
+            status.querySelector(".ok-img").style.display = "initial";
+        }
+        doneButton.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            let { id, dirName } = selected.dataset;
+            for (let src of tempBulk) {
+                toggleStatus(id, dirName, src);
+            }
+        });
 
         main.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -305,7 +309,10 @@ import {
                     addButton.style.display = "initial";
                 }
             }
-            if (bulk.style.display !== "none") bulk.style.display = "none";
+            if (bulk.style.display !== "none") {
+                bulk.style.display = "none";
+                tempBulk.clear();
+            }
         });
         window.addEventListener("contextmenu", () => {
             if (window.location.host === "www.instagram.com") {
@@ -326,7 +333,8 @@ import {
         });
 
         /**************** Popup toggler *****************/
-        function toggleMain(recentDirs) {
+        async function toggleMain(recentDirs) {
+            let { recents } = await chrome.storage.local.get("recents");
             if (recentDirs?.length > 0) {
                 selected.setAttribute("data-id", recentDirs[0].id);
                 selected.setAttribute("data-dir-name", recentDirs[0].name);
@@ -351,6 +359,7 @@ import {
             if (!target.classList.contains("bulk-pic")) return;
             if (target.dataset.toggle === "0") {
                 target.dataset.toggle = "1";
+                tempBulk.add(target.src);
                 selectedCount.innerText = Number(selectedCount.innerText) + 1;
             } else {
                 target.dataset.toggle = "0";
@@ -358,10 +367,18 @@ import {
                 selectedCount.innerText = Number(selectedCount.innerText) - 1;
             }
         });
+        bulkCancelButton.addEventListener("click", () => {
+            bulk.style.display = "none";
+            tempBulk.clear();
+        });
         bulkOkButton.addEventListener("click", () => {
-            console.log(tempBulk);
+            if (tempBulk.size === 0) return;
+            mainImg.src = [...tempBulk][0] || "";
+            bulk.style.display = "none";
+            toggleMain();
         });
         function scrapImages() {
+            selectedCount.innerText = "0";
             const images = document.images;
             const wrapper = bulk.querySelector(".bulk-wrapper");
             wrapper.innerHTML = "";
@@ -379,13 +396,15 @@ import {
                 try {
                     switch (message.context) {
                         case "ACTION":
+                            tempBulk.clear();
                             scrapImages();
                             break;
                         case "SELECTION":
-                            let { recents, src } = message;
+                            tempBulk.clear();
+                            let { src } = message;
                             mainImg.src = src;
-                            tempImg = src;
-                            setTimeout(() => toggleMain(recents), 100);
+                            tempBulk.add(src);
+                            setTimeout(() => toggleMain(), 100);
                             break;
                         case "DIRS":
                             const dirs = message.data || [];

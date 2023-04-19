@@ -70,19 +70,15 @@ try {
                 logout(tab.id);
             }
             if (info.menuItemId === "save") {
-                const exits = await chrome.tabs.sendMessage(tab.id, {
+                const exists = await chrome.tabs.sendMessage(tab.id, {
                     context: "CHECK_IF_ROOT_EXISTS",
                 });
-                await chrome.storage.local.set({
-                    img: { origin: info.pageUrl, src: info.srcUrl },
-                });
-                let { recents } = await chrome.storage.local.get("recents");
-                await chrome.tabs.sendMessage(tab.id, {
-                    context: "SELECTION",
-                    status: 200,
-                    recents,
-                    src: info.srcUrl,
-                });
+                if (exists)
+                    await chrome.tabs.sendMessage(tab.id, {
+                        context: "SELECTION",
+                        status: 200,
+                        src: info.srcUrl,
+                    });
             }
         } catch (error) {
             console.error("error", error);
@@ -141,13 +137,16 @@ try {
             if (message.context === "SAVE") {
                 (async () => {
                     try {
-                        const { img } = await chrome.storage.local.get("img");
-                        const { id, dirName } = message.data;
-                        let { status } = await uploadRequest([id], img);
-                        sendResponse({ code: status });
+                        const { id, dirName, src } = message.data;
                         updateRecents(id, dirName);
+                        let { status } = await uploadRequest([id], {
+                            origin: sender.tab.url,
+                            src,
+                        });
+                        sendResponse({ code: status });
                         chrome.storage.local.remove("img");
                     } catch (error) {
+                        console.log(error);
                         sendResponse({ status: 500 });
                     }
                 })();

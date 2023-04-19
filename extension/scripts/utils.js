@@ -182,9 +182,5 @@ export function initBulk() {
     const wrapper = createElement("div", [["class", "bulk-wrapper"]]);
     bulk.append(ele, bulkOkButton, bulkCancelButton, wrapper);
 
-    bulkCancelButton.addEventListener("click", () => {
-        bulk.style.display = "none";
-    });
-
-    return { bulk, bulkOkButton, selectedCount };
+    return { bulk, bulkOkButton, bulkCancelButton, selectedCount };
 }
