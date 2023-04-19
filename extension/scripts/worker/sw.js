@@ -2,8 +2,6 @@ import { login, logout } from "./connection.js";
 import {
     createDir,
     fetchDirs,
-    refreshChildDirs,
-    refreshDirs,
     updateRecents,
     uploadRequest,
     initContextMenus,
@@ -30,6 +28,7 @@ try {
             let { newValue } = changes.token;
             if (newValue) {
                 chrome.action.setIcon({ path: "/images/krabs.png" });
+                init();
             } else {
                 chrome.action.setIcon({ path: "/images/krabsOff.png" });
                 chrome.storage.local.clear();
@@ -84,7 +83,7 @@ try {
                 return;
             }
         } catch (error) {
-            console.error("error", error);
+            console.warn("error", error);
         }
     });
 
@@ -104,7 +103,7 @@ try {
                     context: "ACTION",
                 });
         } catch (error) {
-            console.error("error", error);
+            console.warn("error", error);
         }
     });
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -133,6 +132,7 @@ try {
                             childDirs: childDirs[parents],
                         });
                     } catch (error) {
+                        console.warn(error);
                         sendResponse({
                             status: 500,
                         });

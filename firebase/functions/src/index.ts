@@ -162,7 +162,7 @@ expressApp.get("/dirs/:parents", validateUserMW, async (req, res) => {
         const { parents } = req.params;
         const url = "https://www.googleapis.com/drive/v3/files";
         const dirReq = await fetch(
-            `${url}?q='${parents}' in parents and mimeType='application/vnd.google-apps.folder'&fields=files(name,id)`,
+            `${url}?q='${parents}' in parents and mimeType='application/vnd.google-apps.folder'&fields=files(name,id)&orderBy=name`,
             {
                 headers: { Authorization: `Bearer ${accessToken}` },
             }
