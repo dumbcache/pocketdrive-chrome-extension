@@ -281,7 +281,7 @@ export const fetchImgExternal = async (req: Request, res: Response) => {
     let imgMeta: ImgMeta = {
         name: `${Date.now()}`,
         mimeType: imgBlob.type,
-        parents,
+        parents: [parents],
     };
     return { imgData, imgMeta };
 };

@@ -13,7 +13,7 @@ import {
         const krab = createElement("div", [["id", "krab-ext"]]);
         const shadow = krab.attachShadow({ mode: "open" });
 
-        const styles = chrome.runtime.getURL("scripts/content.css");
+        const styles = chrome.runtime.getURL("scripts/content/content.css");
         const styleElement = createElement("link", [
             ["rel", "stylesheet"],
             ["href", styles],

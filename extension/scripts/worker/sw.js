@@ -145,7 +145,7 @@ try {
                     try {
                         const { id, dirName, src } = message.data;
                         updateRecents(id, dirName);
-                        let { status } = await uploadRequest([id], {
+                        let { status } = await uploadRequest(id, {
                             origin: sender.tab.url,
                             src,
                         });
