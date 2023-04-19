@@ -27,6 +27,7 @@ try {
         init();
         chrome.action.setIcon({ path: "images/krabs.png" });
     });
+
     chrome.storage.onChanged.addListener(async (changes) => {
         if (changes.status) {
             let { newValue } = changes.status;

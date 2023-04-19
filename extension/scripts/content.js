@@ -51,7 +51,10 @@ import {
         const { bulk, bulkOkButton, bulkCancelButton, selectedCount } =
             initBulk();
 
-        shadow.append(main, bulk);
+        const statusWrapper = createElement("div", [
+            ["class", "status-wrapper"],
+        ]);
+        shadow.append(statusWrapper, main, bulk);
         document.body.append(krab);
 
         /**************** Helper Functions *****************/
@@ -255,13 +258,13 @@ import {
         async function toggleStatus(id, dirName, src) {
             const status = await createStatusElement("Uploading...", src);
             hideToggles();
-            shadow.insertBefore(status, main);
+            statusWrapper.append(status);
             main.style.display = "none";
             const { code } = await chrome.runtime.sendMessage({
                 context: "SAVE",
                 data: { id, dirName, src },
             });
-            setTimeout(() => shadow.removeChild(status), 2000);
+            setTimeout(() => statusWrapper.removeChild(status), 2000);
             if (code !== 200) {
                 status.style.backgroundColor = "#fa5";
                 status.querySelector(".status-text").innerText = "failed";

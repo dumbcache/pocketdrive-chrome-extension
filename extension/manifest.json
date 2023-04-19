@@ -32,7 +32,7 @@
     "commands": {
         "_execute_action": {
             "suggested_key": {
-                "default": "Ctrl+B",
+                "default": "Alt+B",
                 "mac": "Command+B"
             }
         }
