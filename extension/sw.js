@@ -104,7 +104,7 @@ try {
         /******** Related to content scripts *******/
         try {
             if (isSystemPage(sender.tab)) return;
-            if (message.context === "CHILD_DIRs") {
+            if (message.context === "CHILD_DIRS") {
                 (async () => {
                     try {
                         let { parents } = message.data;
