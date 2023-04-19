@@ -173,14 +173,19 @@ export function initBulk() {
     const okIcon = createImgElement(okIconPath, "ok-img");
     const bulkOkButton = createButtonElement(okIcon, "bulk-ok-button");
     const selectedCount = createElement("span", [], 0);
+    const check = createElement("input", [
+        ["class", "check"],
+        ["type", "checkbox"],
+    ]);
     const ele = createElement(
         "div",
         [["class", "count"]],
         "Selected:  ",
-        selectedCount
+        selectedCount,
+        check
     );
     const wrapper = createElement("div", [["class", "bulk-wrapper"]]);
     bulk.append(ele, bulkOkButton, bulkCancelButton, wrapper);
 
-    return { bulk, bulkOkButton, bulkCancelButton, selectedCount };
+    return { bulk, check, bulkOkButton, bulkCancelButton, selectedCount };
 }

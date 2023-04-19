@@ -302,6 +302,9 @@ button:hover::before {
     top: 10px;
     left: 10px;
 }
+.count span {
+    padding-right: 50px;
+}
 .bulk-cancel-button,
 .bulk-ok-button {
     position: absolute;
@@ -314,7 +317,7 @@ button:hover::before {
     user-select: none;
 }
 .bulk-ok-button {
-    right: 50px;
+    right: 75px;
 }
 .bulk-cancel-button:hover,
 .bulk-ok-button:hover {
@@ -329,7 +332,13 @@ button:hover::before {
     width: 100%;
     border-radius: 10px;
 }
-
+.bulk .cancel-img {
+    max-width: 20px;
+    max-height: 20px;
+}
+.check {
+    cursor: pointer;
+}
 .bulk-pic {
     max-width: 50%;
     padding: 5px;

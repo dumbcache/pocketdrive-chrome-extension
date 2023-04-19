@@ -48,7 +48,7 @@ import {
             rootButton,
         } = initMain(root, dirs);
 
-        const { bulk, bulkOkButton, bulkCancelButton, selectedCount } =
+        const { bulk, check, bulkOkButton, bulkCancelButton, selectedCount } =
             initBulk();
 
         const statusWrapper = createElement("div", [
@@ -394,7 +394,25 @@ import {
             }
             bulk.style.display = "initial";
         }
-
+        check.addEventListener("change", () => {
+            if (check.checked) {
+                selectedCount.innerText = "0";
+                const imgs = bulk.querySelectorAll(".bulk-pic");
+                for (let img of imgs) {
+                    img.dataset.toggle = "1";
+                    tempBulk.add(img.src);
+                    selectedCount.innerText =
+                        Number(selectedCount.innerText) + 1;
+                }
+            } else {
+                const imgs = bulk.querySelectorAll(".bulk-pic");
+                for (let img of imgs) {
+                    img.dataset.toggle = "0";
+                    tempBulk.delete(img.src);
+                }
+                selectedCount.innerText = "0";
+            }
+        });
         /**************** Chrome message handling *****************/
         chrome.runtime.onMessage.addListener(
             (message, sender, sendResponse) => {
@@ -402,6 +420,7 @@ import {
                     switch (message.context) {
                         case "ACTION":
                             tempBulk.clear();
+                            check.checked = false;
                             scrapImages();
                             break;
                         case "SELECTION":
