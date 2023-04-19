@@ -9,6 +9,7 @@ import {
     initContextMenus,
     init,
     isSystemPage,
+    isLoggedIn,
 } from "./utils/utils.js";
 
 try {
@@ -27,14 +28,12 @@ try {
         chrome.action.setIcon({ path: "images/krabs.png" });
     });
     chrome.storage.onChanged.addListener(async (changes) => {
-        // console.log(changes);
         if (changes.status) {
             let { newValue } = changes.status;
             if (newValue === 1) {
                 chrome.action.setIcon({ path: "images/krabs.png" });
             } else {
                 chrome.action.setIcon({ path: "images/krabsOff.png" });
-                chrome.contextMenus.removeAll();
                 chrome.storage.local.clear();
             }
             initContextMenus();
@@ -70,6 +69,7 @@ try {
                 logout(tab.id);
             }
             if (info.menuItemId === "save") {
+                if (isSystemPage(tab)) return;
                 const exists = await chrome.tabs.sendMessage(tab.id, {
                     context: "CHECK_IF_ROOT_EXISTS",
                 });
@@ -87,6 +87,10 @@ try {
 
     chrome.action.onClicked.addListener(async (tab) => {
         try {
+            if (!(await isLoggedIn())) {
+                login(tab.id);
+                return;
+            }
             if (isSystemPage(tab)) return;
             const exits = await chrome.tabs.sendMessage(tab.id, {
                 context: "CHECK_IF_ROOT_EXISTS",

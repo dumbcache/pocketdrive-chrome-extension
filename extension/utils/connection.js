@@ -20,7 +20,6 @@ export const login = async (tabid) => {
                 },
                 body: JSON.stringify({ id_token }),
             });
-            console.log(req.status);
             if (req.status !== 200) {
                 console.log("login failed");
                 return;

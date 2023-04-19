@@ -10,6 +10,14 @@ function isSystemLink(link) {
         link.startsWith("chrome-search://")
     );
 }
+export async function isLoggedIn() {
+    const { token, status } = await chrome.storage.local.get([
+        "token",
+        "status",
+    ]);
+    if (status === 1 && token !== "") return true;
+    return false;
+}
 
 export const initContextMenus = async () => {
     chrome.contextMenus.removeAll(() => chrome.runtime.lastError);
