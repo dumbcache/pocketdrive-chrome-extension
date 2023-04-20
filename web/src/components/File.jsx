@@ -1,7 +1,11 @@
-export default function File() {
+import FileCard from "./FileCard";
+
+export default function File({ files }) {
     return (
         <div className="file-wrapper">
-            <div>files</div>
+            {files.map((info) => (
+                <FileCard key={info.id} info={info} />
+            ))}
         </div>
     );
 }

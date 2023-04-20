@@ -1,2 +1,91 @@
 #root {
+    height: 100%;
+}
+.app {
+    padding: 5rem;
+}
+.nav {
+    /* background-color: #1114; */
+    padding: 1rem;
+    display: flex;
+    justify-content: space-around;
+    border-bottom: 1px solid #000;
+    /* padding: 0rem 10rem; */
+}
+.title {
+    font-family: Poppins;
+    font-weight: 900;
+    background: radial-gradient(
+            circle farthest-corner at center center,
+            white,
+            #111
+        )
+        no-repeat;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline;
+}
+
+.title-wrapper {
+    height: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10rem;
+}
+
+.title-wrapper a {
+    display: block;
+    color: #0a5;
+}
+
+.dir-wrapper,
+.file-wrapper {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 1rem;
+}
+.dir-wrapper {
+    padding: 0rem 5rem;
+}
+.cover {
+    max-width: 300px;
+    height: 180px;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 70% 30%;
+    grid-template-areas:
+        "one two"
+        "one three";
+    border-radius: 1rem;
+    overflow: hidden;
+    gap: 1px;
+}
+.cover img:nth-child(1) {
+    grid-area: one;
+}
+.cover img:nth-child(2) {
+    grid-area: two;
+}
+.cover img:nth-child(3) {
+    grid-area: three;
+}
+.pic {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+.dir-card {
+    padding-bottom: 2rem;
+}
+.file-card {
+    overflow: hidden;
+    height: fit-content;
+    max-width: 200px;
+}
+.file-card .pic {
+    border-radius: 1rem;
+    /* max-width: 100%; */
 }

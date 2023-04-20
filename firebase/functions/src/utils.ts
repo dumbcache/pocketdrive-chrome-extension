@@ -346,10 +346,12 @@ export const validateToken = async (
                 if (user.token !== token) {
                     return { status: 401, cause: "invalid token" };
                 }
+                break;
             case "EXT":
                 if (user.extoken !== token) {
                     return { status: 401, cause: "invalid token" };
                 }
+                break;
         }
         return { status: 200, payload };
     } catch (e) {

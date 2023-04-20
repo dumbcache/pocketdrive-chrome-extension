@@ -121,10 +121,13 @@ expressApp.route("/auth").get(async (req, res) => {
         if (!token) return;
         let { status, cause, payload } = await validateToken(token, "WEB");
         if (status !== 200) {
+            if (status === 401) {
+                res.status(401).send({ status: "user unauthorized" });
+            }
             throw new Error("unauthorized error", { cause });
         }
         const { accessToken } = await getFSToken(payload!.user);
-        res.send({ accessToken });
+        res.send({ token: accessToken });
     } catch (error) {
         console.log(error);
         res.status(500).send({ cause: "unable to authenticate at the moment" });

@@ -8,22 +8,27 @@ import {
 import App from "./App";
 import Login from "./components/Login";
 import "./index.css";
-import Template from "./components/Template";
+import Template, { loader as dataLoader } from "./components/Template";
+import Root from "./components/Root";
 
-export function loader({ params }) {
-    return params.username;
-}
 const router = createBrowserRouter([
-    { path: "login", element: <Login />, loader },
     {
         path: "/",
-        element: <Navigate to="/user" />,
-    },
-    {
-        path: "/:username",
-        element: <App />,
-        loader,
-        children: [{ path: ":id", element: <Template /> }],
+        element: <Root />,
+        children: [
+            { path: "login", element: <Login /> },
+            {
+                path: "/d",
+                element: <Navigate to="/user" />,
+                children: [{}],
+            },
+            {
+                path: "/d/:id",
+                element: <App />,
+                children: [{ path: ":id", element: <Template /> }],
+                loader: dataLoader,
+            },
+        ],
     },
 ]);
 
