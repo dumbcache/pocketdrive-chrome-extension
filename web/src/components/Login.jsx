@@ -1,18 +1,27 @@
-export async function loginHandler({ params }) {
-    const token = import.meta.env.VITE_TOKEN;
-    const api = import.meta.env.VITE_API;
-    const req = await fetch(`${api}/auth`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    const { token: t } = await req.json();
-    localStorage.setItem("token", t);
-}
+import { useEffect, useRef } from "react";
+import { handleGoogleSignIn, loadScript } from "../scripts/utils";
 
 const Login = () => {
+    const signInButton = useRef(null);
+    useEffect(() => {
+        loadScript(() => {
+            const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
+            google.accounts.id.initialize({
+                client_id: CLIENT_ID,
+                nonce: import.meta.env.VITE_NONCE,
+                callback: handleGoogleSignIn,
+            });
+            google.accounts.id.renderButton(signInButton.current, {
+                theme: "outline",
+                size: "medium",
+                text: "signin",
+            });
+            // google.accounts.id.prompt();
+            google.accounts.id.disableAutoSelect();
+        });
+    });
     return (
-        <button className="login" onClick={loginHandler}>
+        <button className="login" ref={signInButton}>
             Sign in using Google
         </button>
     );

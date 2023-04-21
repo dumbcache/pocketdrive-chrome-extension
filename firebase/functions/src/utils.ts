@@ -303,7 +303,10 @@ export const verifyIdToken = async (token: string) => {
             audience: process.env.CLIENT_ID,
         });
         const payload = ticket.getPayload();
-        if (payload?.nonce !== process.env.NONCE)
+        if (
+            payload?.nonce !== process.env.NONCE &&
+            payload?.nonce !== process.env.NONCE_WEB
+        )
             throw new Error("Invalid IdToken: nonce mismatch");
         return { status: 200, payload };
     } catch (error) {
@@ -315,7 +318,7 @@ export const verifyIdToken = async (token: string) => {
 export const generateToken = async (email: string, app: "WEB" | "EXT") => {
     let query = firestore.doc(`secrets/app`);
     const { secret } = (await query.get()).data() as { secret: string };
-    const expiresIn = app === "EXT" ? 60 * 60 * 24 * 30 : 60 * 69 * 24;
+    const expiresIn = app === "EXT" ? 60 * 60 * 24 * 30 : 60 * 60 * 24;
     const token = jwt.sign({ user: email }, secret, {
         expiresIn,
         issuer: process.env.ISSUER,

@@ -123,6 +123,7 @@ expressApp.route("/auth").get(async (req, res) => {
         if (status !== 200) {
             if (status === 401) {
                 res.status(401).send({ status: "user unauthorized" });
+                return;
             }
             throw new Error("unauthorized error", { cause });
         }
@@ -135,13 +136,18 @@ expressApp.route("/auth").get(async (req, res) => {
 });
 expressApp.post("/login", async (req, res) => {
     try {
-        const { id_token } = req.body;
+        const { id_token, app } = req.body;
         const { status, payload } = await verifyIdToken(id_token);
-        if (status !== 200 || !payload)
-            throw new Error("invalid token signature");
+        if (status !== 200 || !payload) {
+            res.status(401).send({ cause: "invalid token signature" });
+            return;
+        }
         const { exists, email } = await userExists(payload);
-        if (!exists) throw new Error("Unauthorized user");
-        const data = await generateToken(email!, "EXT");
+        if (!exists) {
+            res.status(401).send({ cause: "Unauthorized user" });
+            return;
+        }
+        const data = await generateToken(email!, app);
         res.status(200).send(data);
     } catch (error) {
         res.status(500).send({ cause: "unable to login user at the moment" });

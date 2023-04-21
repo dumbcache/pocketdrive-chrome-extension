@@ -1,6 +1,13 @@
-import { Route, Routes, useLoaderData, useParams } from "react-router-dom";
+import {
+    Outlet,
+    Route,
+    Routes,
+    useLoaderData,
+    useParams,
+} from "react-router-dom";
 import Dir from "./Dir";
 import File from "./File";
+import Preview from "./Preview";
 
 const dirsUrl = (parent) =>
     `https://www.googleapis.com/drive/v3/files?q='${parent}' in parents and mimeType = 'application/vnd.google-apps.folder'&fields=files(id,name,mimeType,appProperties,parents,hasThumbnail,thumbnailLink,createdTime,modifiedTime)`;
@@ -27,6 +34,7 @@ async function getData(parent) {
 }
 
 export async function loader({ params }) {
+    console.log(params);
     if (params.id !== "home") {
         return await getData(params.id);
     }
@@ -39,8 +47,10 @@ export default function Template() {
     console.log(dirs, files);
     return (
         <>
+            <div>working</div>
             <Dir dirs={dirs} />
             <File files={files} />
+            <Outlet />
         </>
     );
 }

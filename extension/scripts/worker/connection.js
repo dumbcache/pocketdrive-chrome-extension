@@ -19,7 +19,7 @@ export const login = async (tabid) => {
                 headers: {
                     "content-type": "application/json",
                 },
-                body: JSON.stringify({ id_token }),
+                body: JSON.stringify({ id_token, app: "EXT" }),
             });
             if (req.status !== 200) {
                 console.log("login failed");
