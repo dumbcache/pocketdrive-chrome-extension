@@ -69,7 +69,5 @@ export const logoutHandler = async (setLoggedIn) => {
         return;
     }
     window.localStorage.clear();
-    const navigate = useNavigate();
-    navigate("/");
     setLoggedIn(false);
 };

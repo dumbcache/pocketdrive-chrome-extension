@@ -10,7 +10,7 @@ import Home from "./components/Home";
 import { createBrowserRouter } from "react-router-dom";
 import Nav from "./components/Nav";
 import { LoginContext } from "./scripts/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const routes = createRoutesFromElements(
     <>
@@ -25,7 +25,15 @@ const routes = createRoutesFromElements(
 const router = createBrowserRouter(routes);
 
 export default function App() {
-    const [loggedIn, setLoggedIn] = useState(true);
+    const [loggedIn, setLoggedIn] = useState(false);
+    useEffect(() => {
+        const secret = window.localStorage.getItem("secret");
+        if (!secret) {
+            setLoggedIn(false);
+            return;
+        }
+        setLoggedIn(true);
+    }, []);
     return (
         <div className="app">
             <LoginContext.Provider value={{ loggedIn, setLoggedIn }}>

@@ -46,7 +46,8 @@
     padding-bottom: 1rem;
 }
 
-.menu * :hover {
+.menu * :hover,
+.logout-button:hover {
     color: #8a159a;
     cursor: pointer;
 }
