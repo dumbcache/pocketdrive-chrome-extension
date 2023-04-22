@@ -35,11 +35,11 @@ async function getData(parent) {
 
 export async function loader({ params }) {
     console.log(params);
-    if (params.id !== "home") {
-        return await getData(params.id);
+    if (params.id === undefined) {
+        const root = import.meta.env.VITE_ROOT;
+        return await getData(root);
     }
-    const root = import.meta.env.VITE_ROOT;
-    return await getData(root);
+    return await getData(params.id);
 }
 
 export default function Template() {

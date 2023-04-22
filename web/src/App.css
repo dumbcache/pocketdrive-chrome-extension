@@ -1,19 +1,35 @@
-#root {
+#root,
+.app {
     height: 100%;
 }
-.app {
-    padding: 0rem 5rem 5rem 5rem;
-}
-.nav {
-    /* background-color: #1114; */
-    padding: 1rem;
+.header {
     display: flex;
-    justify-content: space-around;
-    border-bottom: 1px solid #000;
-    /* padding: 0rem 10rem; */
+    /* flex-flow: row nowrap; */
+    align-items: center;
+    justify-content: space-between;
+    padding: 0rem 5rem;
 }
+.logo {
+    font-size: 3rem;
+}
+
+.header button {
+    /* background: none; */
+    /* border: none; */
+    cursor: pointer;
+}
+
+.home {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: 5rem;
+}
+
 .title {
     font-family: Poppins;
+    font-size: 20rem;
     font-weight: 900;
     background: linear-gradient(to right, #8a159a, #252323) no-repeat;
     background-clip: text;
@@ -22,18 +38,22 @@
     display: inline;
 }
 
-.title-wrapper {
-    height: 100%;
-    display: flex;
-    flex-flow: row nowrap;
-    align-items: center;
-    justify-content: center;
-    gap: 10rem;
+.sep {
+    height: 50%;
 }
 
-.title-wrapper a {
-    display: block;
-    color: #0a5;
+.child2 * {
+    padding-bottom: 1rem;
+}
+
+.menu * :hover {
+    color: #8a159a;
+    cursor: pointer;
+}
+
+.logout-button {
+    border: none;
+    background: none;
 }
 
 .dir-wrapper,
