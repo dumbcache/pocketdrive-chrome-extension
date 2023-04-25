@@ -2,7 +2,10 @@ import { createContext, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const LoginContext = createContext();
-
+export const dirsUrl = (parent) =>
+    `https://www.googleapis.com/drive/v3/files?q='${parent}' in parents and mimeType = 'application/vnd.google-apps.folder'&fields=files(id,name,mimeType,appProperties,parents,hasThumbnail,thumbnailLink,createdTime,modifiedTime)`;
+export const filesUrl = (parent) =>
+    `https://www.googleapis.com/drive/v3/files?q='${parent}' in parents and mimeType contains 'image/'&fields=files(id,name,mimeType,appProperties,parents,hasThumbnail,thumbnailLink,createdTime,modifiedTime)`;
 export const loadScript = (handler) => {
     const src = "https://accounts.google.com/gsi/client";
     const gsiIfExists = document.querySelector(`script[src='${src}']`);
@@ -31,11 +34,12 @@ export const handleGoogleSignIn = async (res, setLoggedIn) => {
     const { token, root } = await req.json();
     localStorage.setItem("secret", token);
     localStorage.setItem("root", root);
-    getToken(token);
+    getToken();
     setLoggedIn(true);
 };
 
-export const getToken = async (secret) => {
+export const getToken = async () => {
+    const secret = window.localStorage.getItem("secret");
     const api = import.meta.env.VITE_API;
     const req = await fetch(`${api}/auth`, {
         headers: {
@@ -45,8 +49,6 @@ export const getToken = async (secret) => {
     if (req.status !== 200) {
         if (req.status === 401) {
             console.log("session timeout. Logging off");
-            const navigate = useNavigate();
-            navigate("/");
             return;
         }
         console.warn(req.status, await req.text());
@@ -71,3 +73,47 @@ export const logoutHandler = async (setLoggedIn) => {
     window.localStorage.clear();
     setLoggedIn(false);
 };
+
+export async function getDirs(parent) {
+    try {
+        const token = window.localStorage.getItem("token");
+        let req = await fetch(dirsUrl(parent), {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        if (req.status !== 200) {
+            if (req.status === 401) {
+                await getToken();
+                return getDirs(parent);
+            }
+        }
+        let { files } = await req.json();
+        return { dirs: files };
+    } catch (error) {
+        console.warn(error);
+    }
+}
+
+export async function getFiles(parent) {
+    try {
+        const token = window.localStorage.getItem("token");
+        let req = await fetch(filesUrl(parent), {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        if (req.status !== 200) {
+            if (req.status === 401) {
+                await getToken();
+                return getFiles(parent);
+            }
+        }
+        let { files } = await req.json();
+        return { files };
+    } catch (error) {
+        console.warn(error);
+    }
+}

@@ -1,0 +1,38 @@
+// WorkOrder - https://ekkz-test.fa.em2.oraclecloud.com/fscmRestApi/resources/latest/maintenanceWorkOrders
+// SRRequest -  https://ekkz-test.fa.em2.oraclecloud.com/crmRestApi/resources/latest/serviceRequests/{srno}
+// AssetRequest - https://ekkz-test.fa.em2.oraclecloud.com/fscmRestApi/resources/latest/installedBaseAssets/{assetid}
+// Incident - https://ekkz-test.fa.em2.oraclecloud.com/crmRestApi/resources/latest/serviceRequests/{srno}/lov/LOVVA_For_IncidentList_c
+// Milestone - https://ekkz-test.fa.em2.oraclecloud.com/crmRestApi/resources/latest/serviceRequests/{srno}/child/srMilestone
+
+{
+    "WorkOrderTypeCode": "CORRECTIVE", //SRRequest - WorkType_c
+    "WorkOrderSubTypeCode": "ORA_CONDITION_BASED", //SRRequest - WorkSubtype_c
+    "AssetId": "300000119126431", //Being passed as request param in integration
+    "OrganizationId": "300000028707236", //AssetRequest - OperatingOrganizationId
+    "MntWorkDefinitionCode": "Parking Barrier Damage", //SRRequest - lookupValue( "oramds:/apps/ICS/DVM/ResourceAssignment.dvm", "ServiceCategoryIncident", string( concat( Category_c, " ", IncidentList_c)), "WDName", "Data Not Found")
+    "WorkOrderDescription": "WorkOrderDescription", //SRRequest - ProblemDescription
+    "PlannedStartDate": "2021-11-03T10:01:00+00:00", //SRRequest - CreationDate
+    "WorkOrderPriority": 3, //SRRequest - lookupValue( "tenant/resources/dvms/SRSevtoWOPriority", "SRSeverity", Severity Cd, "AssetPriority", "3")
+    "ProjectDetailsDFF": [
+        {
+            "projectId_Display": "130100000", //AssetRequest - projectNumber
+            "taskId_Display": "1.2", //lookupValue( "tenant/resources/dvms/WOExpenditureType", "Source", "SRTaskId", "Destination", "2.7")
+            "expenditureTypeId_Display": "Material - Stocks-Direct" //lookupValue( "tenant/resources/dvms/WOExpenditureType", "Source", "SRExpenditureType", "Destination", "Variable Revenue")
+        }
+    ],
+    "WorkOrderDFF": [
+        {
+            "contractHeader": null, //AssetRequest - contractNumber
+            "contractLine": null, //AssetRequest - contractLine
+            "serviceRequestNumber": "0000011035", //SRRequest - SrNumber
+            "srDueDateAndTime": "2020-08-05T10:37:00+00:00", //Milestone - DueDate (where "MilestoneLabel" = "First Response Metric")
+            "expectedCompletionDate": "2020-08-05T10:37:00+00:00", //Milestone - DueDate (where "MilestoneLabel" = "Resolution Metric")
+            "incident": null, //Incident - Meaning
+            "srContactPerson": "Soukkath Ali", //SRRequest - PrimaryContactPartyName
+            "srContactNumber": "+971 (50) 2778047", //SRRequest - PrimaryContactFormattedPhoneNumber
+            "consumedCallouts": 4, //SRRequest - ConsumedCallOuts_c
+            "totalFreeCallouts": 10, //SRRequest - FreeCallOuts_c
+            "customerRef": null //SRRequest - ClientReference_c
+        }
+    ]
+}
