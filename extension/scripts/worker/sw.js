@@ -142,19 +142,20 @@ try {
             }
             if (message.context === "SAVE") {
                 (async () => {
-                    try {
-                        const { id, dirName, src } = message.data;
-                        updateRecents(id, dirName);
-                        let { status } = await uploadRequest(id, {
-                            origin: sender.tab.url,
-                            src,
-                        });
-                        sendResponse({ code: status });
-                        chrome.storage.local.remove("img");
-                    } catch (error) {
-                        console.log(error);
-                        sendResponse({ status: 500 });
-                    }
+                    await Promise((res, rej) => {});
+                    // try {
+                    //     const { id, dirName, src } = message.data;
+                    //     updateRecents(id, dirName);
+                    //     let { status } = await uploadRequest(id, {
+                    //         origin: sender.tab.url,
+                    //         src,
+                    //     });
+                    //     sendResponse({ code: status });
+                    //     chrome.storage.local.remove("img");
+                    // } catch (error) {
+                    //     console.log(error);
+                    //     sendResponse({ status: 500 });
+                    // }
                 })();
                 return true;
             }

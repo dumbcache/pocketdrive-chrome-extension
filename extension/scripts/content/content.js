@@ -11,6 +11,7 @@ import {
     try {
         /**************** Inserting scripts *****************/
         const krab = createElement("div", [["id", "krab-ext"]]);
+        krab.style.background = "none";
         const shadow = krab.attachShadow({ mode: "open" });
 
         const styles = chrome.runtime.getURL("scripts/content/content.css");
@@ -121,13 +122,20 @@ import {
                 inputInvalidate("Already Present");
                 return;
             }
+            let name = search.value.trim();
+            name = name
+                .split(" ")
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ");
+            search.value = name;
+
             sendButton.style.display = "none";
             dirStatusIcon.style.display = "initial";
 
             await chrome.runtime.sendMessage({
                 context: "CREATE_DIR",
                 data: {
-                    name: search.value.trim(),
+                    name: name,
                     parents: tempParent,
                 },
             });
@@ -238,7 +246,6 @@ import {
             if (val === "") {
                 e.target.value = "";
                 filtered = tempDirs;
-                console.log("filtered");
             } else {
                 filtered = tempDirs.filter((element) =>
                     element.name.toLowerCase().includes(val)
