@@ -1,10 +1,6 @@
-import { createContext, useContext } from "react";
-import { useNavigate } from "react-router-dom";
-
-export const LoginContext = createContext();
-export const dirsUrl = (parent) =>
+export const dirsUrl = (parent: string) =>
     `https://www.googleapis.com/drive/v3/files?q='${parent}' in parents and mimeType = 'application/vnd.google-apps.folder'&fields=files(id,name,mimeType,appProperties,parents,hasThumbnail,thumbnailLink,createdTime,modifiedTime)`;
-export const filesUrl = (parent) =>
+export const filesUrl = (parent: string) =>
     `https://www.googleapis.com/drive/v3/files?q='${parent}' in parents and mimeType contains 'image/'&fields=files(id,name,mimeType,appProperties,parents,hasThumbnail,thumbnailLink,createdTime,modifiedTime)`;
 export const loadScript = (handler) => {
     const src = "https://accounts.google.com/gsi/client";
@@ -16,8 +12,7 @@ export const loadScript = (handler) => {
     script.onerror = console.log;
     document.body.append(script);
 };
-
-export const handleGoogleSignIn = async (res, setLoggedIn) => {
+export const handleGoogleSignIn = async (res: object) => {
     const creds = res?.credential;
     const api = import.meta.env.VITE_API;
     const req = await fetch(`${api}/login`, {
@@ -35,7 +30,6 @@ export const handleGoogleSignIn = async (res, setLoggedIn) => {
     localStorage.setItem("secret", token);
     localStorage.setItem("root", root);
     getToken();
-    setLoggedIn(true);
 };
 
 export const getToken = async () => {
