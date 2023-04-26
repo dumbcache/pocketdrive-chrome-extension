@@ -7,7 +7,7 @@ import {
     initBulk,
 } from "./helper.js";
 
-(async () => {
+const init = async (sendResponse) => {
     try {
         /**************** Inserting scripts *****************/
         const krab = createElement("div", [["id", "krab-ext"]]);
@@ -420,63 +420,79 @@ import {
                 selectedCount.innerText = "0";
             }
         });
+
+        sendResponse(true);
         /**************** Chrome message handling *****************/
-        chrome.runtime.onMessage.addListener(
-            (message, sender, sendResponse) => {
-                try {
-                    switch (message.context) {
-                        case "ACTION":
-                            tempBulk.clear();
-                            check.checked = false;
-                            scrapImages();
-                            break;
-                        case "SELECTION":
-                            tempBulk.clear();
-                            let { src } = message;
-                            mainImg.src = src;
-                            tempBulk.add(src);
-                            setTimeout(() => toggleMain(), 100);
-                            break;
-                        case "DIRS":
-                            const dirs = message.data || [];
-                            tempDirs = dirs;
-                            parents.innerHTML = "";
-                            parents.append(createOptionsElement(dirs));
-                            break;
-                        case "CREATE_DIR":
-                            if (message.status !== 200) {
-                                search.style.backgroundColor = "#f005";
-                                search.placeholder = "failed";
-                                setTimeout(() => {
-                                    search.style.backgroundColor = "#ddd";
-                                    search.placeholder = "Search Directory";
-                                }, 1000);
-                            }
-                            let { id, name } = message.data;
-                            let div = createElement("div", [
-                                ["class", `option`],
-                                ["data-id", id],
-                                ["data-dir-name", name],
-                            ]);
-                            div.innerText = name;
-                            div.style.backgroundColor = "#0f05";
-                            childs.prepend(div);
-                            tempDirs.unshift(message.data);
+        chrome.runtime.onMessage.addListener((message) => {
+            try {
+                switch (message.context) {
+                    case "ACTION":
+                        tempBulk.clear();
+                        check.checked = false;
+                        scrapImages();
+                        break;
+                    case "SELECTION":
+                        tempBulk.clear();
+                        let { src } = message;
+                        mainImg.src = src;
+                        tempBulk.add(src);
+                        setTimeout(() => toggleMain(), 100);
+                        break;
+                    case "DIRS":
+                        const dirs = message.data || [];
+                        tempDirs = dirs;
+                        parents.innerHTML = "";
+                        parents.append(createOptionsElement(dirs));
+                        break;
+                    case "CREATE_DIR":
+                        if (message.status !== 200) {
+                            search.style.backgroundColor = "#f005";
+                            search.placeholder = "failed";
                             setTimeout(() => {
-                                div.style.backgroundColor = "initial";
-                            }, 500);
-                            dirStatusIcon.style.display = "none";
-                            addButton.style.display = "initial";
-                            search.focus();
-                            search.value = "";
-                            break;
-                    }
-                } catch (error) {
-                    console.warn("krabs:", error);
+                                search.style.backgroundColor = "#ddd";
+                                search.placeholder = "Search Directory";
+                            }, 1000);
+                        }
+                        let { id, name } = message.data;
+                        let div = createElement("div", [
+                            ["class", `option`],
+                            ["data-id", id],
+                            ["data-dir-name", name],
+                        ]);
+                        div.innerText = name;
+                        div.style.backgroundColor = "#0f05";
+                        childs.prepend(div);
+                        tempDirs.unshift(message.data);
+                        setTimeout(() => {
+                            div.style.backgroundColor = "initial";
+                        }, 500);
+                        dirStatusIcon.style.display = "none";
+                        addButton.style.display = "initial";
+                        search.focus();
+                        search.value = "";
+                        break;
                 }
+            } catch (error) {
+                console.warn("krabs:", error);
             }
-        );
+        });
     } catch (error) {
         console.warn("krabs:", error);
     }
-})();
+};
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    try {
+        if (message.context === "CHECK_IF_ROOT_EXISTS") {
+            const root = document.getElementById("krab-ext");
+            if (root) {
+                sendResponse(true);
+                return;
+            }
+            init(sendResponse);
+            return true;
+        }
+    } catch (error) {
+        console.warn("krabs:", error);
+    }
+});

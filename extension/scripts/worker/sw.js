@@ -71,6 +71,7 @@ try {
             }
             if (info.menuItemId === "save") {
                 if (isSystemPage(tab)) return;
+                console.log("clicked");
                 const exists = await chrome.tabs.sendMessage(tab.id, {
                     context: "CHECK_IF_ROOT_EXISTS",
                 });
@@ -142,20 +143,19 @@ try {
             }
             if (message.context === "SAVE") {
                 (async () => {
-                    await Promise((res, rej) => {});
-                    // try {
-                    //     const { id, dirName, src } = message.data;
-                    //     updateRecents(id, dirName);
-                    //     let { status } = await uploadRequest(id, {
-                    //         origin: sender.tab.url,
-                    //         src,
-                    //     });
-                    //     sendResponse({ code: status });
-                    //     chrome.storage.local.remove("img");
-                    // } catch (error) {
-                    //     console.log(error);
-                    //     sendResponse({ status: 500 });
-                    // }
+                    try {
+                        const { id, dirName, src } = message.data;
+                        updateRecents(id, dirName);
+                        let { status } = await uploadRequest(id, {
+                            origin: sender.tab.url,
+                            src,
+                        });
+                        sendResponse({ code: status });
+                        chrome.storage.local.remove("img");
+                    } catch (error) {
+                        console.log(error);
+                        sendResponse({ status: 500 });
+                    }
                 })();
                 return true;
             }
