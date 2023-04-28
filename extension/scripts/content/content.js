@@ -117,17 +117,19 @@ const init = async (sendResponse) => {
                 inputInvalidate("Cannot be empty");
                 return;
             }
-            if (checkDirPresent()) {
-                addButton.style.display = "initial";
-                inputInvalidate("Already Present");
-                return;
-            }
+
             let name = search.value.trim();
             name = name
                 .split(" ")
                 .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                 .join(" ");
             search.value = name;
+
+            if (checkDirPresent()) {
+                addButton.style.display = "initial";
+                inputInvalidate("Already Present");
+                return;
+            }
 
             sendButton.style.display = "none";
             dirStatusIcon.style.display = "initial";

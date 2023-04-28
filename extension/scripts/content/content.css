@@ -12,8 +12,7 @@
     right: 10px;
     z-index: 99999999999;
     border-radius: 5px;
-    color-scheme: light dark;
-    color: #ddd;
+    color: #000;
 }
 
 *,
@@ -364,10 +363,4 @@ button:hover::before {
 }
 ::-webkit-scrollbar-thumb:hover {
     background: #022;
-}
-
-@media (prefers-color-scheme: light) {
-    :host(#krab-ext) {
-        color: #000;
-    }
 }
