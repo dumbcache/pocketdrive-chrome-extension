@@ -8,30 +8,40 @@ import {
     init,
     isSystemPage,
     isLoggedIn,
+    checkRuntimeError,
 } from "./utils.js";
 
 try {
     chrome.runtime.onInstalled.addListener(async () => {
         const { token } = await isLoggedIn();
         if (!token) {
-            chrome.action.setIcon({ path: "/images/krabsOff.png" });
+            chrome.action.setIcon(
+                { path: "/images/krabsOff.png" },
+                checkRuntimeError
+            );
             initContextMenus();
             return;
         }
         initContextMenus();
         init();
-        chrome.action.setIcon({ path: "/images/krabs.png" });
+        chrome.action.setIcon({ path: "/images/krabs.png" }, checkRuntimeError);
     });
 
     chrome.storage.onChanged.addListener(async (changes) => {
         if (changes.token) {
             let { newValue } = changes.token;
             if (newValue) {
-                chrome.action.setIcon({ path: "/images/krabs.png" });
+                chrome.action.setIcon(
+                    { path: "/images/krabs.png" },
+                    checkRuntimeError
+                );
                 init();
             } else {
-                chrome.action.setIcon({ path: "/images/krabsOff.png" });
-                chrome.storage.local.clear();
+                chrome.action.setIcon(
+                    { path: "/images/krabsOff.png" },
+                    checkRuntimeError
+                );
+                chrome.storage.local.clear(checkRuntimeError);
             }
             initContextMenus();
         }
@@ -41,47 +51,51 @@ try {
                 active: true,
             });
             if (isSystemPage(tab)) return;
-            chrome.tabs.sendMessage(tab.id, {
-                context: "DIRS",
-                data: newValue,
-            });
+            chrome.tabs.sendMessage(
+                tab.id,
+                {
+                    context: "DIRS",
+                    data: newValue,
+                },
+                checkRuntimeError
+            );
         }
         if (changes.recents) {
             let { newValue } = changes.recents;
             if (newValue?.length > 10) {
                 newValue.pop();
-                await chrome.storage.local.set({ recents: newValue });
+                chrome.storage.local.set(
+                    { recents: newValue },
+                    checkRuntimeError
+                );
             }
         }
     });
 
     chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         try {
-            if (info.menuItemId === "refresh") {
-                init();
-                return;
-            }
-            if (info.menuItemId === "login") {
-                login(tab.id);
-                return;
-            }
-            if (info.menuItemId === "logout") {
-                logout(tab.id);
-                return;
-            }
-            if (info.menuItemId === "save") {
-                if (isSystemPage(tab)) return;
-                console.log("clicked");
-                const exists = await chrome.tabs.sendMessage(tab.id, {
-                    context: "CHECK_IF_ROOT_EXISTS",
-                });
-                if (exists)
-                    await chrome.tabs.sendMessage(tab.id, {
-                        context: "SELECTION",
-                        status: 200,
-                        src: info.srcUrl,
+            switch (info.menuItemId) {
+                case "refresh":
+                    init();
+                    return;
+                case "login":
+                    login(tab.id);
+                    return;
+                case "logout":
+                    logout(tab.id);
+                    return;
+                case "save":
+                    if (isSystemPage(tab)) return;
+                    const exists = await chrome.tabs.sendMessage(tab.id, {
+                        context: "CHECK_IF_ROOT_EXISTS",
                     });
-                return;
+                    if (exists)
+                        chrome.tabs.sendMessage(tab.id, {
+                            context: "SELECTION",
+                            status: 200,
+                            src: info.srcUrl,
+                        });
+                    return;
             }
         } catch (error) {
             console.warn("error", error);
@@ -121,7 +135,10 @@ try {
                         if (childDirs[parents] === undefined) {
                             let { status, data } = await fetchDirs(parents);
                             childDirs[parents] = data;
-                            chrome.storage.local.set({ childDirs });
+                            chrome.storage.local.set(
+                                { childDirs },
+                                checkRuntimeError
+                            );
                             sendResponse({
                                 status,
                                 childDirs: data,
@@ -151,7 +168,7 @@ try {
                             src,
                         });
                         sendResponse({ code: status });
-                        chrome.storage.local.remove("img");
+                        chrome.storage.local.remove("img", checkRuntimeError);
                     } catch (error) {
                         console.log(error);
                         sendResponse({ status: 500 });
@@ -163,11 +180,15 @@ try {
                 (async () => {
                     const { name, parents } = message.data;
                     const { status, data } = await createDir(name, parents);
-                    chrome.tabs.sendMessage(sender.tab.id, {
-                        context: "CREATE_DIR",
-                        status,
-                        data,
-                    });
+                    chrome.tabs.sendMessage(
+                        sender.tab.id,
+                        {
+                            context: "CREATE_DIR",
+                            status,
+                            data,
+                        },
+                        checkRuntimeError
+                    );
                 })();
             }
         } catch (error) {
@@ -178,7 +199,7 @@ try {
                     context: message.context,
                     status: 500,
                 },
-                () => chrome.runtime.lastError
+                checkRuntimeError
             );
         }
     });

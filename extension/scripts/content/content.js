@@ -427,6 +427,8 @@ const init = async (sendResponse) => {
             try {
                 switch (message.context) {
                     case "ACTION":
+                        const bulk = shadow.querySelector(".bulk");
+                        if (bulk?.style.display !== "none") return;
                         tempBulk.clear();
                         check.checked = false;
                         scrapImages();

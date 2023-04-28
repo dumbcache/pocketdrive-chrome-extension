@@ -1,5 +1,9 @@
 export const ENDPOINT = `http://127.0.0.1:5001/dumbcache4658/us-central1/krabs`;
 
+export function checkRuntimeError() {
+    chrome.runtime.lastError && console.log(chrome.runtime.lastError);
+}
+
 function isSystemLink(link) {
     return (
         link.startsWith("chrome://") ||
@@ -17,7 +21,7 @@ export function isLoggedIn() {
 }
 
 export const initContextMenus = async () => {
-    chrome.contextMenus.removeAll(() => chrome.runtime.lastError);
+    chrome.contextMenus.removeAll(checkRuntimeError);
 
     const { token } = await isLoggedIn();
     if (!token) {
@@ -27,7 +31,7 @@ export const initContextMenus = async () => {
                 title: "Login",
                 contexts: ["action"],
             },
-            () => chrome.runtime.lastError
+            checkRuntimeError
         );
         return;
     } else {
@@ -37,7 +41,7 @@ export const initContextMenus = async () => {
                 title: "Save",
                 contexts: ["image"],
             },
-            () => chrome.runtime.lastError
+            checkRuntimeError
         );
         chrome.contextMenus.create(
             {
@@ -45,7 +49,7 @@ export const initContextMenus = async () => {
                 title: "Refresh",
                 contexts: ["action"],
             },
-            () => chrome.runtime.lastError
+            checkRuntimeError
         );
         chrome.contextMenus.create(
             {
@@ -53,7 +57,7 @@ export const initContextMenus = async () => {
                 title: "Logout",
                 contexts: ["action"],
             },
-            () => chrome.runtime.lastError
+            checkRuntimeError
         );
     }
 };
@@ -62,7 +66,7 @@ export const init = async () => {
     try {
         await refreshDirs();
         refreshChildDirs();
-        await chrome.storage.local.set({ recents: [] });
+        chrome.storage.local.set({ recents: [] }, checkRuntimeError);
     } catch (error) {
         console.warn(error);
         console.log("cause:", error.cause);
@@ -73,12 +77,12 @@ export const refreshDirs = async () => {
     try {
         let { root } = await chrome.storage.local.get("root");
         let { data } = await fetchDirs(root);
-        await chrome.storage.local.set({ dirs: data });
+        chrome.storage.local.set({ dirs: data }, checkRuntimeError);
     } catch (error) {
         console.warn("Unable to Refresh dirs:", error);
         let { dirs } = await chrome.storage.local.get();
         dirs = dirs ? [...dirs] : [];
-        await chrome.storage.local.set({ dirs });
+        chrome.storage.local.set({ dirs }, checkRuntimeError);
     }
 };
 export const refreshChildDirs = async () => {
@@ -100,25 +104,28 @@ export const refreshChildDirs = async () => {
                 const { data } = await fetchDirs(parent);
                 childDirs[parent] = data;
             }
-            await chrome.storage.local.set({ childDirs });
+            chrome.storage.local.set({ childDirs }, checkRuntimeError);
         }
     } catch (error) {
         console.warn("Unable to Refresh childDirs:", error);
         let { childDirs } = await chrome.storage.local.get("childDirs");
         childDirs = childDirs ? { ...childDirs } : {};
-        await chrome.storage.local.set({ childDirs });
+        chrome.storage.local.set({ childDirs }, checkRuntimeError);
     }
 };
 
 export const updateRecents = async (id, dirName) => {
     let { recents } = await chrome.storage.local.get("recents");
     if (!recents) {
-        chrome.storage.local.set({ recents: [{ id, name: dirName }] });
+        chrome.storage.local.set(
+            { recents: [{ id, name: dirName }] },
+            checkRuntimeError
+        );
         return;
     }
     recents = recents.filter((item) => item.id !== id);
     recents.unshift({ id, name: dirName });
-    chrome.storage.local.set({ recents });
+    chrome.storage.local.set({ recents }, checkRuntimeError);
 };
 
 export const fetchDirs = async (parent) => {
@@ -132,7 +139,7 @@ export const fetchDirs = async (parent) => {
     });
     let { status, statusText } = req;
     if (status === 401) {
-        await chrome.storage.local.set({ token: null });
+        chrome.storage.local.set({ token: null }, checkRuntimeError);
         throw new Error("error while fetching dirs", {
             cause: `${status} ${statusText} ${await req.text()}`,
         });
@@ -151,14 +158,14 @@ export const addtoLocalDirs = async (data, parents) => {
     if (root === parents) {
         let { dirs = [] } = await chrome.storage.local.get("dirs");
         dirs.unshift(data);
-        chrome.storage.local.set({ dirs });
+        chrome.storage.local.set({ dirs }, checkRuntimeError);
         return;
     }
     let { childDirs } = await chrome.storage.local.get("childDirs");
     childDirs[parents]
         ? childDirs[parents].unshift(data)
         : (childDirs[parents] = [data]);
-    chrome.storage.local.set({ childDirs });
+    chrome.storage.local.set({ childDirs }, checkRuntimeError);
 };
 export const createDir = async (name, parents) => {
     let url = `${ENDPOINT}/dirs/`;
@@ -173,7 +180,7 @@ export const createDir = async (name, parents) => {
     });
     let { status, statusText } = req;
     if (status === 401) {
-        await chrome.storage.local.set({ token: null });
+        chrome.storage.local.set({ token: null }, checkRuntimeError);
         throw new Error("error while creating dirs", {
             cause: `${status} ${statusText} ${await req.text()}`,
         });
@@ -202,13 +209,13 @@ export const uploadRequest = async (parents, img) => {
     });
     let { status, statusText } = req;
     if (status === 401) {
-        await chrome.storage.local.set({ token: null });
+        chrome.storage.local.set({ token: null }, checkRuntimeError);
         throw new Error("error while uploading img", {
             cause: `${status} ${statusText} ${await req.text()}`,
         });
     }
     if (status !== 200) {
-        chrome.storage.local.remove("img");
+        chrome.storage.local.remove("img", checkRuntimeError);
         throw new Error("error while uploading img", {
             cause: `${status} ${statusText}`,
         });
