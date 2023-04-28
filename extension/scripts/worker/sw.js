@@ -180,27 +180,19 @@ try {
                 (async () => {
                     const { name, parents } = message.data;
                     const { status, data } = await createDir(name, parents);
-                    chrome.tabs.sendMessage(
-                        sender.tab.id,
-                        {
-                            context: "CREATE_DIR",
-                            status,
-                            data,
-                        },
-                        checkRuntimeError
-                    );
+                    chrome.tabs.sendMessage(sender.tab.id, {
+                        context: "CREATE_DIR",
+                        status,
+                        data,
+                    });
                 })();
             }
         } catch (error) {
             console.warn(error, `cause: ${error.cause}`);
-            chrome.tabs.sendMessage(
-                sender.tab.id,
-                {
-                    context: message.context,
-                    status: 500,
-                },
-                checkRuntimeError
-            );
+            chrome.tabs.sendMessage(sender.tab.id, {
+                context: message.context,
+                status: 500,
+            });
         }
     });
 } catch (error) {

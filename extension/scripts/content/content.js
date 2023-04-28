@@ -143,7 +143,7 @@ const init = async (sendResponse) => {
         }
 
         function ListenForEnterInCreateMode(e) {
-            if (e.key === "Enter") {
+            if (e.ctrlKey === false && e.key === "Enter") {
                 dirCreateHandler();
             }
         }
@@ -173,6 +173,8 @@ const init = async (sendResponse) => {
             }
             search.value = "";
             search.focus();
+            addButton.style.display = "initial";
+            sendButton.style.display = "none";
             childs.innerHTML = "";
             childs.style.display = "block";
             tempDirs = childDirs || [];
@@ -215,6 +217,12 @@ const init = async (sendResponse) => {
 
         addButton.addEventListener("click", async (e) => {
             e.stopPropagation();
+
+            childs.innerHTML = "";
+            childs.append(createOptionsElement(tempDirs));
+            childs.style.display = "block";
+            parents.style.display = "none";
+
             addButton.style.display = "none";
             sendButton.style.display = "initial";
             search.placeholder = "Enter Dir to Create";
@@ -241,8 +249,9 @@ const init = async (sendResponse) => {
         });
 
         search.addEventListener("input", (e) => {
-            let val = e.target.value.toLowerCase().trimLeft();
+            if (addButton.style.display === "none") return;
             let filtered = [];
+            let val = e.target.value.toLowerCase().trimLeft();
             if (val === "") {
                 e.target.value = "";
                 filtered = tempDirs;
@@ -251,6 +260,7 @@ const init = async (sendResponse) => {
                     element.name.toLowerCase().includes(val)
                 );
             }
+
             childs.innerHTML = "";
             childs.append(createOptionsElement(filtered));
             childs.style.display = "block";
