@@ -142,6 +142,13 @@ const init = async (sendResponse) => {
             search.removeEventListener("keyup", ListenForEnterInCreateMode);
         }
 
+        function createChilds(dirs) {
+            childs.innerHTML = "";
+            childs.append(createOptionsElement(dirs));
+            childs.style.display = "block";
+            parents.style.display = "none";
+        }
+
         function ListenForEnterInCreateMode(e) {
             if (e.ctrlKey === false && e.key === "Enter") {
                 dirCreateHandler();
@@ -175,11 +182,8 @@ const init = async (sendResponse) => {
             search.focus();
             addButton.style.display = "initial";
             sendButton.style.display = "none";
-            childs.innerHTML = "";
-            childs.style.display = "block";
             tempDirs = childDirs || [];
-            childs.append(createOptionsElement(tempDirs));
-            parents.style.display = "none";
+            createChilds(tempDirs);
         }
         /**************** Event Listners *****************/
 
@@ -217,12 +221,7 @@ const init = async (sendResponse) => {
 
         addButton.addEventListener("click", async (e) => {
             e.stopPropagation();
-
-            childs.innerHTML = "";
-            childs.append(createOptionsElement(tempDirs));
-            childs.style.display = "block";
-            parents.style.display = "none";
-
+            createChilds(tempDirs);
             addButton.style.display = "none";
             sendButton.style.display = "initial";
             search.placeholder = "Enter Dir to Create";
@@ -260,11 +259,7 @@ const init = async (sendResponse) => {
                     element.name.toLowerCase().includes(val)
                 );
             }
-
-            childs.innerHTML = "";
-            childs.append(createOptionsElement(filtered));
-            childs.style.display = "block";
-            parents.style.display = "none";
+            createChilds(filtered);
         });
 
         cancelButton.addEventListener("click", (e) => {
