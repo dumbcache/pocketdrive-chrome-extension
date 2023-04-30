@@ -35,7 +35,7 @@ export const login = async (tabid) => {
 
 export const logout = async (tabid) => {
     const { token } = await chrome.storage.local.get("token");
-    let { status } = await fetch(`${ENDPOINT}/logout`, {
+    let { status } = await fetch(`${ENDPOINT}/logout/EXT`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },

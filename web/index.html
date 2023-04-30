@@ -4,13 +4,23 @@
         <meta charset="UTF-8" />
         <link rel="icon" type="image/svg+xml" href="/vite.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="./src/css/style.css" />
         <title>Krabs</title>
     </head>
     <body>
         <div id="app">
-            <div class="login-wrapper" hidden>
-                <button class="signin-button"></button>
-            </div>
+            <header class="header">
+                <h1 class="title">K</h1>
+                <nav class="navigation">navigation</nav>
+                <div class="profile">
+                    <button class="signin-button" hidden></button>
+                    <button class="signout-button" hidden>signout</button>
+                </div>
+            </header>
+            <main class="main">
+                <div class="dirs"></div>
+                <div class="imgs"></div>
+            </main>
         </div>
 
         <script type="module" src="/src/main.ts"></script>

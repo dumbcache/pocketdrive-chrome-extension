@@ -120,42 +120,6 @@ export const getFSToken = async (user: string) => {
     return { accessToken };
 };
 
-export const createJWT = async (user: string, secret: string) => {
-    const token = jwt.sign({ name: user }, secret, {
-        expiresIn: 60 * 60 * 24 * 30,
-        issuer: process.env.ISSUER,
-    });
-    let query = firestore.doc(`users/${user}`);
-    query.update({ jwt: token });
-    let { root } = (await query.get()).data() as UserData;
-    return { token, root };
-};
-export const removeJWT = (user: string) => {
-    let query = firestore.doc(`users/${user}`);
-    query.update({ jwt: "" });
-    return { status: 200 };
-};
-
-export const validateJWT = async (
-    user: string,
-    token: string
-): Promise<{ status: number; cause?: string }> => {
-    const query = firestore.doc(`users/${user}`);
-    const userData = (await query.get()).data() as UserData;
-    if (!userData) {
-        return { status: 401, cause: "invalid user" };
-    }
-    if (userData.jwt !== token) {
-        return { status: 401, cause: "invalid token" };
-    }
-    try {
-        jwt.verify(token, userData.secret);
-        return { status: 200 };
-    } catch {
-        return { status: 401, cause: "invalid token" };
-    }
-};
-
 export const authenticateUser = async (
     user: string,
     pass: string
@@ -363,9 +327,9 @@ export const validateToken = async (
     }
 };
 
-export const removeToken = (user: string) => {
+export const removeToken = (user: string, app: "WEB" | "EXT") => {
     let query = firestore.doc(`users/${user}`);
-    query.update({ jwt: "" });
+    app === "EXT" ? query.update({ extoken: "" }) : query.update({ token: "" });
     return { status: 200 };
 };
 

@@ -10,7 +10,6 @@ import {
     fetchImgExternal,
     getFSToken,
     patchImgMetaData,
-    removeJWT,
     uploadImg,
     WebOAuth,
     validateToken,
@@ -22,6 +21,7 @@ import {
     WebOAuthConsent,
     handleNewUser,
     handleExistingUser,
+    removeToken,
 } from "./utils.js";
 
 /*************** End Points ****************/
@@ -153,11 +153,21 @@ expressApp.post("/login", async (req, res) => {
         res.status(500).send({ cause: "unable to login user at the moment" });
     }
 });
-expressApp.route("/logout").get(validateUserMW, async (req, res) => {
+expressApp.route("/logout/:app").get(async (req, res) => {
     try {
-        let { user } = res.locals;
-        let { status } = removeJWT(user);
-        res.status(status).send({});
+        let token = req.headers.authorization?.split(" ")[1];
+        const { app } = req.params as { app: "EXT" | "WEB" };
+        if (!token) return;
+        let { status, cause, payload } = await validateToken(token, app);
+        if (status !== 200) {
+            if (status === 401) {
+                res.status(401).send({ status: "user unauthorized" });
+                return;
+            }
+            throw new Error("unauthorized error", { cause });
+        }
+        const removeRes = removeToken(payload!.user, app);
+        res.status(removeRes.status).send({});
     } catch (error) {
         console.log(error);
         res.status(500).send({ cause: "unable to logout user at the moment" });
