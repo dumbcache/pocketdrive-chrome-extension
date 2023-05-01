@@ -7,22 +7,40 @@ export const FILE_API = "https://www.googleapis.com/drive/v3/files";
 function constructAPI(
     parent: string,
     mimeType: string,
-    pageSize?: string,
+    pageSize?: number,
     pageToken?: string
 ) {
-    const api = `${FILE_API}?q='${parent}' in parents and mimeType = '${mimeType}'&fields=files(id,name,appProperties,parents,thumbnailLink)&pageSize=${pageSize}`;
+    const api = `${FILE_API}?q='${parent}' in parents and mimeType contains '${mimeType}'&fields=files(id,name,appProperties,parents,thumbnailLink)&pageSize=${pageSize}`;
     pageToken && api + `&pageToken=` + pageToken;
     return api;
 }
-export function downloadImage() {}
+export async function downloadImage(id: string) {
+    const token = window.localStorage.getItem("token");
+    let req = await fetch(`${FILE_API}/${id}?alt=media`, {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    if (req.status !== 200) {
+        if (req.status === 401) {
+            await getToken();
+            return await downloadImage(id);
+        }
+        throw new Error("Unable to fetch dirs");
+    }
+    const data = await req.blob();
+    return data;
+}
 
 export async function getFiles(
     parent: string,
-    mimeType: string
+    mimeType: string,
+    pageSize: number = 100
 ): Promise<GoogleFileRes | undefined> {
     try {
         const token = window.localStorage.getItem("token");
-        let req = await fetch(constructAPI(parent, mimeType), {
+        let req = await fetch(constructAPI(parent, mimeType, pageSize), {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -172,32 +190,85 @@ function addAttributes(ele: HTMLElement, attributes: [string, string][]) {
     }
 }
 
-export function createDir(file: GoogleFile): HTMLDivElement {
+export function createAnchorElement(id: string, name: string) {
+    const a = document.createElement("a");
+    a.dataset.id = id;
+    a.href = "javascript:void(0)";
+    a.onclick = () => {
+        history.pushState({ dir: name, id }, "", id);
+        window.dispatchEvent(new Event("locationchange"));
+    };
+    return a;
+}
+
+export function createDir(
+    file: GoogleFile,
+    imgs: GoogleFile[]
+): HTMLDivElement {
     const div = document.createElement("div");
+    const cover = document.createElement("div");
+    const title = document.createElement("p");
+    const anchor = createAnchorElement(file.id, file.name);
+    title.innerText = file.name;
+    cover.classList.add("cover");
     addAttributes(div, [["class", "dir"]]);
+    for (let img of imgs) {
+        const m = createImg(img);
+        cover.append(m);
+    }
+    anchor.append(cover);
+    div.append(anchor, title);
     return div;
 }
 
-export function createImg(file: GoogleFile): HTMLImageElement {
+export function createImg(
+    file: GoogleFile,
+    className: string = ""
+): HTMLImageElement {
     const img = document.createElement("img");
+    img.dataset.id = file.id;
     addAttributes(img, [
         ["src", file.thumbnailLink!],
-        ["class", "img"],
+        ["class", className],
         ["referrerpolicy", "no-referrer"],
     ]);
     return img;
 }
 
-export function crateMaincontent(dirs: GoogleFileRes, imgs: GoogleFileRes) {
+export async function crateMaincontent(
+    dirsData: GoogleFileRes,
+    imgsData: GoogleFileRes
+) {
+    console.log(dirsData, imgsData);
     const dirsEle = document.querySelector(".dirs");
     const imgsEle = document.querySelector(".imgs");
-    for (let dir of dirs) {
-        getImgs(dir.id);
-        const folder = createDir(dir);
+    for (let dir of dirsData.files) {
+        const data = await getFiles(dir.id, IMG_MIME_TYPE, 3);
+        const folder = createDir(dir, data!.files);
         dirsEle?.append(folder);
     }
-    for (let img of imgs) {
-        const pic = createImg(img);
+    for (let img of imgsData.files) {
+        const pic = createImg(img, "img");
         imgsEle?.append(pic);
     }
+    imgsEle?.addEventListener("click", async (e) => {
+        const dataset = e.target.dataset;
+        const preview = document.querySelector(".preview");
+        if (dataset.url) {
+            const img = document.createElement("img");
+            img.classList.toggle("preview-img");
+            img.src = dataset.url;
+            preview!.innerHTML = "";
+            preview?.append(img);
+            return;
+        }
+        const blob = await downloadImage(dataset.id);
+        const url = URL.createObjectURL(blob);
+        const img = document.createElement("img");
+        img.classList.toggle("preview-img");
+        dataset.url = url;
+        img.src = url;
+        preview!.innerHTML = "";
+        preview?.append(img);
+    });
 }

@@ -66,6 +66,21 @@ a {
     text-decoration: none;
 }
 
+::-webkit-scrollbar {
+    width: 5px;
+}
+::-webkit-scrollbar-track {
+    background: #0002;
+    backdrop-filter: blur(10px);
+}
+::-webkit-scrollbar-thumb {
+    background: #1459;
+    border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #022;
+}
+
 @media (max-width: 600px) {
 }
 @media (prefers-color-scheme: light) {

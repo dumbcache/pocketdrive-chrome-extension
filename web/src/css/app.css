@@ -33,7 +33,9 @@ h1 {
 .main {
     padding: 1rem;
     height: 90%;
-    overflow-y: scroll;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "one two";
 }
 
 .imgs,
@@ -41,6 +43,24 @@ h1 {
     display: flex;
     flex-flow: row wrap;
     gap: 1rem;
+    justify-content: center;
+    padding-top: 2rem;
+}
+.main-wrapper {
+    height: 100%;
+    grid-area: one;
+    overflow-y: scroll;
+    padding: 1rem;
+}
+
+.preview {
+    grid-area: two;
+    height: 100%;
+    padding: 1rem;
+}
+.preview-img {
+    height: 100%;
+    max-width: 900px;
 }
 .dir {
     max-width: 300px;
@@ -66,6 +86,21 @@ h1 {
     gap: 1px;
 }
 
+.cover:hover,
+.img:hover {
+    filter: brightness(0.5);
+    cursor: pointer;
+}
+
+.cover img:nth-child(1) {
+    grid-area: one;
+}
+.cover img:nth-child(2) {
+    grid-area: two;
+}
+.cover img:nth-child(3) {
+    grid-area: three;
+}
 @media (max-width: 600px) {
     .dir {
         max-width: 150px;

@@ -76,7 +76,7 @@ expressApp.get("/loginpage", async (req, res) => {
     res.send(html(WebOAuth));
 });
 
-expressApp.get("/login/:app", async (req, res) => {
+expressApp.get("/logininfo/:app", async (req, res) => {
     const { app } = req.params;
     if (app === "web") {
         res.send({ url: WebOAuth });

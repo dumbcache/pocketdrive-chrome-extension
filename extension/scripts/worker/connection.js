@@ -2,7 +2,7 @@ import { ENDPOINT, initContextMenus } from "./utils.js";
 
 export const login = async (tabid) => {
     console.log(ENDPOINT);
-    const req = await fetch(`${ENDPOINT}/login/ext`);
+    const req = await fetch(`${ENDPOINT}/logininfo/ext`);
     const { url } = await req.json();
     chrome.identity.launchWebAuthFlow(
         { url, interactive: true },

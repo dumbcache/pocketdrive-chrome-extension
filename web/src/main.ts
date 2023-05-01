@@ -24,3 +24,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 });
+
+window.addEventListener("locationchange", () => {
+    console.log(location);
+});
+
+window.addEventListener("popstate", () => {
+    window.dispatchEvent(new Event("locationchange"));
+});
