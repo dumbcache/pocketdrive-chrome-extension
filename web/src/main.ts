@@ -1,32 +1,40 @@
 import {
-    DIR_MIME_TYPE,
-    IMG_MIME_TYPE,
     crateMaincontent,
-    getFiles,
     isLoggedin,
     toggleSignButton,
 } from "./scripts/utils";
 import "./css/app.css";
 
+let worker: Worker;
+if (window.Worker) {
+    worker = new Worker("src/workers/worker.ts");
+    worker.addEventListener("message", ({ data }) => {
+        if (data.context === "FETCH_FILES") {
+            crateMaincontent(data.files);
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     const loginStatus = isLoggedin();
     toggleSignButton(loginStatus);
     if (loginStatus === true) {
-        const root = window.localStorage.getItem("root");
-        try {
-            const [dirs, imgs] = await Promise.all([
-                getFiles(root!, DIR_MIME_TYPE),
-                getFiles(root!, IMG_MIME_TYPE),
-            ]);
-            crateMaincontent(dirs!, imgs!);
-        } catch (error) {
-            console.warn(error);
-        }
+        window.dispatchEvent(new Event("locationchange"));
     }
 });
 
-window.addEventListener("locationchange", () => {
-    console.log(location);
+window.addEventListener("locationchange", async () => {
+    try {
+        const { pathname } = window.location;
+        const root =
+            pathname === "/"
+                ? window.localStorage.getItem("root")!
+                : pathname.substring(1);
+        const token = window.localStorage.getItem("token");
+        worker.postMessage({ context: "FETCH_FILES", parent: root, token });
+    } catch (error) {
+        console.warn(error);
+    }
 });
 
 window.addEventListener("popstate", () => {

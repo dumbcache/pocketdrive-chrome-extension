@@ -14,7 +14,7 @@ function constructAPI(
     pageToken && api + `&pageToken=` + pageToken;
     return api;
 }
-export async function downloadImage(id: string) {
+export async function downloadImage(id: string): Promise<Blob> {
     const token = window.localStorage.getItem("token");
     let req = await fetch(`${FILE_API}/${id}?alt=media`, {
         method: "GET",
@@ -24,8 +24,7 @@ export async function downloadImage(id: string) {
     });
     if (req.status !== 200) {
         if (req.status === 401) {
-            await getToken();
-            return await downloadImage(id);
+            if (await getToken()) return await downloadImage(id);
         }
         throw new Error("Unable to fetch dirs");
     }
@@ -48,8 +47,7 @@ export async function getFiles(
         });
         if (req.status !== 200) {
             if (req.status === 401) {
-                await getToken();
-                return await getFiles(parent, mimeType);
+                if (await getToken()) return await getFiles(parent, mimeType);
             }
             throw new Error("Unable to fetch dirs");
         }
@@ -146,7 +144,8 @@ export const handleGoogleSignIn = async (res: GoogleSignInPayload) => {
     localStorage.setItem("root", root);
     toggleSignButton(true);
 
-    getToken();
+    await getToken();
+    window.dispatchEvent(new Event("locationchange"));
 };
 
 export const getToken = async () => {
@@ -160,6 +159,8 @@ export const getToken = async () => {
     if (req.status !== 200) {
         if (req.status === 401) {
             console.log("session timeout. Logging off");
+            window.localStorage.clear();
+            toggleSignButton(false);
             return;
         }
         console.warn(req.status, await req.text());
@@ -167,6 +168,7 @@ export const getToken = async () => {
     }
     const { token } = await req.json();
     localStorage.setItem("token", token);
+    return true;
 };
 
 export const logoutHandler = async () => {
@@ -213,7 +215,7 @@ export function createDir(
     cover.classList.add("cover");
     addAttributes(div, [["class", "dir"]]);
     for (let img of imgs) {
-        const m = createImg(img);
+        const m = createImg(img, "cover-pic");
         cover.append(m);
     }
     anchor.append(cover);
@@ -236,23 +238,24 @@ export function createImg(
 }
 
 export async function crateMaincontent(
-    dirsData: GoogleFileRes,
-    imgsData: GoogleFileRes
+    files: [dirs: GoogleFileRes, imgs: GoogleFileRes]
 ) {
-    console.log(dirsData, imgsData);
-    const dirsEle = document.querySelector(".dirs");
-    const imgsEle = document.querySelector(".imgs");
-    for (let dir of dirsData.files) {
+    const [dirs, imgs] = files;
+    const dirsEle = document.querySelector(".dirs") as HTMLDivElement;
+    const imgsEle = document.querySelector(".imgs") as HTMLDivElement;
+    dirsEle.innerHTML = "";
+    imgsEle.innerHTML = "";
+    for (let dir of dirs!.files) {
         const data = await getFiles(dir.id, IMG_MIME_TYPE, 3);
         const folder = createDir(dir, data!.files);
         dirsEle?.append(folder);
     }
-    for (let img of imgsData.files) {
+    for (let img of imgs!.files) {
         const pic = createImg(img, "img");
         imgsEle?.append(pic);
     }
     imgsEle?.addEventListener("click", async (e) => {
-        const dataset = e.target.dataset;
+        const dataset = (e.target as HTMLImageElement).dataset;
         const preview = document.querySelector(".preview");
         if (dataset.url) {
             const img = document.createElement("img");
@@ -262,7 +265,7 @@ export async function crateMaincontent(
             preview?.append(img);
             return;
         }
-        const blob = await downloadImage(dataset.id);
+        const blob = await downloadImage(dataset.id!);
         const url = URL.createObjectURL(blob);
         const img = document.createElement("img");
         img.classList.toggle("preview-img");
