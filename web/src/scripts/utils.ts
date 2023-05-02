@@ -261,6 +261,7 @@ export function createImg(
             ["target", "_blank"],
             ["class", "img-link"],
             ["href", file.appProperties.origin],
+            ["rel", "noopener noreferrer nofollow"],
         ],
         linkImg
     );
