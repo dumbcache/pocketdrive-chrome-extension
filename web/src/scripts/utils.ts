@@ -34,25 +34,28 @@ export async function downloadImage(id: string): Promise<Blob> {
 
 export async function getFiles(
     parent: string,
+    token: string,
     mimeType: string,
     pageSize: number = 100
 ): Promise<GoogleFileRes | undefined> {
     try {
-        const token = window.localStorage.getItem("token");
-        let req = await fetch(constructAPI(parent, mimeType, pageSize), {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        if (req.status !== 200) {
-            if (req.status === 401) {
-                if (await getToken()) return await getFiles(parent, mimeType);
+        return new Promise(async (resolve, reject) => {
+            let req = await fetch(constructAPI(parent, mimeType, pageSize), {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (req.status !== 200) {
+                if (req.status === 401) {
+                    console.log(token);
+                    reject({ status: 401 });
+                }
+                reject({ status: req.status });
             }
-            throw new Error("Unable to fetch dirs");
-        }
-        const data = (await req.json()) as GoogleFileRes;
-        return data;
+            const data = (await req.json()) as GoogleFileRes;
+            resolve(data);
+        });
     } catch (error) {
         console.warn(error);
     }
@@ -186,40 +189,56 @@ export const logoutHandler = async () => {
     window.localStorage.clear();
 };
 
+export function createElement<T extends HTMLElement>(
+    type: string,
+    attributes: [string, string][] = [],
+    ...childNodes: HTMLElement[] | string[]
+): T {
+    const ele = document.createElement(type) as T;
+    for (let [key, val] of attributes) {
+        ele.setAttribute(key, val);
+    }
+    childNodes.length !== 0 && ele.append(...childNodes);
+    return ele;
+}
+
 function addAttributes(ele: HTMLElement, attributes: [string, string][]) {
     for (let [key, val] of attributes) {
         ele.setAttribute(key, val);
     }
 }
 
-export function createAnchorElement(id: string, name: string) {
-    const a = document.createElement("a");
-    a.dataset.id = id;
-    a.href = "javascript:void(0)";
-    a.onclick = () => {
-        history.pushState({ dir: name, id }, "", id);
-        window.dispatchEvent(new Event("locationchange"));
-    };
-    return a;
+function anchorHandler(e: Event) {
+    const { id, name } = e.currentTarget!.dataset;
+    history.pushState({ dir: name, id }, "", id);
+    window.dispatchEvent(new Event("locationchange"));
 }
 
-export function createDir(
-    file: GoogleFile,
-    imgs: GoogleFile[]
-): HTMLDivElement {
-    const div = document.createElement("div");
-    const cover = document.createElement("div");
-    const title = document.createElement("p");
-    const anchor = createAnchorElement(file.id, file.name);
-    title.innerText = file.name;
-    cover.classList.add("cover");
-    addAttributes(div, [["class", "dir"]]);
-    for (let img of imgs) {
-        const m = createImg(img, "cover-pic");
-        cover.append(m);
-    }
+export function createDir(file: GoogleFile, worker: Worker): HTMLDivElement {
+    const token = window.localStorage.getItem("token")!;
+    worker.postMessage({
+        context: "FETCH_FILES_COVER",
+        parent: file.id,
+        token,
+    });
+    const cover = createElement<HTMLDivElement>("div", [
+        ["class", "cover"],
+        ["data-parent", file.id],
+    ]);
+    const title = createElement("p", [], file.name);
+    const anchor = createElement<HTMLAnchorElement>("a", [
+        ["href", "javascript:void(0)"],
+        ["data-id", file.id],
+        ["data-name", file.name],
+    ]);
+    anchor.onclick = anchorHandler;
     anchor.append(cover);
-    div.append(anchor, title);
+    const div = createElement<HTMLDivElement>(
+        "div",
+        [["class", "dir"]],
+        anchor,
+        title
+    );
     return div;
 }
 
@@ -237,8 +256,26 @@ export function createImg(
     return img;
 }
 
+export function updateCoverPics(id: string, imgs: GoogleFile[]) {
+    const cover = document.querySelector(
+        `[data-parent='${id}']`
+    ) as HTMLDivElement;
+    cover.innerHTML = "";
+    console.log(cover, imgs);
+    if (cover) {
+        for (let img of imgs) {
+            const coverPic = createElement("img", [
+                ["src", img.thumbnailLink!],
+                ["referrerpolicy", "no-referrer"],
+            ]);
+            cover.append(coverPic);
+        }
+    }
+}
+
 export async function crateMaincontent(
-    files: [dirs: GoogleFileRes, imgs: GoogleFileRes]
+    files: [dirs: GoogleFileRes, imgs: GoogleFileRes],
+    worker: Worker
 ) {
     const [dirs, imgs] = files;
     const dirsEle = document.querySelector(".dirs") as HTMLDivElement;
@@ -246,8 +283,7 @@ export async function crateMaincontent(
     dirsEle.innerHTML = "";
     imgsEle.innerHTML = "";
     for (let dir of dirs!.files) {
-        const data = await getFiles(dir.id, IMG_MIME_TYPE, 3);
-        const folder = createDir(dir, data!.files);
+        const folder = createDir(dir, worker);
         dirsEle?.append(folder);
     }
     for (let img of imgs!.files) {

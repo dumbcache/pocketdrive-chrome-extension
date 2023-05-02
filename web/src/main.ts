@@ -1,19 +1,11 @@
 import {
     crateMaincontent,
+    getToken,
     isLoggedin,
     toggleSignButton,
+    updateCoverPics,
 } from "./scripts/utils";
 import "./css/app.css";
-
-let worker: Worker;
-if (window.Worker) {
-    worker = new Worker("src/workers/worker.ts");
-    worker.addEventListener("message", ({ data }) => {
-        if (data.context === "FETCH_FILES") {
-            crateMaincontent(data.files);
-        }
-    });
-}
 
 document.addEventListener("DOMContentLoaded", async () => {
     const loginStatus = isLoggedin();
@@ -22,6 +14,30 @@ document.addEventListener("DOMContentLoaded", async () => {
         window.dispatchEvent(new Event("locationchange"));
     }
 });
+
+let worker: Worker;
+if (window.Worker) {
+    worker = new Worker(new URL("workers/worker.ts", import.meta.url), {
+        type: "module",
+    });
+    worker.onmessage = ({ data }) => {
+        if (data.context === "FETCH_FILES") {
+            crateMaincontent(data.files, worker);
+            return;
+        }
+        if (data.context === "FETCH_FILES_COVER") {
+            updateCoverPics(data.parent, data.files);
+            return;
+        }
+        if (data.context === "FETCH_FILES_FAILED") {
+            if (data.status === 401) {
+                getToken();
+                return;
+            }
+        }
+    };
+    worker.onerror = (e) => console.warn(e);
+}
 
 window.addEventListener("locationchange", async () => {
     try {
