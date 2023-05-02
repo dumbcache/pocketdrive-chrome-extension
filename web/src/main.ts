@@ -56,3 +56,7 @@ window.addEventListener("locationchange", async () => {
 window.addEventListener("popstate", () => {
     window.dispatchEvent(new Event("locationchange"));
 });
+
+window.addEventListener("offline", () => {
+    alert("offline");
+});

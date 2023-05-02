@@ -47,6 +47,11 @@ select {
     font: inherit; /* By default not inherited */
 }
 
+button {
+    background: none;
+    border: none;
+}
+
 button:hover {
     cursor: pointer;
 }

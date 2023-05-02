@@ -1,4 +1,5 @@
 import type { GoogleFile, GoogleFileRes, GoogleSignInPayload } from "../types";
+import LinkButton from "../assets/link.svg";
 
 export const DIR_MIME_TYPE = "application/vnd.google-apps.folder";
 export const IMG_MIME_TYPE = "image/";
@@ -16,19 +17,19 @@ function constructAPI(
 }
 export async function downloadImage(id: string): Promise<Blob> {
     const token = window.localStorage.getItem("token");
-    let req = await fetch(`${FILE_API}/${id}?alt=media`, {
+    let res = await fetch(`${FILE_API}/${id}?alt=media`, {
         method: "GET",
         headers: {
             Authorization: `Bearer ${token}`,
         },
     });
-    if (req.status !== 200) {
-        if (req.status === 401) {
+    if (res.status !== 200) {
+        if (res.status === 401) {
             if (await getToken()) return await downloadImage(id);
         }
         throw new Error("Unable to fetch dirs");
     }
-    const data = await req.blob();
+    const data = await res.blob();
     return data;
 }
 
@@ -40,20 +41,20 @@ export async function getFiles(
 ): Promise<GoogleFileRes | undefined> {
     try {
         return new Promise(async (resolve, reject) => {
-            let req = await fetch(constructAPI(parent, mimeType, pageSize), {
+            let res = await fetch(constructAPI(parent, mimeType, pageSize), {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            if (req.status !== 200) {
-                if (req.status === 401) {
+            if (res.status !== 200) {
+                if (res.status === 401) {
                     console.log(token);
                     reject({ status: 401 });
                 }
-                reject({ status: req.status });
+                reject({ status: res.status });
             }
-            const data = (await req.json()) as GoogleFileRes;
+            const data = (await res.json()) as GoogleFileRes;
             resolve(data);
         });
     } catch (error) {
@@ -110,13 +111,13 @@ export function toggleSignButton(status: Boolean) {
 export async function signUserOut() {
     const api = import.meta.env.VITE_API;
     const secret = window.localStorage.getItem("secret");
-    const req = await fetch(`${api}/logout/WEB`, {
+    const res = await fetch(`${api}/logout/WEB`, {
         headers: {
             Authorization: `Bearer ${secret}`,
         },
     });
-    if (req.status !== 200) {
-        console.warn(req.status, await req.text());
+    if (res.status !== 200) {
+        console.warn(res.status, await res.text());
         return;
     }
     window.localStorage.clear();
@@ -128,21 +129,21 @@ export function isLoggedin() {
     return Boolean(secret);
 }
 
-export const handleGoogleSignIn = async (res: GoogleSignInPayload) => {
-    const creds = res?.credential;
+export const handleGoogleSignIn = async (googleRes: GoogleSignInPayload) => {
+    const creds = googleRes?.credential;
     const api = import.meta.env.VITE_API;
-    const req = await fetch(`${api}/login`, {
+    const res = await fetch(`${api}/login`, {
         method: "POST",
         headers: {
             "content-type": "application/json",
         },
         body: JSON.stringify({ id_token: creds, app: "WEB" }),
     });
-    if (req.status !== 200) {
-        console.warn(req.status, await req.text());
+    if (res.status !== 200) {
+        console.warn(res.status, await res.text());
         return;
     }
-    const { token, root } = await req.json();
+    const { token, root } = await res.json();
     localStorage.setItem("secret", token);
     localStorage.setItem("root", root);
     toggleSignButton(true);
@@ -154,22 +155,22 @@ export const handleGoogleSignIn = async (res: GoogleSignInPayload) => {
 export const getToken = async () => {
     const secret = window.localStorage.getItem("secret");
     const api = import.meta.env.VITE_API;
-    const req = await fetch(`${api}/auth`, {
+    const res = await fetch(`${api}/auth`, {
         headers: {
             Authorization: `Bearer ${secret}`,
         },
     });
-    if (req.status !== 200) {
-        if (req.status === 401) {
+    if (res.status !== 200) {
+        if (res.status === 401) {
             console.log("session timeout. Logging off");
             window.localStorage.clear();
             toggleSignButton(false);
             return;
         }
-        console.warn(req.status, await req.text());
+        console.warn(res.status, await res.text());
         return;
     }
-    const { token } = await req.json();
+    const { token } = await res.json();
     localStorage.setItem("token", token);
     return true;
 };
@@ -177,13 +178,13 @@ export const getToken = async () => {
 export const logoutHandler = async () => {
     const api = import.meta.env.VITE_API;
     const secret = window.localStorage.getItem("secret");
-    const req = await fetch(`${api}/auth`, {
+    const res = await fetch(`${api}/auth`, {
         headers: {
             Authorization: `Bearer ${secret}`,
         },
     });
-    if (req.status !== 200) {
-        console.warn(req.status, await req.text());
+    if (res.status !== 200) {
+        console.warn(res.status, await res.text());
         return;
     }
     window.localStorage.clear();
@@ -245,15 +246,26 @@ export function createDir(file: GoogleFile, worker: Worker): HTMLDivElement {
 export function createImg(
     file: GoogleFile,
     className: string = ""
-): HTMLImageElement {
-    const img = document.createElement("img");
-    img.dataset.id = file.id;
-    addAttributes(img, [
+): HTMLDivElement {
+    const frag = createElement<HTMLDivElement>("div", [["class", "img-card"]]);
+    const img = createElement<HTMLImageElement>("img", [
         ["src", file.thumbnailLink!],
         ["class", className],
         ["referrerpolicy", "no-referrer"],
+        ["data-id", file.id],
     ]);
-    return img;
+    const linkImg = createElement("img", [["src", LinkButton]]);
+    const link = createElement(
+        "a",
+        [
+            ["target", "_blank"],
+            ["class", "img-link"],
+            ["href", file.appProperties.origin],
+        ],
+        linkImg
+    );
+    frag.append(img, link);
+    return frag;
 }
 
 export function updateCoverPics(id: string, imgs: GoogleFile[]) {
@@ -261,7 +273,6 @@ export function updateCoverPics(id: string, imgs: GoogleFile[]) {
         `[data-parent='${id}']`
     ) as HTMLDivElement;
     cover.innerHTML = "";
-    console.log(cover, imgs);
     if (cover) {
         for (let img of imgs) {
             const coverPic = createElement("img", [
@@ -271,6 +282,25 @@ export function updateCoverPics(id: string, imgs: GoogleFile[]) {
             cover.append(coverPic);
         }
     }
+}
+
+export function previewCloseHandler(e) {
+    const preview = document.querySelector(".preview") as HTMLDivElement;
+    const previewClose = document.querySelector(
+        ".preview-close"
+    ) as HTMLDivElement;
+    preview.hidden = true;
+    previewClose.removeEventListener("click", previewCloseHandler);
+}
+
+export function togglePreview() {
+    console.log("preview toggled");
+    const preview = document.querySelector(".preview") as HTMLDivElement;
+    const previewClose = document.querySelector(
+        ".preview-close"
+    ) as HTMLDivElement;
+    preview.hidden = false;
+    previewClose.addEventListener("click", previewCloseHandler);
 }
 
 export async function crateMaincontent(
@@ -291,23 +321,21 @@ export async function crateMaincontent(
         imgsEle?.append(pic);
     }
     imgsEle?.addEventListener("click", async (e) => {
-        const dataset = (e.target as HTMLImageElement).dataset;
-        const preview = document.querySelector(".preview");
+        const target = e.target as HTMLImageElement;
+        const dataset = target.dataset;
+        const previewImg = document.querySelector(".preview-img");
         if (dataset.url) {
-            const img = document.createElement("img");
-            img.classList.toggle("preview-img");
-            img.src = dataset.url;
-            preview!.innerHTML = "";
-            preview?.append(img);
-            return;
+            const img = createElement("img", [["src", dataset.url]]);
+            previewImg!.innerHTML = "";
+            previewImg?.append(img);
+        } else {
+            const blob = await downloadImage(dataset.id!);
+            const url = URL.createObjectURL(blob);
+            const img = createElement("img", [["src", url]]);
+            previewImg!.innerHTML = "";
+            previewImg?.append(img);
+            dataset.url = url;
         }
-        const blob = await downloadImage(dataset.id!);
-        const url = URL.createObjectURL(blob);
-        const img = document.createElement("img");
-        img.classList.toggle("preview-img");
-        dataset.url = url;
-        img.src = url;
-        preview!.innerHTML = "";
-        preview?.append(img);
+        togglePreview();
     });
 }
