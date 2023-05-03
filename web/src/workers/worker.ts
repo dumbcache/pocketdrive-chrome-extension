@@ -1,12 +1,5 @@
 import { DIR_MIME_TYPE, IMG_MIME_TYPE, getFiles } from "../scripts/utils";
 
-async function checkCacheForFiles(krabsCache: Cache, parent: string) {
-    const [dirRes, imgsRes] = await krabsCache.matchAll(`/${parent}`, {
-        ignoreSearch: true,
-    });
-    return { dirRes, imgsRes };
-}
-
 async function fetchAndCacheFiles(data: any, krabsCache: Cache) {
     return new Promise((resolve, reject) => {
         Promise.all([
@@ -40,8 +33,7 @@ onmessage = async ({ data }) => {
             const dirs = await dirRes.json();
             const imgs = await imgsRes.json();
             postMessage({ context: "FETCH_FILES", files: [dirs, imgs] });
-            fetchAndCacheFiles(data, krabsCache);
-
+            // fetchAndCacheFiles(data, krabsCache);
             return;
         } else {
             fetchAndCacheFiles(data, krabsCache)

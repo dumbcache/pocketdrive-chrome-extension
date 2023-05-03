@@ -7,6 +7,8 @@ import {
 } from "./scripts/utils";
 import "./css/app.css";
 
+console.log("loading" in HTMLImageElement.prototype);
+
 document.addEventListener("DOMContentLoaded", async () => {
     const loginStatus = isLoggedin();
     toggleSignButton(loginStatus);
@@ -15,14 +17,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-let worker: Worker;
+let worker: Worker, childWorker: Worker;
+
 if (window.Worker) {
     worker = new Worker(new URL("workers/worker.ts", import.meta.url), {
         type: "module",
     });
+    childWorker = new Worker(
+        new URL("workers/childWorker.ts", import.meta.url),
+        {
+            type: "module",
+        }
+    );
+
+    /************ worker ************/
+    worker.onerror = (e) => console.warn(e);
     worker.onmessage = ({ data }) => {
         if (data.context === "FETCH_FILES") {
-            crateMaincontent(data.files, worker);
+            crateMaincontent(data.files, worker, childWorker);
             return;
         }
         if (data.context === "FETCH_FILES_COVER") {
@@ -36,7 +48,32 @@ if (window.Worker) {
             }
         }
     };
-    worker.onerror = (e) => console.warn(e);
+
+    /************ Child worker ************/
+    childWorker.onerror = (e) => console.warn(e);
+    childWorker.onmessage = ({ data }) => {
+        if (data.context === "FETCH_IMAGE") {
+            const { id, blob } = data;
+            console.log(id, blob);
+            const previewImg = document.querySelector(
+                ".preview-img"
+            ) as HTMLImageElement;
+            const target = document.querySelector(
+                `[data-id='${id}']`
+            ) as HTMLDivElement;
+            if (previewImg.dataset.id !== id) return;
+            const url = URL.createObjectURL(blob);
+            previewImg.src = url;
+            target.dataset.url = url;
+            return;
+        }
+        if (data.context === "IMAGE_FAILED") {
+            if (data.status === 401) {
+                getToken();
+                return;
+            }
+        }
+    };
 }
 
 window.addEventListener("locationchange", async () => {
@@ -54,6 +91,13 @@ window.addEventListener("locationchange", async () => {
     }
 });
 
+window.addEventListener("cacheimage", (e) => {
+    try {
+        console.log(e.datail);
+    } catch (error) {
+        console.warn(error);
+    }
+});
 window.addEventListener("popstate", () => {
     window.dispatchEvent(new Event("locationchange"));
 });

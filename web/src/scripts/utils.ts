@@ -15,22 +15,21 @@ function constructAPI(
     pageToken && api + `&pageToken=` + pageToken;
     return api;
 }
-export async function downloadImage(id: string): Promise<Blob> {
-    const token = window.localStorage.getItem("token");
-    let res = await fetch(`${FILE_API}/${id}?alt=media`, {
-        method: "GET",
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    if (res.status !== 200) {
-        if (res.status === 401) {
-            if (await getToken()) return await downloadImage(id);
+export async function downloadImage(id: string, token: string): Promise<Blob> {
+    return new Promise(async (resolve, reject) => {
+        let res = await fetch(`${FILE_API}/${id}?alt=media`, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        if (res.status !== 200) {
+            if (res.status === 401) reject({ status: 401 });
+            reject({ status: res.status });
         }
-        throw new Error("Unable to fetch dirs");
-    }
-    const data = await res.blob();
-    return data;
+        const data = await res.blob();
+        resolve(data);
+    });
 }
 
 export async function getFiles(
@@ -48,10 +47,7 @@ export async function getFiles(
                 },
             });
             if (res.status !== 200) {
-                if (res.status === 401) {
-                    console.log(token);
-                    reject({ status: 401 });
-                }
+                if (res.status === 401) reject({ status: 401 });
                 reject({ status: res.status });
             }
             const data = (await res.json()) as GoogleFileRes;
@@ -253,6 +249,9 @@ export function createImg(
         ["class", className],
         ["referrerpolicy", "no-referrer"],
         ["data-id", file.id],
+        ["loading", "lazy"],
+        ["height", "200"],
+        ["width", "200"],
     ]);
     const linkImg = createElement("img", [["src", LinkButton]]);
     const link = createElement(
@@ -305,7 +304,8 @@ export function togglePreview() {
 
 export async function crateMaincontent(
     files: [dirs: GoogleFileRes, imgs: GoogleFileRes],
-    worker: Worker
+    worker: Worker,
+    childWorker: Worker
 ) {
     const [dirs, imgs] = files;
     const dirsEle = document.querySelector(".dirs") as HTMLDivElement;
@@ -337,11 +337,12 @@ export async function crateMaincontent(
         if (dataset.url) {
             previewImg.src = dataset.url;
         } else {
-            const blob = await downloadImage(dataset.id!);
-            const url = URL.createObjectURL(blob);
-            if (previewImg.dataset.id !== dataset.id) return;
-            previewImg.src = url;
-            dataset.url = url;
+            const token = window.localStorage.getItem("token")!;
+            childWorker.postMessage({
+                context: "FETCH_IMAGE",
+                id: dataset.id,
+                token,
+            });
         }
     });
 }
