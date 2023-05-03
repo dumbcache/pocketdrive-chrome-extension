@@ -295,7 +295,6 @@ export function previewCloseHandler(e) {
 }
 
 export function togglePreview() {
-    console.log("preview toggled");
     const preview = document.querySelector(".preview") as HTMLDivElement;
     const previewClose = document.querySelector(
         ".preview-close"
@@ -323,20 +322,26 @@ export async function crateMaincontent(
     }
     imgsEle?.addEventListener("click", async (e) => {
         const target = e.target as HTMLImageElement;
+        if (!target.classList.contains("img")) return;
         const dataset = target.dataset;
-        const previewImg = document.querySelector(".preview-img");
+        const previewImg = document.querySelector(
+            ".preview-img"
+        ) as HTMLImageElement;
+        if (previewImg.dataset.id === dataset.id) {
+            togglePreview();
+            return;
+        }
+        previewImg.src = target.src;
+        previewImg.dataset.id = target.dataset.id;
+        togglePreview();
         if (dataset.url) {
-            const img = createElement("img", [["src", dataset.url]]);
-            previewImg!.innerHTML = "";
-            previewImg?.append(img);
+            previewImg.src = dataset.url;
         } else {
             const blob = await downloadImage(dataset.id!);
             const url = URL.createObjectURL(blob);
-            const img = createElement("img", [["src", url]]);
-            previewImg!.innerHTML = "";
-            previewImg?.append(img);
+            if (previewImg.dataset.id !== dataset.id) return;
+            previewImg.src = url;
             dataset.url = url;
         }
-        togglePreview();
     });
 }

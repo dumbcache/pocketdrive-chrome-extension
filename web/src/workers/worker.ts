@@ -8,27 +8,26 @@ async function checkCacheForFiles(krabsCache: Cache, parent: string) {
 }
 
 async function fetchAndCacheFiles(data: any, krabsCache: Cache) {
-    Promise.all([
-        getFiles(data.parent, data.token, DIR_MIME_TYPE),
-        getFiles(data.parent, data.token, IMG_MIME_TYPE),
-    ])
-        .then(async ([dirs, imgs]) => {
-            krabsCache.put(
-                `/${data.parent}?type=dirs`,
-                new Response(JSON.stringify(dirs!))
-            );
-            krabsCache.put(
-                `/${data.parent}?type=imgs`,
-                new Response(JSON.stringify(imgs!))
-            );
-        })
-        .catch((e) => {
-            postMessage({
-                context: "FETCH_FILES_FAILED",
-                status: e.status,
+    return new Promise((resolve, reject) => {
+        Promise.all([
+            getFiles(data.parent, data.token, DIR_MIME_TYPE),
+            getFiles(data.parent, data.token, IMG_MIME_TYPE),
+        ])
+            .then(async ([dirs, imgs]) => {
+                krabsCache.put(
+                    `/${data.parent}?type=dirs`,
+                    new Response(JSON.stringify(dirs!))
+                );
+                krabsCache.put(
+                    `/${data.parent}?type=imgs`,
+                    new Response(JSON.stringify(imgs!))
+                );
+                resolve([dirs, imgs]);
+            })
+            .catch((e) => {
+                reject(e.status);
             });
-            console.warn(e);
-        });
+    });
 }
 
 onmessage = async ({ data }) => {
@@ -41,12 +40,21 @@ onmessage = async ({ data }) => {
             const dirs = await dirRes.json();
             const imgs = await imgsRes.json();
             postMessage({ context: "FETCH_FILES", files: [dirs, imgs] });
-            setTimeout(() => {
-                // fetchAndCacheFiles(data, krabsCache);
-            }, 5000);
+            fetchAndCacheFiles(data, krabsCache);
+
             return;
         } else {
-            fetchAndCacheFiles(data, krabsCache);
+            fetchAndCacheFiles(data, krabsCache)
+                .then((files) => {
+                    postMessage({ context: "FETCH_FILES", files });
+                })
+                .catch((e) => {
+                    postMessage({
+                        context: "FETCH_FILES_FAILED",
+                        status: e.status,
+                    });
+                    console.warn(e);
+                });
             return;
         }
     }

@@ -47,6 +47,7 @@ window.addEventListener("locationchange", async () => {
                 ? window.localStorage.getItem("root")!
                 : pathname.substring(1);
         const token = window.localStorage.getItem("token");
+        console.log("fetching");
         worker.postMessage({ context: "FETCH_FILES", parent: root, token });
     } catch (error) {
         console.warn(error);
