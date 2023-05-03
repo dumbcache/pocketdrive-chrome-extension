@@ -5,7 +5,7 @@ let idbRequest: IDBOpenDBRequest;
     idbRequest = indexedDB.open("krabfiles", 1);
     idbRequest.onsuccess = () => {
         const db = idbRequest.result;
-        db.onversionchange = (e) => {
+        db.onversionchange = () => {
             postMessage({ context: "IDB_RELOAD_REQUIRED" });
         };
         db.onclose = (e) => {

@@ -57,6 +57,7 @@ export async function getFiles(
         console.warn(error);
     }
 }
+let google: any;
 
 export const loadGSIScript = () => {
     const src = "https://accounts.google.com/gsi/client";
@@ -65,7 +66,7 @@ export const loadGSIScript = () => {
     if (gsiIfExists) profile.removeChild(gsiIfExists);
     const script = document.createElement("script");
     script.src = src;
-    script.onload = (e) => {
+    script.onload = () => {
         google.accounts.id.initialize({
             client_id: import.meta.env.VITE_CLIENT_ID,
             nonce: import.meta.env.VITE_NONCE_WEB,
