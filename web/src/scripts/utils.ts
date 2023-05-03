@@ -57,7 +57,6 @@ export async function getFiles(
         console.warn(error);
     }
 }
-let google: any;
 
 export const loadGSIScript = () => {
     const src = "https://accounts.google.com/gsi/client";
@@ -67,14 +66,14 @@ export const loadGSIScript = () => {
     const script = document.createElement("script");
     script.src = src;
     script.onload = () => {
-        google.accounts.id.initialize({
+        window.google.accounts.id.initialize({
             client_id: import.meta.env.VITE_CLIENT_ID,
             nonce: import.meta.env.VITE_NONCE_WEB,
             auto_select: false,
             callback: handleGoogleSignIn,
         });
-        // google.accounts.id.prompt();
-        google.accounts.id.renderButton(
+        // window.google.accounts.id.prompt();
+        window.google.accounts.id.renderButton(
             document.querySelector(".signin-button"),
             {
                 type: "icon",

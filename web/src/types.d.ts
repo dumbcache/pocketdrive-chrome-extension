@@ -22,3 +22,9 @@ export interface GoogleSignInPayload {
     credential: string;
     select_by: string;
 }
+
+declare global {
+    interface Window {
+        google: any;
+    }
+}
