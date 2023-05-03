@@ -11,6 +11,9 @@ let idbRequest: IDBOpenDBRequest;
         db.onclose = (e) => {
             console.log(`db closed`, e);
         };
+        db.onerror = (e) => {
+            console.log(`db errored out`, e);
+        };
     };
     idbRequest.onupgradeneeded = () => {
         const db = idbRequest.result;

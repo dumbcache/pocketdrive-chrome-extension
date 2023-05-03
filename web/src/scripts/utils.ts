@@ -117,6 +117,7 @@ export async function signUserOut() {
         return;
     }
     window.localStorage.clear();
+    document.querySelector(".main")!.innerHTML = "";
     toggleSignButton(false);
 }
 
@@ -171,7 +172,7 @@ export const getToken = async () => {
     return true;
 };
 
-export const logoutHandler = async () => {
+export const logoutFromServer = async () => {
     const api = import.meta.env.VITE_API;
     const secret = window.localStorage.getItem("secret");
     const res = await fetch(`${api}/auth`, {
@@ -199,14 +200,8 @@ export function createElement<T extends HTMLElement>(
     return ele;
 }
 
-function addAttributes(ele: HTMLElement, attributes: [string, string][]) {
-    for (let [key, val] of attributes) {
-        ele.setAttribute(key, val);
-    }
-}
-
 function anchorHandler(e: Event) {
-    const { id, name } = e.currentTarget!.dataset;
+    const { id, name } = (e.currentTarget as HTMLAnchorElement).dataset;
     history.pushState({ dir: name, id }, "", id);
     window.dispatchEvent(new Event("locationchange"));
 }
@@ -253,18 +248,21 @@ export function createImg(
         ["height", "200"],
         ["width", "200"],
     ]);
-    const linkImg = createElement("img", [["src", LinkButton]]);
-    const link = createElement(
-        "a",
-        [
-            ["target", "_blank"],
-            ["class", "img-link"],
-            ["href", file.appProperties.origin],
-            ["rel", "noopener noreferrer nofollow"],
-        ],
-        linkImg
-    );
-    frag.append(img, link);
+    frag.append(img);
+    if (file.appProperties?.origin) {
+        const linkImg = createElement("img", [["src", LinkButton]]);
+        const link = createElement(
+            "a",
+            [
+                ["target", "_blank"],
+                ["class", "img-link"],
+                ["href", file.appProperties.origin],
+                ["rel", "noopener noreferrer nofollow"],
+            ],
+            linkImg
+        );
+        frag.append(link);
+    }
     return frag;
 }
 
@@ -284,7 +282,7 @@ export function updateCoverPics(id: string, imgs: GoogleFile[]) {
     }
 }
 
-export function previewCloseHandler(e) {
+export function previewCloseHandler() {
     const preview = document.querySelector(".preview") as HTMLDivElement;
     const previewClose = document.querySelector(
         ".preview-close"

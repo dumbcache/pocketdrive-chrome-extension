@@ -7,8 +7,6 @@ import {
 } from "./scripts/utils";
 import "./css/app.css";
 
-console.log("loading" in HTMLImageElement.prototype);
-
 document.addEventListener("DOMContentLoaded", async () => {
     const loginStatus = isLoggedin();
     toggleSignButton(loginStatus);
@@ -54,7 +52,6 @@ if (window.Worker) {
     childWorker.onmessage = ({ data }) => {
         if (data.context === "FETCH_IMAGE") {
             const { id, blob } = data;
-            console.log(id, blob);
             const previewImg = document.querySelector(
                 ".preview-img"
             ) as HTMLImageElement;
@@ -84,20 +81,12 @@ window.addEventListener("locationchange", async () => {
                 ? window.localStorage.getItem("root")!
                 : pathname.substring(1);
         const token = window.localStorage.getItem("token");
-        console.log("fetching");
         worker.postMessage({ context: "FETCH_FILES", parent: root, token });
     } catch (error) {
         console.warn(error);
     }
 });
 
-window.addEventListener("cacheimage", (e) => {
-    try {
-        console.log(e.datail);
-    } catch (error) {
-        console.warn(error);
-    }
-});
 window.addEventListener("popstate", () => {
     window.dispatchEvent(new Event("locationchange"));
 });
