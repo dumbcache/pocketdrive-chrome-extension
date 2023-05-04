@@ -29,6 +29,7 @@ export function initTouchEvents() {
     }
     preview.addEventListener("touchstart", (e) => {
         e.stopPropagation();
+        e.preventDefault();
         if ((e.target as HTMLImageElement).classList.contains("preview-img")) {
             if (e.changedTouches.length === 0) return;
             touchStartX = e.changedTouches[0].screenX;
@@ -36,6 +37,7 @@ export function initTouchEvents() {
         }
     });
     preview.addEventListener("touchend", (e) => {
+        e.preventDefault();
         e.stopPropagation();
         if ((e.target as HTMLImageElement).classList.contains("preview-img")) {
             if (e.changedTouches.length === 0) return;
