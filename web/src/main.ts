@@ -5,6 +5,7 @@ import {
     toggleSignButton,
     updateCoverPics,
 } from "./scripts/utils";
+import { initTouchEvents } from "./scripts/events";
 import "./css/app.css";
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -12,6 +13,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     toggleSignButton(loginStatus);
     if (loginStatus === true) {
         window.dispatchEvent(new Event("locationchange"));
+        initTouchEvents();
     }
 });
 
@@ -93,4 +95,16 @@ window.addEventListener("popstate", () => {
 
 window.addEventListener("offline", () => {
     alert("offline");
+});
+
+window.addEventListener("touchstart", (e) => {
+    if ((e.target as HTMLDivElement).classList.contains("preview-img")) {
+        console.log(e);
+    }
+});
+
+window.addEventListener("touchend", (e) => {
+    if ((e.target as HTMLDivElement).classList.contains("preview-img")) {
+        console.log(e);
+    }
 });

@@ -96,6 +96,8 @@ export function toggleSignButton(status: Boolean) {
     if (status === true) {
         signout.hidden = false;
         signin.hidden = true;
+        (document.querySelector(".main-wrapper")! as HTMLDivElement).hidden =
+            false;
         signout.addEventListener("click", signUserOut);
     } else {
         loadGSIScript();

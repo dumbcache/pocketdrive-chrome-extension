@@ -11,7 +11,7 @@ h1 {
     flex-flow: row nowrap;
     justify-content: space-between;
     align-items: center;
-    background-color: #ddd;
+    box-shadow: 0 0 1px 1px;
     padding: 0rem 1rem;
     height: 10%;
 }
@@ -34,6 +34,7 @@ h1 {
 .main {
     height: 90%;
     display: flex;
+    position: relative;
     justify-content: space-between;
 }
 .main ::-webkit-scrollbar {
@@ -170,5 +171,35 @@ h1 {
     }
     .img-link {
         width: 20px;
+    }
+    .preview {
+        position: absolute;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        background-color: #000;
+    }
+    .preview ::-webkit-scrollbar {
+        display: none;
+    }
+    .preview-nav {
+        background-color: #aaa;
+        display: flex;
+        flex-flow: row nowrap;
+        padding: 0.5rem;
+        height: 8%;
+    }
+    .preview-body {
+        max-width: 100%;
+        height: 92%;
+        background-color: #fff5;
+        backdrop-filter: blur(10px);
+    }
+    .preview-img {
+        padding: 0rem 1rem;
+        width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        object-position: top;
     }
 }
