@@ -1,4 +1,4 @@
-import { DIR_MIME_TYPE, IMG_MIME_TYPE, getFiles } from "../scripts/utils";
+import { DIR_MIME_TYPE, IMG_MIME_TYPE, getFiles } from "../scripts/drive";
 
 async function fetchAndCacheFiles(data: any, krabsCache: Cache) {
     return new Promise((resolve, reject) => {

@@ -1,4 +1,4 @@
-import { downloadImage } from "../scripts/utils";
+import { downloadImage } from "../scripts/drive";
 
 let idbRequest: IDBOpenDBRequest;
 (() => {
