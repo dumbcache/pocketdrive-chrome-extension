@@ -5,7 +5,7 @@ import {
     toggleSignButton,
     updateCoverPics,
 } from "./scripts/utils";
-import { initTouchEvents } from "./scripts/events";
+import { initTouchEvents, initMenuEvents } from "./scripts/events";
 import "./css/app.css";
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (loginStatus === true) {
         window.dispatchEvent(new Event("locationchange"));
         initTouchEvents();
+        initMenuEvents();
     }
 });
 
@@ -29,7 +30,6 @@ if (window.Worker) {
             type: "module",
         }
     );
-
     /************ worker ************/
     worker.onerror = (e) => console.warn(e);
     worker.onmessage = ({ data }) => {
@@ -97,6 +97,16 @@ window.addEventListener("locationchange", async () => {
 
 window.addEventListener("popstate", () => {
     window.dispatchEvent(new Event("locationchange"));
+});
+
+window.addEventListener("refresh", () => {
+    const { pathname } = window.location;
+    const root =
+        pathname === "/"
+            ? window.localStorage.getItem("root")!
+            : pathname.substring(1);
+    const token = window.localStorage.getItem("token");
+    worker.postMessage({ context: "REFRESH", parent: root, token });
 });
 
 window.addEventListener("offline", () => {

@@ -7,10 +7,10 @@ export function initTouchEvents() {
     let touchEndX = 0;
     let touchEndY = 0;
     const preview = document.querySelector(".preview") as HTMLDivElement;
-    const header = document.querySelector(".header") as HTMLDivElement;
+    const backButton = document.querySelector(".back-button") as HTMLDivElement;
 
     function checkDirection() {
-        if (Math.abs(touchStartX - touchEndX) > 30) {
+        if (Math.abs(touchStartX - touchEndX) > 40) {
             if (touchStartX > touchEndX) {
                 // console.log(
                 //     document.querySelector(`[data-id='${e.target?.dataset.id}']`)
@@ -25,7 +25,7 @@ export function initTouchEvents() {
                 // console.log("swipe right");
             }
         }
-        if (Math.abs(touchStartY - touchEndY) > 50) {
+        if (Math.abs(touchStartY - touchEndY) > 30) {
             if (touchStartY < touchEndY) {
                 console.log("swipe down");
                 preview.hidden = true;
@@ -54,16 +54,23 @@ export function initTouchEvents() {
         }
     });
 
-    header.addEventListener("click", () => {
+    backButton.addEventListener("click", () => {
         const mainWrapper = document.querySelector(
             ".main-wrapper"
         ) as HTMLDivElement;
         mainWrapper.scrollTo(0, 0);
     });
-    header.addEventListener("touchstart", () => {
+    backButton.addEventListener("touchstart", () => {
         const mainWrapper = document.querySelector(
             ".main-wrapper"
         ) as HTMLDivElement;
         mainWrapper.scrollTo(0, 0);
     });
+}
+
+export function initMenuEvents() {
+    const refresh = document.querySelector(
+        ".refresh-button"
+    ) as HTMLButtonElement;
+    refresh.onclick = () => window.dispatchEvent(new Event("refresh"));
 }

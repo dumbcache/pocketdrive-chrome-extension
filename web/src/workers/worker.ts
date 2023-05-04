@@ -1,12 +1,13 @@
 import { DIR_MIME_TYPE, IMG_MIME_TYPE, getFiles } from "../scripts/drive";
 
-async function fetchAndCacheFiles(data: any, krabsCache: Cache) {
+async function fetchAndCacheFiles(data: any) {
     return new Promise((resolve, reject) => {
         Promise.all([
             getFiles(data.parent, data.token, DIR_MIME_TYPE),
             getFiles(data.parent, data.token, IMG_MIME_TYPE),
         ])
             .then(async ([dirs, imgs]) => {
+                const krabsCache = await caches.open("krabs");
                 krabsCache.put(
                     `/${data.parent}?type=dirs`,
                     new Response(JSON.stringify(dirs!))
@@ -36,7 +37,7 @@ onmessage = async ({ data }) => {
             // fetchAndCacheFiles(data, krabsCache);
             return;
         } else {
-            fetchAndCacheFiles(data, krabsCache)
+            fetchAndCacheFiles(data)
                 .then((files) => {
                     postMessage({ context: "FETCH_FILES", files });
                 })
@@ -59,6 +60,21 @@ onmessage = async ({ data }) => {
                     files: data?.files,
                     parent,
                 });
+            })
+            .catch((e) => {
+                postMessage({
+                    context: "FETCH_FILES_FAILED",
+                    status: e.status,
+                });
+                console.warn(e);
+            });
+        return;
+    }
+    if (data.context === "REFRESH") {
+        console.log("refresh");
+        fetchAndCacheFiles(data)
+            .then((files) => {
+                postMessage({ context: "FETCH_FILES", files });
             })
             .catch((e) => {
                 postMessage({
