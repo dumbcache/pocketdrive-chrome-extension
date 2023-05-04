@@ -245,21 +245,18 @@ export function togglePreview() {
     previewClose.addEventListener("click", previewCloseHandler);
 }
 
-export async function crateMaincontent(
-    files: [dirs: GoogleFileRes, imgs: GoogleFileRes],
-    worker: Worker,
-    childWorker: Worker
-) {
-    const [dirs, imgs] = files;
+function generateDirs(files: GoogleFile[], worker: Worker) {
     const dirsEle = document.querySelector(".dirs") as HTMLDivElement;
-    const imgsEle = document.querySelector(".imgs") as HTMLDivElement;
     dirsEle.innerHTML = "";
-    imgsEle.innerHTML = "";
-    for (let dir of dirs!.files) {
+    for (let dir of files) {
         const folder = createDir(dir, worker);
         dirsEle?.append(folder);
     }
-    for (let img of imgs!.files) {
+}
+function generateImgs(files: GoogleFile[], childWorker: Worker) {
+    const imgsEle = document.querySelector(".imgs") as HTMLDivElement;
+    imgsEle.innerHTML = "";
+    for (let img of files) {
         const pic = createImg(img, "img");
         imgsEle?.append(pic);
     }
@@ -288,4 +285,15 @@ export async function crateMaincontent(
             });
         }
     });
+}
+
+export async function crateMaincontent(
+    files: [dirs: GoogleFileRes, imgs: GoogleFileRes],
+    worker: Worker,
+    childWorker: Worker
+) {
+    const [dirs, imgs] = files;
+
+    generateDirs(dirs.files, worker);
+    generateImgs(imgs.files, childWorker);
 }

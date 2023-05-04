@@ -78,6 +78,12 @@ if (window.Worker) {
 window.addEventListener("locationchange", async () => {
     try {
         const { pathname } = window.location;
+        const back = document.querySelector(
+            ".back-button"
+        ) as HTMLButtonElement;
+        pathname === "/"
+            ? (back.style.display = "none")
+            : (back.style.display = "initial");
         const root =
             pathname === "/"
                 ? window.localStorage.getItem("root")!
