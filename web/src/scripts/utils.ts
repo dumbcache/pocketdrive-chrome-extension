@@ -33,18 +33,16 @@ export function toggleSignButton(status: Boolean) {
     const signout = document.querySelector(
         ".signout-button"
     ) as HTMLButtonElement;
-    const signin = document.querySelector(
-        ".signin-button"
-    ) as HTMLButtonElement;
+    const menu = document.querySelector(".menu") as HTMLDivElement;
     if (status === true) {
         signout.hidden = false;
-        signin.hidden = true;
+        menu.hidden = true;
         (document.querySelector(".main-wrapper")! as HTMLDivElement).hidden =
             false;
         signout.addEventListener("click", signUserOut);
     } else {
         loadGSIScript();
-        signin.hidden = false;
+        menu.hidden = false;
         signout.hidden = true;
     }
 }
