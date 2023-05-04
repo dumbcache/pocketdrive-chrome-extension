@@ -51,7 +51,8 @@ export function toggleSignButton(status: Boolean) {
     }
 }
 
-export async function signUserOut() {
+export async function signUserOut(e: Event) {
+    e.stopPropagation();
     const api = import.meta.env.VITE_API;
     const secret = window.localStorage.getItem("secret");
     const res = await fetch(`${api}/logout/WEB`, {
