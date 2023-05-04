@@ -8,7 +8,7 @@ export function initTouchEvents() {
     function checkDirection() {
         if (
             Math.abs(touchStartX - touchEndX) > 30 ||
-            Math.abs(touchStartY - touchEndY) > 30
+            Math.abs(touchStartY - touchEndY) > 50
         ) {
             console.log("x", touchStartX, touchEndX);
             console.log("y", touchStartY, touchEndY);

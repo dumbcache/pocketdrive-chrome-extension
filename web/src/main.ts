@@ -15,7 +15,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         window.dispatchEvent(new Event("locationchange"));
         initTouchEvents();
     }
-    alert(`${window.screen.height}, ${window.screen.width}`);
 });
 
 let worker: Worker, childWorker: Worker;

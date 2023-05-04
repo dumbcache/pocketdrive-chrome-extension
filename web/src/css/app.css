@@ -160,14 +160,18 @@ h1 {
     grid-area: three;
 }
 @media (max-width: 600px) {
+    .main-wrapper {
+        padding: 0.5rem;
+    }
+
     .dir {
-        max-width: 150px;
+        max-width: 14rem;
     }
     .img {
-        max-width: 100px;
+        max-width: 9rem;
     }
     .cover {
-        height: 100px;
+        height: 9rem;
     }
     .img-link {
         width: 20px;
