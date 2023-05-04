@@ -6,7 +6,7 @@ async function fetchAndCacheCovers(data: any, krabsCache: Cache) {
         getFiles(parent, token, IMG_MIME_TYPE, 3)
             .then(async (files) => {
                 krabsCache.put(
-                    `/${parent}?type=dirs`,
+                    `/${parent}?type=covers`,
                     new Response(JSON.stringify(files))
                 );
                 resolve(files);
