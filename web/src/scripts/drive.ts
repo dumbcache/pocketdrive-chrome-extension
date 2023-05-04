@@ -1,5 +1,4 @@
-import type { GoogleFile, GoogleFileRes, GoogleSignInPayload } from "../types";
-import LinkButton from "../assets/link.svg";
+import type { GoogleFileRes } from "../types";
 
 export const DIR_MIME_TYPE = "application/vnd.google-apps.folder";
 export const IMG_MIME_TYPE = "image/";
