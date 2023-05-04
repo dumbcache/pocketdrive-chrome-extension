@@ -4,6 +4,7 @@ export function initTouchEvents() {
     let touchEndX = 0;
     let touchEndY = 0;
     const preview = document.querySelector(".preview") as HTMLDivElement;
+    const navigation = document.querySelector(".navigation") as HTMLDivElement;
 
     function checkDirection() {
         if (Math.abs(touchStartX - touchEndX) > 30) {
@@ -42,5 +43,18 @@ export function initTouchEvents() {
             touchEndY = e.changedTouches[0].screenY;
             checkDirection();
         }
+    });
+
+    navigation.addEventListener("click", () => {
+        const mainWrapper = document.querySelector(
+            ".main-wrapper"
+        ) as HTMLDivElement;
+        mainWrapper.scrollTo(0, 0);
+    });
+    navigation.addEventListener("touchstart", () => {
+        const mainWrapper = document.querySelector(
+            ".main-wrapper"
+        ) as HTMLDivElement;
+        mainWrapper.scrollTo(0, 0);
     });
 }
