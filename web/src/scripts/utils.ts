@@ -1,5 +1,6 @@
 import type { GoogleFile, GoogleFileRes, GoogleSignInPayload } from "../types";
 import LinkButton from "../assets/link.svg";
+import { initMenuEvents } from "./events";
 
 export const loadGSIScript = () => {
     const src = "https://accounts.google.com/gsi/client";
@@ -44,6 +45,7 @@ export function toggleSignButton(status: Boolean) {
         (
             document.querySelector(".signout-button")! as HTMLDivElement
         ).addEventListener("click", signUserOut);
+        initMenuEvents();
     } else {
         loadGSIScript();
         menu.style.display = "none";

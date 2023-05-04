@@ -68,7 +68,7 @@ onmessage = async ({ data }) => {
     }
     if (data.context === "FETCH_FILES_COVER") {
         const { parent } = data;
-        const coverRes = await krabsCache.match(`/${parent}?type=dirs`);
+        const coverRes = await krabsCache.match(`/${parent}?type=covers`);
         if (coverRes) {
             const files = await coverRes.json();
             postMessage({
