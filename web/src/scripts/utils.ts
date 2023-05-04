@@ -62,6 +62,7 @@ export async function signUserOut() {
         return;
     }
     window.localStorage.clear();
+    history.pushState({ dir: "root" }, "", "/");
     window.location.reload();
 }
 
