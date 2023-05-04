@@ -115,6 +115,7 @@ window.addEventListener("refresh", () => {
     //         token,
     //     });
     // }
+    //
 });
 
 window.addEventListener("offline", () => {
