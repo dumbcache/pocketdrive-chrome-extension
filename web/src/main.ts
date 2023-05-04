@@ -96,15 +96,3 @@ window.addEventListener("popstate", () => {
 window.addEventListener("offline", () => {
     alert("offline");
 });
-
-window.addEventListener("touchstart", (e) => {
-    if ((e.target as HTMLDivElement).classList.contains("preview-img")) {
-        console.log(e);
-    }
-});
-
-window.addEventListener("touchend", (e) => {
-    if ((e.target as HTMLDivElement).classList.contains("preview-img")) {
-        console.log(e);
-    }
-});

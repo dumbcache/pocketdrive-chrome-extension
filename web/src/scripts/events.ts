@@ -6,18 +6,17 @@ export function initTouchEvents() {
     const preview = document.querySelector(".preview") as HTMLDivElement;
 
     function checkDirection() {
-        if (
-            Math.abs(touchStartX - touchEndX) > 30 ||
-            Math.abs(touchStartY - touchEndY) > 50
-        ) {
-            console.log("x", touchStartX, touchEndX);
-            console.log("y", touchStartY, touchEndY);
+        if (Math.abs(touchStartX - touchEndX) > 30) {
+            console.log("x", touchStartX - touchEndX);
+            console.log("y", touchStartY - touchEndY);
             if (touchStartX > touchEndX) {
                 console.log("swipe left");
             }
             if (touchStartX < touchEndX) {
                 console.log("swipe right");
             }
+        }
+        if (Math.abs(touchStartY - touchEndY) > 50) {
             if (touchStartY < touchEndY) {
                 console.log("swipe down");
                 preview.hidden = true;
