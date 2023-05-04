@@ -3,9 +3,9 @@ import LinkButton from "../assets/link.svg";
 
 export const loadGSIScript = () => {
     const src = "https://accounts.google.com/gsi/client";
-    const profile = document.querySelector(".profile") as HTMLDivElement;
-    const gsiIfExists = profile.querySelector(`script[src='${src}']`);
-    if (gsiIfExists) profile.removeChild(gsiIfExists);
+    const header = document.querySelector(".header") as HTMLDivElement;
+    const gsiIfExists = header.querySelector(`script[src='${src}']`);
+    if (gsiIfExists) header.removeChild(gsiIfExists);
     const script = document.createElement("script");
     script.src = src;
     script.onload = () => {
@@ -26,24 +26,26 @@ export const loadGSIScript = () => {
     };
     script.onerror = (e) => console.log(e);
 
-    profile.append(script);
+    header.append(script);
 };
 
 export function toggleSignButton(status: Boolean) {
-    const signout = document.querySelector(
-        ".signout-button"
+    const signin = document.querySelector(
+        ".signin-button"
     ) as HTMLButtonElement;
     const menu = document.querySelector(".menu") as HTMLDivElement;
     if (status === true) {
-        signout.hidden = false;
-        menu.hidden = true;
+        menu.style.display = "flex";
+        signin.hidden = true;
         (document.querySelector(".main-wrapper")! as HTMLDivElement).hidden =
             false;
-        signout.addEventListener("click", signUserOut);
+        (
+            document.querySelector(".signout-button")! as HTMLDivElement
+        ).addEventListener("click", signUserOut);
     } else {
         loadGSIScript();
-        menu.hidden = false;
-        signout.hidden = true;
+        menu.style.display = "none";
+        signin.hidden = false;
     }
 }
 
@@ -60,8 +62,7 @@ export async function signUserOut() {
         return;
     }
     window.localStorage.clear();
-    document.querySelector(".main")!.innerHTML = "";
-    toggleSignButton(false);
+    window.location.reload();
 }
 
 export function isLoggedin() {
@@ -86,9 +87,9 @@ export const handleGoogleSignIn = async (googleRes: GoogleSignInPayload) => {
     const { token, root } = await res.json();
     localStorage.setItem("secret", token);
     localStorage.setItem("root", root);
-    toggleSignButton(true);
-
     await getToken();
+
+    toggleSignButton(true);
     window.dispatchEvent(new Event("locationchange"));
 };
 
