@@ -11,8 +11,9 @@ function constructAPI(
     pageSize?: number,
     pageToken?: string
 ) {
-    const api = `${FILE_API}?q='${parent}' in parents and mimeType contains '${mimeType}'&fields=files(id,name,appProperties,parents,thumbnailLink)&pageSize=${pageSize}`;
-    pageToken && api + `&pageToken=` + pageToken;
+    let api = `${FILE_API}?q='${parent}' in parents and mimeType contains '${mimeType}'&fields=files(id,name,appProperties,parents,thumbnailLink)&pageSize=${pageSize}`;
+    pageToken && (api = api + `&pageToken=` + pageToken);
+    mimeType === DIR_MIME_TYPE && (api = api + "&orderBy=name");
     return api;
 }
 export async function downloadImage(id: string, token: string): Promise<Blob> {

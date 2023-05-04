@@ -180,6 +180,9 @@ h1 {
         visibility: visible;
         filter: invert(1);
     }
+    .main-wrapper {
+        width: 100%;
+    }
     .preview {
         position: absolute;
         top: 0px;
