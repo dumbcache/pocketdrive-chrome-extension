@@ -43,7 +43,6 @@ async function fetchAndCacheFiles(data: any, krabsCache: Cache) {
 onmessage = async ({ data }) => {
     const krabsCache = await caches.open("krabs");
     if (data.context === "FETCH_FILES") {
-        console.log("fetch files");
         const [dirRes, imgsRes] = await krabsCache.matchAll(`/${data.parent}`, {
             ignoreSearch: true,
         });
@@ -71,7 +70,6 @@ onmessage = async ({ data }) => {
         const { parent } = data;
         const coverRes = await krabsCache.match(`/${parent}?type=dirs`);
         if (coverRes) {
-            console.log("fetch covers from cache");
             const files = await coverRes.json();
             postMessage({
                 context: "FETCH_FILES_COVER",
