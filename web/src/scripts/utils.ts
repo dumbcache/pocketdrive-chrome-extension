@@ -37,6 +37,8 @@ export function toggleSignButton(status: Boolean) {
     if (status === true) {
         menu.style.display = "flex";
         signin.hidden = true;
+        (document.querySelector(".title") as HTMLHeadingElement).innerText =
+            "K";
         (document.querySelector(".main-wrapper")! as HTMLDivElement).hidden =
             false;
         (
@@ -58,8 +60,11 @@ export async function signUserOut() {
         },
     });
     if (res.status !== 200) {
+        if (res.status !== 401) {
+            console.warn(res.status, await res.text());
+            return;
+        }
         console.warn(res.status, await res.text());
-        return;
     }
     window.localStorage.clear();
     history.pushState({ dir: "root" }, "", "/");
@@ -162,7 +167,7 @@ export function createDir(file: GoogleFile, worker: Worker): HTMLDivElement {
         ["class", "cover"],
         ["data-parent", file.id],
     ]);
-    const title = createElement("p", [], file.name);
+    const title = createElement("h2", [["class", "dir-title"]], file.name);
     const anchor = createElement<HTMLAnchorElement>("a", [
         ["href", "javascript:void(0)"],
         ["data-id", file.id],

@@ -10,7 +10,7 @@
     <body>
         <div id="app">
             <header class="header">
-                <h1 class="title"><a href="/">K</a></h1>
+                <a href="/"><h1 class="title">Krabs</h1></a>
                 <div class="menu" hidden>
                     <input
                         type="search"
@@ -41,11 +41,6 @@
                     <div class="imgs"></div>
                 </div>
                 <div class="preview" hidden>
-                    <div class="preview-nav">
-                        <button class="preview-close">
-                            <img src="./src/assets/cancel.svg" alt="" />
-                        </button>
-                    </div>
                     <div class="preview-body">
                         <img
                             src="0"
@@ -53,6 +48,20 @@
                             class="preview-img"
                             data-id="0"
                         />
+                    </div>
+                    <div class="preview-tools">
+                        <button class="preview-close tool-button">
+                            <img src="./src/assets/close.svg" alt="" />
+                        </button>
+                        <button class="preview-prev tool-button">
+                            <img src="./src/assets/left.svg" alt="" />
+                        </button>
+                        <button class="preview-next tool-button">
+                            <img src="./src/assets/right.svg" alt="" />
+                        </button>
+                        <button class="preview-expand tool-button">
+                            <img src="./src/assets/expand.svg" alt="" />
+                        </button>
                     </div>
                 </div>
             </main>
