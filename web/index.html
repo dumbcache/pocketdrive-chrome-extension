@@ -11,36 +11,26 @@
         <div id="app">
             <header class="header">
                 <a href="/"><h1 class="title">Krabs</h1></a>
+                <button class="back-button">
+                    <span style="color: #60f" onclick="window.history.back()"
+                        ><span>&lt;</span>back</span
+                    >
+                </button>
                 <div class="menu" hidden>
-                    <input
-                        type="search"
-                        name="search"
-                        id="search"
-                        placeholder="search"
-                    />
-                    <div class="menu-buttons">
-                        <button class="refresh-button">
-                            <img src="./src/assets/refresh.svg" alt="refresh" />
-                        </button>
-                        <button class="filter-button">
-                            <img src="./src/assets/filter.svg" alt="filter" />
-                        </button>
-                        <button class="signout-button">
-                            <img src="./src/assets/power.svg" alt="signout" />
-                        </button>
-                    </div>
+                    <button class="refresh-button">
+                        <img src="./src/assets/refresh.svg" alt="refresh" />
+                    </button>
+                    <button class="filter-button">
+                        <img src="./src/assets/filter.svg" alt="filter" />
+                    </button>
+                    <button class="signout-button">
+                        <img src="./src/assets/power.svg" alt="signout" />
+                    </button>
                 </div>
                 <button class="signin-button" hidden></button>
             </header>
             <main class="main">
                 <div class="main-wrapper" hidden>
-                    <button class="back-button">
-                        <span
-                            style="color: #60f"
-                            onclick="window.history.back()"
-                            ><span>&lt;</span>back</span
-                        >
-                    </button>
                     <div class="dirs"></div>
                     <div class="imgs"></div>
                 </div>

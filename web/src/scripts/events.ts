@@ -7,7 +7,7 @@ export function initTouchEvents() {
     let touchEndX = 0;
     let touchEndY = 0;
     const preview = document.querySelector(".preview") as HTMLDivElement;
-    const backButton = document.querySelector(".back-button") as HTMLDivElement;
+    const header = document.querySelector(".header") as HTMLDivElement;
 
     function checkDirection() {
         if (Math.abs(touchStartX - touchEndX) > 40) {
@@ -54,13 +54,13 @@ export function initTouchEvents() {
         }
     });
 
-    backButton.addEventListener("click", () => {
+    header.addEventListener("click", () => {
         const mainWrapper = document.querySelector(
             ".main-wrapper"
         ) as HTMLDivElement;
         mainWrapper.scrollTo(0, 0);
     });
-    backButton.addEventListener("touchstart", () => {
+    header.addEventListener("touchstart", () => {
         const mainWrapper = document.querySelector(
             ".main-wrapper"
         ) as HTMLDivElement;

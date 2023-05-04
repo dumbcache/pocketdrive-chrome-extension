@@ -26,27 +26,13 @@
 
 .menu {
     display: flex;
-    width: 80%;
-    justify-content: space-between;
-}
-.menu-buttons {
-    display: flex;
     gap: 2rem;
-    justify-content: space-between;
 }
 .signin-button {
     border: none;
     background: none;
 }
-.back-button {
-    position: static;
-    top: 0;
-    width: 100%;
-    text-align: start;
-    background: #fff;
-    padding: 0.5rem;
-    z-index: 10;
-}
+
 .signout-button,
 .filter-button,
 .refresh-button {
@@ -73,8 +59,11 @@
 .main-wrapper {
     height: 100%;
     width: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 2rem;
     overflow-y: scroll;
-    /* padding: 1rem; */
+    padding: 2rem;
 }
 
 #search {
@@ -134,6 +123,7 @@
     height: 90vh;
     background-color: #0005;
     backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(10px);
     z-index: 100;
 }
 .preview-tools {
@@ -231,8 +221,8 @@
         font-size: 1.5rem;
     }
     .main-wrapper {
-        padding: 0.5rem;
-        padding-top: 0;
+        padding: 1rem;
+        padding-top: 2rem;
     }
     .dirs,
     .imgs {
@@ -284,12 +274,7 @@
     .header {
         gap: 1.5rem;
     }
-    .menu {
-        width: 100%;
-    }
-    .menu-buttons {
-        gap: 1rem;
-    }
+
     #search {
         max-width: 15rem;
         font-size: 1.3rem;
