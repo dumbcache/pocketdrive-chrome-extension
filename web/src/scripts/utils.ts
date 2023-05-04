@@ -216,13 +216,13 @@ export function createImg(
     return frag;
 }
 
-export function updateCoverPics(id: string, imgs: GoogleFile[]) {
+export function updateCoverPics(id: string, imgs: GoogleFileRes) {
     const cover = document.querySelector(
         `[data-parent='${id}']`
     ) as HTMLDivElement;
     cover.innerHTML = "";
     if (cover) {
-        for (let img of imgs) {
+        for (let img of imgs.files) {
             const coverPic = createElement("img", [
                 ["src", img.thumbnailLink!],
                 ["referrerpolicy", "no-referrer"],

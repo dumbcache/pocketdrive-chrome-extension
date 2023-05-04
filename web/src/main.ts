@@ -106,7 +106,15 @@ window.addEventListener("refresh", () => {
             ? window.localStorage.getItem("root")!
             : pathname.substring(1);
     const token = window.localStorage.getItem("token");
-    worker.postMessage({ context: "REFRESH", parent: root, token });
+    worker.postMessage({ context: "REFRESH_FILES", parent: root, token });
+    const covers = document.querySelectorAll(".cover");
+    for (let cover of covers) {
+        worker.postMessage({
+            context: "REFRESH_COVERS",
+            parent: (cover as HTMLDivElement).dataset.parent,
+            token,
+        });
+    }
 });
 
 window.addEventListener("offline", () => {

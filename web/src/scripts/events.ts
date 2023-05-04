@@ -72,5 +72,8 @@ export function initMenuEvents() {
     const refresh = document.querySelector(
         ".refresh-button"
     ) as HTMLButtonElement;
-    refresh.onclick = () => window.dispatchEvent(new Event("refresh"));
+    refresh.onclick = (e) => {
+        e.stopPropagation();
+        window.dispatchEvent(new Event("refresh"));
+    };
 }

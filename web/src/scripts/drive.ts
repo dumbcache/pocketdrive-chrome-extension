@@ -49,7 +49,9 @@ export async function getFiles(
                 },
             });
             if (res.status !== 200) {
-                if (res.status === 401) reject({ status: 401 });
+                if (res.status === 401) {
+                    reject({ status: 401 });
+                }
                 reject({ status: res.status });
             }
             const data = (await res.json()) as GoogleFileRes;
