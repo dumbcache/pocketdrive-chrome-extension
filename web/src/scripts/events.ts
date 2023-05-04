@@ -9,7 +9,7 @@ export function initTouchEvents() {
     const preview = document.querySelector(".preview") as HTMLDivElement;
     const header = document.querySelector(".header") as HTMLDivElement;
 
-    function checkDirection(e: TouchEvent) {
+    function checkDirection() {
         if (Math.abs(touchStartX - touchEndX) > 30) {
             if (touchStartX > touchEndX) {
                 // console.log(
@@ -50,7 +50,7 @@ export function initTouchEvents() {
             if (e.changedTouches.length === 0) return;
             touchEndX = e.changedTouches[0].screenX;
             touchEndY = e.changedTouches[0].screenY;
-            checkDirection(e);
+            checkDirection();
         }
     });
 
