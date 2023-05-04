@@ -1,3 +1,6 @@
+// function getPrevElement(){}
+// function getNextElement(){}
+
 export function initTouchEvents() {
     let touchStartX = 0;
     let touchStartY = 0;
@@ -6,15 +9,20 @@ export function initTouchEvents() {
     const preview = document.querySelector(".preview") as HTMLDivElement;
     const header = document.querySelector(".header") as HTMLDivElement;
 
-    function checkDirection() {
+    function checkDirection(e: TouchEvent) {
         if (Math.abs(touchStartX - touchEndX) > 30) {
-            console.log("x", touchStartX - touchEndX);
-            console.log("y", touchStartY - touchEndY);
             if (touchStartX > touchEndX) {
-                console.log("swipe left");
+                // console.log(
+                //     document.querySelector(`[data-id='${e.target?.dataset.id}']`)
+                //         ?.parentNode?.previousElementSibling.firstChild
+                // );
             }
             if (touchStartX < touchEndX) {
-                console.log("swipe right");
+                // console.log(
+                //     document.querySelector(`[data-id='${e.target?.dataset.id}']`)
+                //         ?.parentNode?.nextElementSibling.firstChild
+                // );
+                // console.log("swipe right");
             }
         }
         if (Math.abs(touchStartY - touchEndY) > 50) {
@@ -24,6 +32,7 @@ export function initTouchEvents() {
             }
             if (touchStartY > touchEndY) {
                 console.log("swipe up");
+                preview.hidden = true;
             }
         }
     }
@@ -41,7 +50,7 @@ export function initTouchEvents() {
             if (e.changedTouches.length === 0) return;
             touchEndX = e.changedTouches[0].screenX;
             touchEndY = e.changedTouches[0].screenY;
-            checkDirection();
+            checkDirection(e);
         }
     });
 
