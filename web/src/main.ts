@@ -105,7 +105,6 @@ window.addEventListener("refresh", () => {
             : pathname.substring(1);
     const token = window.localStorage.getItem("token");
     worker.postMessage({ context: "REFRESH_FILES", parent: root, token });
-    const covers = document.querySelectorAll(".cover");
 });
 
 window.addEventListener("offline", () => {
