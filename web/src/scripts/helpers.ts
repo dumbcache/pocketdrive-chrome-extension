@@ -122,47 +122,21 @@ function generateDirs(files: GoogleFile[], worker: Worker) {
         dirsEle?.append(folder);
     }
 }
-function generateImgs(files: GoogleFile[], childWorker: Worker) {
+function generateImgs(files: GoogleFile[]) {
     const imgsEle = document.querySelector(".imgs") as HTMLDivElement;
     imgsEle.innerHTML = "";
     for (let img of files) {
         const pic = createImg(img, "img");
         imgsEle?.append(pic);
     }
-    imgsEle?.addEventListener("click", async (e) => {
-        const target = e.target as HTMLImageElement;
-        if (!target.classList.contains("img")) return;
-        const dataset = target.dataset;
-        const previewImg = document.querySelector(
-            ".preview-img"
-        ) as HTMLImageElement;
-        if (previewImg.dataset.id === dataset.id) {
-            togglePreview();
-            return;
-        }
-        previewImg.src = target.src;
-        previewImg.dataset.id = target.dataset.id;
-        togglePreview();
-        if (dataset.url) {
-            previewImg.src = dataset.url;
-        } else {
-            const token = window.localStorage.getItem("token")!;
-            childWorker.postMessage({
-                context: "FETCH_IMAGE",
-                id: dataset.id,
-                token,
-            });
-        }
-    });
 }
 
 export async function crateMaincontent(
     files: [dirs: GoogleFileRes, imgs: GoogleFileRes],
-    worker: Worker,
-    childWorker: Worker
+    worker: Worker
 ) {
     const [dirs, imgs] = files;
 
     generateDirs(dirs.files, worker);
-    generateImgs(imgs.files, childWorker);
+    generateImgs(imgs.files);
 }

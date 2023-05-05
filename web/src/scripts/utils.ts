@@ -1,5 +1,5 @@
 import type { GoogleSignInPayload } from "../types";
-import { initMenuEvents, initTouchEvents } from "./events";
+import { initMenuEvents } from "./events";
 
 export function isLoggedin() {
     const secret = window.localStorage.getItem("secret");
@@ -22,10 +22,7 @@ export function toggleSignButton() {
 export function isUserOnline(status: Boolean) {
     if (status) {
         toggleMenu();
-        initTouchEvents();
         toggleSignButton();
-        (document.querySelector(".main-wrapper")! as HTMLDivElement).hidden =
-            false;
         return;
     }
     loadGSIScript();
@@ -104,8 +101,7 @@ export const handleGoogleSignIn = async (googleRes: GoogleSignInPayload) => {
     localStorage.setItem("secret", token);
     localStorage.setItem("root", root);
     await getToken();
-    isUserOnline(true);
-    window.dispatchEvent(new Event("locationchange"));
+    window.location.reload();
 };
 
 export const getToken = async () => {

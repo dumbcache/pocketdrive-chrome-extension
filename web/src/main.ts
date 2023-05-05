@@ -1,17 +1,19 @@
 import { getToken, isLoggedin, isUserOnline } from "./scripts/utils";
 import { updateCoverPics, crateMaincontent } from "./scripts/helpers";
 import "./css/app.css";
+import { initMainEvents } from "./scripts/events";
+
+let worker: Worker, childWorker: Worker;
 
 document.addEventListener("DOMContentLoaded", async () => {
     if (isLoggedin()) {
         isUserOnline(true);
+        initMainEvents(worker, childWorker);
         window.dispatchEvent(new Event("locationchange"));
     } else {
         isUserOnline(false);
     }
 });
-
-let worker: Worker, childWorker: Worker;
 
 if (window.Worker) {
     worker = new Worker(new URL("workers/worker.ts", import.meta.url), {
@@ -27,7 +29,7 @@ if (window.Worker) {
     worker.onerror = (e) => console.warn(e);
     worker.onmessage = ({ data }) => {
         if (data.context === "FETCH_FILES") {
-            crateMaincontent(data.files, worker, childWorker);
+            crateMaincontent(data.files, worker);
             return;
         }
         if (data.context === "FETCH_FILES_COVER") {

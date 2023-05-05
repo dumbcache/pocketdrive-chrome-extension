@@ -29,22 +29,10 @@
     gap: 2rem;
 }
 .signin-button {
-    border: none;
-    background: none;
+    width: initial;
 }
-
-.signout-button,
-.filter-button,
-.refresh-button {
-    border: none;
-    background: none;
-    width: 3rem;
-}
-.back-button span:hover,
-.filter-button:hover,
-.refresh-button:hover,
-.signout-button:hover {
-    filter: invert(0.5);
+.signin-button:hover {
+    filter: initial;
 }
 
 .main {
@@ -149,9 +137,6 @@
 }
 .preview-close {
     width: 2.5rem;
-}
-.tool-button:hover {
-    filter: invert(0.5);
 }
 .preview-body {
     max-width: 100%;
@@ -278,10 +263,5 @@
     #search {
         max-width: 15rem;
         font-size: 1.3rem;
-    }
-    .signout-button,
-    .refresh-button,
-    .filter-button {
-        width: 2.4rem;
     }
 }

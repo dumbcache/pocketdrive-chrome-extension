@@ -52,10 +52,12 @@ select {
 button {
     background: none;
     border: none;
+    width: 3rem;
 }
 
 button:hover {
     cursor: pointer;
+    filter: invert(0.5);
 }
 
 p,
@@ -89,6 +91,9 @@ a {
 }
 
 @media (max-width: 600px) {
+    button {
+        width: 2.4rem;
+    }
 }
 @media (prefers-color-scheme: light) {
 }

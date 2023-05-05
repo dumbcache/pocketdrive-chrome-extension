@@ -1,6 +1,7 @@
 // function getPrevElement(){}
 // function getNextElement(){}
 
+import { togglePreview } from "./helpers";
 import { signUserOut } from "./utils";
 
 export function initTouchEvents() {
@@ -82,4 +83,39 @@ export function initMenuEvents() {
         window.dispatchEvent(new Event("refresh"));
     });
     signoutButton.addEventListener("click", signUserOut);
+}
+
+function initImgClickEvent(childWorker: Worker) {
+    const imgsEle = document.querySelector(".imgs") as HTMLDivElement;
+    imgsEle?.addEventListener("click", async (e) => {
+        console.log(e);
+        const target = e.target as HTMLImageElement;
+        if (!target.classList.contains("img")) return;
+        const dataset = target.dataset;
+        const previewImg = document.querySelector(
+            ".preview-img"
+        ) as HTMLImageElement;
+        if (previewImg.dataset.id === dataset.id) {
+            togglePreview();
+            return;
+        }
+        previewImg.src = target.src;
+        previewImg.dataset.id = target.dataset.id;
+        togglePreview();
+        if (dataset.url) {
+            previewImg.src = dataset.url;
+        } else {
+            const token = window.localStorage.getItem("token")!;
+            childWorker.postMessage({
+                context: "FETCH_IMAGE",
+                id: dataset.id,
+                token,
+            });
+        }
+    });
+}
+
+export function initMainEvents(childWorker: Worker) {
+    initTouchEvents();
+    initImgClickEvent(childWorker);
 }
