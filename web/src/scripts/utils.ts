@@ -59,8 +59,8 @@ export const loadGSIScript = () => {
     header.append(script);
 };
 
-export async function signUserOut(e: Event) {
-    e.stopPropagation();
+export async function signUserOut(e?: Event) {
+    e?.stopPropagation();
     const api = import.meta.env.VITE_API;
     const secret = window.localStorage.getItem("secret");
     const res = await fetch(`${api}/logout/WEB`, {
@@ -113,8 +113,7 @@ export const getToken = async () => {
     if (res.status !== 200) {
         if (res.status === 401) {
             console.log("session timeout. Logging off");
-            window.localStorage.clear();
-            toggleSignButton(false);
+            signUserOut();
             return;
         }
         console.warn(res.status, await res.text());
