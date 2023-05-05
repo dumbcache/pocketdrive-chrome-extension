@@ -24,7 +24,7 @@
     height: 10%;
 }
 
-.menu {
+.menu-visible {
     display: flex;
     gap: 2rem;
 }

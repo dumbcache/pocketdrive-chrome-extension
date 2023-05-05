@@ -1,20 +1,13 @@
-import {
-    crateMaincontent,
-    getToken,
-    isLoggedin,
-    toggleSignButton,
-    updateCoverPics,
-} from "./scripts/utils";
-import { initTouchEvents, initMenuEvents } from "./scripts/events";
+import { getToken, isLoggedin, isUserOnline } from "./scripts/utils";
+import { updateCoverPics, crateMaincontent } from "./scripts/helpers";
 import "./css/app.css";
 
 document.addEventListener("DOMContentLoaded", async () => {
-    const loginStatus = isLoggedin();
-    toggleSignButton(loginStatus);
-    if (loginStatus === true) {
+    if (isLoggedin()) {
+        isUserOnline(true);
         window.dispatchEvent(new Event("locationchange"));
-        initTouchEvents();
-        initMenuEvents();
+    } else {
+        isUserOnline(false);
     }
 });
 

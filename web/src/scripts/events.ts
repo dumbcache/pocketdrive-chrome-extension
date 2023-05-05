@@ -1,6 +1,8 @@
 // function getPrevElement(){}
 // function getNextElement(){}
 
+import { signUserOut } from "./utils";
+
 export function initTouchEvents() {
     let touchStartX = 0;
     let touchStartY = 0;
@@ -72,8 +74,12 @@ export function initMenuEvents() {
     const refresh = document.querySelector(
         ".refresh-button"
     ) as HTMLButtonElement;
-    refresh.onclick = (e) => {
+    const signoutButton = document.querySelector(
+        ".signout-button"
+    )! as HTMLDivElement;
+    refresh.addEventListener("click", (e) => {
         e.stopPropagation();
         window.dispatchEvent(new Event("refresh"));
-    };
+    });
+    signoutButton.addEventListener("click", signUserOut);
 }
