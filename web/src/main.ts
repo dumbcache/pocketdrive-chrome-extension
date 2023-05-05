@@ -8,7 +8,7 @@ let worker: Worker, childWorker: Worker;
 document.addEventListener("DOMContentLoaded", async () => {
     if (isLoggedin()) {
         isUserOnline(true);
-        initMainEvents(worker, childWorker);
+        initMainEvents(childWorker);
         window.dispatchEvent(new Event("locationchange"));
     } else {
         isUserOnline(false);
