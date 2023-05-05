@@ -1,10 +1,9 @@
 import { getToken, isLoggedin, isUserOnline } from "./scripts/utils";
-import { updateCoverPics, crateMaincontent } from "./scripts/helpers";
+import { generateCovers, crateMaincontent } from "./scripts/helpers";
 import "./css/app.css";
 import { initMainEvents } from "./scripts/events";
 
 let worker: Worker, childWorker: Worker;
-
 document.addEventListener("DOMContentLoaded", async () => {
     if (isLoggedin()) {
         isUserOnline(true);
@@ -32,8 +31,16 @@ if (window.Worker) {
             crateMaincontent(data.files, worker);
             return;
         }
-        if (data.context === "FETCH_FILES_COVER") {
-            updateCoverPics(data.parent, data.files);
+        if (data.context === "FETCH_COVERS") {
+            generateCovers(data.parent, data.files);
+            return;
+        }
+        if (data.context === "REFRESH_FILES") {
+            crateMaincontent(data.files, worker, true);
+            return;
+        }
+        if (data.context === "REFRESH_COVERS") {
+            generateCovers(data.parent, data.files);
             return;
         }
         if (data.context === "FETCH_FILES_FAILED") {
@@ -90,10 +97,6 @@ window.addEventListener("locationchange", async () => {
     }
 });
 
-window.addEventListener("popstate", () => {
-    window.dispatchEvent(new Event("locationchange"));
-});
-
 window.addEventListener("refresh", () => {
     const { pathname } = window.location;
     const root =
@@ -103,15 +106,12 @@ window.addEventListener("refresh", () => {
     const token = window.localStorage.getItem("token");
     worker.postMessage({ context: "REFRESH_FILES", parent: root, token });
     const covers = document.querySelectorAll(".cover");
-    for (let cover of covers) {
-        worker.postMessage({
-            context: "REFRESH_COVERS",
-            parent: (cover as HTMLDivElement).dataset.parent,
-            token,
-        });
-    }
 });
 
 window.addEventListener("offline", () => {
-    alert("offline");
+    console.log("offline");
+});
+
+window.addEventListener("popstate", () => {
+    window.dispatchEvent(new Event("locationchange"));
 });

@@ -40,93 +40,87 @@ async function fetchAndCacheFiles(data: any, krabsCache: Cache) {
     });
 }
 
-onmessage = async ({ data }) => {
-    const krabsCache = await caches.open("krabs");
-    if (data.context === "FETCH_FILES") {
+async function fetchFiles(
+    data: any,
+    krabsCache: Cache,
+    refresh: Boolean = false
+) {
+    const context = refresh === false ? "FETCH_FILES" : "REFRESH_FILES";
+    if (refresh !== true) {
         const [dirRes, imgsRes] = await krabsCache.matchAll(`/${data.parent}`, {
             ignoreSearch: true,
         });
         if (dirRes && imgsRes) {
             const dirs = await dirRes.json();
             const imgs = await imgsRes.json();
-            postMessage({ context: "FETCH_FILES", files: [dirs, imgs] });
-            return;
-        } else {
-            fetchAndCacheFiles(data, krabsCache)
-                .then((files) => {
-                    postMessage({ context: "FETCH_FILES", files });
-                })
-                .catch((e) => {
-                    postMessage({
-                        context: "FETCH_FILES_FAILED",
-                        status: e.status,
-                    });
-                    console.warn(e);
-                });
+            postMessage({ context, files: [dirs, imgs] });
             return;
         }
     }
-    if (data.context === "FETCH_FILES_COVER") {
-        const { parent } = data;
+    fetchAndCacheFiles(data, krabsCache)
+        .then((files) => {
+            postMessage({ context, files });
+        })
+        .catch((e) => {
+            postMessage({
+                context: "FETCH_FILES_FAILED",
+                status: e.status,
+            });
+            console.warn(e);
+        });
+    return;
+}
+async function fetchCovers(
+    data: any,
+    krabsCache: Cache,
+    refresh: Boolean = false
+) {
+    const { parent } = data;
+    const context = refresh === false ? "FETCH_COVERS" : "REFRESH_COVERS";
+    if (refresh !== true) {
         const coverRes = await krabsCache.match(`/${parent}?type=covers`);
         if (coverRes) {
             const files = await coverRes.json();
             postMessage({
-                context: "FETCH_FILES_COVER",
+                context,
                 files,
                 parent,
             });
             return;
-        } else {
-            fetchAndCacheCovers(data, krabsCache)
-                .then(async (files) => {
-                    postMessage({
-                        context: "FETCH_FILES_COVER",
-                        files,
-                        parent,
-                    });
-                })
-                .catch((e) => {
-                    postMessage({
-                        context: "FETCH_FILES_FAILED",
-                        status: e.status,
-                    });
-                    console.warn(e);
-                });
-            return;
         }
     }
-    if (data.context === "REFRESH_FILES") {
-        fetchAndCacheFiles(data, krabsCache)
-            .then((files) => {
-                postMessage({ context: "FETCH_FILES", files });
-            })
-            .catch((e) => {
-                postMessage({
-                    context: "FETCH_FILES_FAILED",
-                    status: e.status,
-                });
-                console.warn(e);
+    fetchAndCacheCovers(data, krabsCache)
+        .then(async (files) => {
+            postMessage({
+                context,
+                files,
+                parent,
             });
-        return;
+        })
+        .catch((e) => {
+            postMessage({
+                context: "FETCH_FILES_FAILED",
+                status: e.status,
+            });
+            console.warn(e);
+        });
+    return;
+}
+
+onmessage = async ({ data }) => {
+    console.log(data.context);
+    const krabsCache = await caches.open("krabs");
+    if (data.context === "FETCH_FILES") {
+        fetchFiles(data, krabsCache);
+    }
+    if (data.context === "FETCH_COVERS") {
+        fetchCovers(data, krabsCache);
+    }
+    if (data.context === "REFRESH_FILES") {
+        fetchFiles(data, krabsCache, true);
     }
     if (data.context === "REFRESH_COVERS") {
-        fetchAndCacheCovers(data, krabsCache)
-            .then(async (files) => {
-                postMessage({
-                    context: "FETCH_FILES_COVER",
-                    files,
-                    parent: data.parent,
-                });
-            })
-            .catch((e) => {
-                postMessage({
-                    context: "FETCH_FILES_FAILED",
-                    status: e.status,
-                });
-                console.warn(e);
-            });
-        return;
+        fetchCovers(data, krabsCache, true);
     }
 };
 onmessageerror = (e) => console.warn(e);

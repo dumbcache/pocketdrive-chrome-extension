@@ -20,10 +20,15 @@ function anchorHandler(e: Event) {
     window.dispatchEvent(new Event("locationchange"));
 }
 
-export function createDir(file: GoogleFile, worker: Worker): HTMLDivElement {
+export function createDir(
+    file: GoogleFile,
+    worker: Worker,
+    refresh: Boolean
+): HTMLDivElement {
     const token = window.localStorage.getItem("token")!;
+    const context = refresh === false ? "FETCH_COVERS" : "REFRESH_COVERS";
     worker.postMessage({
-        context: "FETCH_FILES_COVER",
+        context,
         parent: file.id,
         token,
     });
@@ -80,22 +85,6 @@ export function createImg(
     return frag;
 }
 
-export function updateCoverPics(id: string, imgs: GoogleFileRes) {
-    const cover = document.querySelector(
-        `[data-parent='${id}']`
-    ) as HTMLDivElement;
-    cover.innerHTML = "";
-    if (cover) {
-        for (let img of imgs.files) {
-            const coverPic = createElement("img", [
-                ["src", img.thumbnailLink!],
-                ["referrerpolicy", "no-referrer"],
-            ]);
-            cover.append(coverPic);
-        }
-    }
-}
-
 export function previewCloseHandler() {
     const preview = document.querySelector(".preview") as HTMLDivElement;
     const previewClose = document.querySelector(
@@ -114,16 +103,34 @@ export function togglePreview() {
     previewClose.addEventListener("click", previewCloseHandler);
 }
 
-function generateDirs(files: GoogleFile[], worker: Worker) {
+export function generateCovers(id: string, imgs: GoogleFileRes) {
+    const cover = document.querySelector(
+        `[data-parent='${id}']`
+    ) as HTMLDivElement;
+    cover.innerHTML = "";
+    if (cover) {
+        for (let img of imgs.files) {
+            const coverPic = createElement("img", [
+                ["src", img.thumbnailLink!],
+                ["referrerpolicy", "no-referrer"],
+            ]);
+            cover.append(coverPic);
+        }
+    }
+}
+
+function generateDirs(files: GoogleFile[], worker: Worker, refresh: Boolean) {
     const dirsEle = document.querySelector(".dirs") as HTMLDivElement;
+    if (!dirsEle) return;
     dirsEle.innerHTML = "";
     for (let dir of files) {
-        const folder = createDir(dir, worker);
+        const folder = createDir(dir, worker, refresh);
         dirsEle?.append(folder);
     }
 }
 function generateImgs(files: GoogleFile[]) {
     const imgsEle = document.querySelector(".imgs") as HTMLDivElement;
+    if (!imgsEle) return;
     imgsEle.innerHTML = "";
     for (let img of files) {
         const pic = createImg(img, "img");
@@ -133,10 +140,11 @@ function generateImgs(files: GoogleFile[]) {
 
 export async function crateMaincontent(
     files: [dirs: GoogleFileRes, imgs: GoogleFileRes],
-    worker: Worker
+    worker: Worker,
+    refresh: Boolean = false
 ) {
     const [dirs, imgs] = files;
 
-    generateDirs(dirs.files, worker);
+    generateDirs(dirs.files, worker, refresh);
     generateImgs(imgs.files);
 }
