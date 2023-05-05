@@ -59,6 +59,12 @@ export const loadGSIScript = () => {
     header.append(script);
 };
 
+export async function clearFiles() {
+    window.localStorage.clear();
+    const krabsCache = await caches.open("krabs");
+    const keys = await krabsCache.keys();
+    keys.forEach((key) => krabsCache.delete(key));
+}
 export async function signUserOut(e?: Event) {
     e?.stopPropagation();
     const api = import.meta.env.VITE_API;
@@ -75,7 +81,7 @@ export async function signUserOut(e?: Event) {
         }
         console.warn(res.status, await res.text());
     }
-    window.localStorage.clear();
+    await clearFiles();
     history.pushState({ dir: "root" }, "", "/");
     window.location.reload();
 }
