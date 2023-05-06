@@ -206,12 +206,19 @@
     .title {
         font-size: 2.4rem;
     }
-    .dir-title {
-        font-size: 1.5rem;
+    .header {
+        gap: 1.5rem;
+        height: 15%;
+    }
+    .main {
+        height: 85%;
     }
     .main-wrapper {
         padding: 1rem;
         padding-top: 2rem;
+    }
+    .dir-title {
+        font-size: 1.5rem;
     }
     .dirs,
     .imgs {
@@ -259,9 +266,6 @@
     .preview-img {
         padding: 0;
         height: 100%;
-    }
-    .header {
-        gap: 1.5rem;
     }
 
     #search {
