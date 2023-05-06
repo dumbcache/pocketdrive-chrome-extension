@@ -118,4 +118,8 @@ function initImgClickEvent(childWorker: Worker) {
 export function initMainEvents(childWorker: Worker) {
     initTouchEvents();
     initImgClickEvent(childWorker);
+    const preview = document.querySelector(".preview") as HTMLDivElement;
+    preview.addEventListener("scroll", (e) => {
+        e.preventDefault();
+    });
 }
