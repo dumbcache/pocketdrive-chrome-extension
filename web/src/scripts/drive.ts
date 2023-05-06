@@ -49,11 +49,12 @@ export async function getFiles(
                 },
             });
             if (res.status !== 200) {
-                console.log(res.status, await res.text());
                 if (res.status === 401) {
                     reject({ status: 401 });
+                    return;
                 }
                 reject({ status: res.status });
+                return;
             }
             const data = (await res.json()) as GoogleFileRes;
             resolve(data);

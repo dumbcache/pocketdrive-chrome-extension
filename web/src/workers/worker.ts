@@ -35,7 +35,7 @@ async function fetchAndCacheFiles(data: any, krabsCache: Cache) {
                 resolve([dirs, imgs]);
             })
             .catch(async (e) => {
-                reject(e.status);
+                reject(e);
             });
     });
 }

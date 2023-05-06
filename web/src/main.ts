@@ -27,53 +27,53 @@ if (window.Worker) {
     /************ worker ************/
     worker.onerror = (e) => console.warn(e);
     worker.onmessage = ({ data }) => {
-        if (data.context === "FETCH_FILES") {
-            crateMaincontent(data.files, worker);
-            return;
-        }
-        if (data.context === "FETCH_COVERS") {
-            generateCovers(data.parent, data.files);
-            return;
-        }
-        if (data.context === "REFRESH_FILES") {
-            crateMaincontent(data.files, worker, true);
-            return;
-        }
-        if (data.context === "REFRESH_COVERS") {
-            generateCovers(data.parent, data.files);
-            return;
-        }
-        if (data.context === "FETCH_FILES_FAILED") {
-            console.log(data);
-            if (data.status === 401) {
-                getToken();
+        switch (data.context) {
+            case "FETCH_FILES":
+                crateMaincontent(data.files, worker);
                 return;
-            }
+            case "FETCH_COVERS":
+                generateCovers(data.parent, data.files);
+                return;
+            case "REFRESH_FILES":
+                crateMaincontent(data.files, worker, true);
+                return;
+            case "REFRESH_COVERS":
+                generateCovers(data.parent, data.files);
+                return;
+            case "FETCH_FILES_FAILED":
+                if (data.status === 401) {
+                    getToken();
+                    return;
+                }
         }
     };
 
     /************ Child worker ************/
     childWorker.onerror = (e) => console.warn(e);
     childWorker.onmessage = ({ data }) => {
-        if (data.context === "FETCH_IMAGE") {
-            const { id, blob } = data;
-            const previewImg = document.querySelector(
-                ".preview-img"
-            ) as HTMLImageElement;
-            const target = document.querySelector(
-                `[data-id='${id}']`
-            ) as HTMLDivElement;
-            if (previewImg.dataset.id !== id) return;
-            const url = URL.createObjectURL(blob);
-            previewImg.src = url;
-            target.dataset.url = url;
-            return;
-        }
-        if (data.context === "IMAGE_FAILED") {
-            if (data.status === 401) {
-                getToken();
+        switch (data.context) {
+            case "FETCH_IMAGE":
+                const { id, blob } = data;
+                const previewImg = document.querySelector(
+                    ".preview-img"
+                ) as HTMLImageElement;
+                const target = document.querySelector(
+                    `[data-id='${id}']`
+                ) as HTMLDivElement;
+                if (previewImg.dataset.id !== id) return;
+                const url = URL.createObjectURL(blob);
+                previewImg.src = url;
+                target.dataset.url = url;
                 return;
-            }
+
+            case "IMAGE_FAILED":
+                if (data.status === 401) {
+                    getToken();
+                    return;
+                }
+                return;
+            case "IDB_RELOAD_REQUIRED":
+                return;
         }
     };
 }

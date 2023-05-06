@@ -28,8 +28,9 @@
     display: flex;
     gap: 2rem;
 }
-.signin-button {
-    width: initial;
+.signin-button,
+.back-button {
+    width: fit-content;
 }
 .signin-button:hover {
     filter: initial;
