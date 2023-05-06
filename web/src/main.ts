@@ -131,12 +131,13 @@ window.addEventListener("keydown", (e) => {
             togglePreview(true);
             return;
         case "ArrowUp":
-        case "Escape":
             const preview = document.querySelector(
                 ".preview"
             ) as HTMLDivElement;
             preview.classList.toggle("preview-full");
             return;
+        case "Escape":
+            togglePreview(true);
     }
 });
 
