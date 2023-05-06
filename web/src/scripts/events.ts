@@ -63,11 +63,8 @@ export function initTouchEvents() {
         e.stopPropagation();
     });
     header.addEventListener("click", () => {
-        const main = document.querySelector(".main") as HTMLDivElement;
-        main.scrollTo(0, 0);
-    });
-    header.addEventListener("touchstart", () => {
-        const main = document.querySelector(".main") as HTMLDivElement;
+        document.body.scrollTo(0, 0);
+        const main = document.querySelector(".main-wrapper") as HTMLDivElement;
         main.scrollTo(0, 0);
     });
 }
