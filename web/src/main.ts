@@ -130,6 +130,7 @@ window.addEventListener("keydown", (e) => {
         case "ArrowDown":
             togglePreview(true);
             return;
+        case "ArrowUp":
         case "Escape":
             const preview = document.querySelector(
                 ".preview"
