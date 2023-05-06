@@ -1,5 +1,6 @@
 import type { GoogleFile, GoogleFileRes } from "../types";
 import LinkButton from "../assets/link.svg";
+import { togglePreview } from "./utils";
 
 export function createElement<T extends HTMLElement>(
     type: string,
@@ -17,6 +18,7 @@ export function createElement<T extends HTMLElement>(
 function anchorHandler(e: Event) {
     const { id, name } = (e.currentTarget as HTMLAnchorElement).dataset;
     history.pushState({ dir: name, id }, "", id);
+    togglePreview(true);
     window.dispatchEvent(new Event("locationchange"));
 }
 

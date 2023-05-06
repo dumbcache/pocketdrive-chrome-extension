@@ -28,9 +28,9 @@ export function isUserOnline(status: Boolean) {
     loadGSIScript();
 }
 
-export function togglePreview() {
+export function togglePreview(toggle: true | false) {
     const preview = document.querySelector(".preview") as HTMLDivElement;
-    preview.hidden = false;
+    preview.hidden = toggle;
 }
 
 export const loadGSIScript = () => {

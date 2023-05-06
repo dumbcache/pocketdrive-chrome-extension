@@ -1,7 +1,11 @@
 import { getToken, isLoggedin, isUserOnline } from "./scripts/utils";
 import { generateCovers, crateMaincontent } from "./scripts/helpers";
 import "./css/app.css";
-import { initMainEvents } from "./scripts/events";
+import {
+    initMainEvents,
+    initPreviewFull,
+    previewChange,
+} from "./scripts/events";
 
 let worker: Worker, childWorker: Worker;
 document.addEventListener("DOMContentLoaded", async () => {
@@ -84,9 +88,7 @@ window.addEventListener("locationchange", async () => {
         const back = document.querySelector(
             ".back-button"
         ) as HTMLButtonElement;
-        pathname === "/"
-            ? (back.style.display = "none")
-            : (back.style.display = "initial");
+        pathname === "/" ? (back.hidden = true) : (back.hidden = false);
         const root =
             pathname === "/"
                 ? window.localStorage.getItem("root")!
@@ -106,6 +108,34 @@ window.addEventListener("refresh", () => {
             : pathname.substring(1);
     const token = window.localStorage.getItem("token");
     worker.postMessage({ context: "REFRESH_FILES", parent: root, token });
+});
+
+window.addEventListener("keydown", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const preview = document.querySelector(".preview") as HTMLDivElement;
+    if (preview.hidden) return;
+    // debugger;
+    switch (e.key) {
+        case "ArrowRight":
+            previewChange("NEXT", childWorker);
+            return;
+        case "ArrowLeft":
+            previewChange("PREV", childWorker);
+            return;
+        case "ArrowDown":
+            previewChange("NEXT", childWorker);
+            return;
+        case "ArrowUp":
+            previewChange("PREV", childWorker);
+            return;
+        case "Escape":
+            const preview = document.querySelector(
+                ".preview"
+            ) as HTMLDivElement;
+            preview.classList.toggle("preview-full");
+            return;
+    }
 });
 
 window.addEventListener("offline", () => {

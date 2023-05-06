@@ -68,12 +68,18 @@ export function initMenuEvents() {
     const refresh = document.querySelector(
         ".refresh-button"
     ) as HTMLButtonElement;
+    const back = document.querySelector(".back-button") as HTMLButtonElement;
     const signoutButton = document.querySelector(
         ".signout-button"
     )! as HTMLDivElement;
     refresh.addEventListener("click", (e) => {
         e.stopPropagation();
         window.dispatchEvent(new Event("refresh"));
+    });
+    back.addEventListener("click", (e) => {
+        e.stopPropagation();
+        window.history.back();
+        togglePreview(true);
     });
     signoutButton.addEventListener("click", signUserOut);
 }
@@ -98,11 +104,12 @@ export function initPreviewFull() {
     });
 }
 
-function previewChange(type: "PREV" | "NEXT", childWorker: Worker) {
+export function previewChange(type: "PREV" | "NEXT", childWorker: Worker) {
     const previewImg = document.querySelector(
         ".preview-img"
     ) as HTMLImageElement;
-    const targetImg = document.querySelector(
+    const imgs = document.querySelector(".imgs") as HTMLDivElement;
+    const targetImg = imgs.querySelector(
         `[data-id='${previewImg.dataset.id}']`
     );
     const targetParent = targetImg?.parentElement;
@@ -154,12 +161,12 @@ function initImgEvents(childWorker: Worker) {
             ".preview-img"
         ) as HTMLImageElement;
         if (previewImg.dataset.id === dataset.id) {
-            togglePreview();
+            togglePreview(false);
             return;
         }
         previewImg.src = target.src;
         previewImg.dataset.id = target.dataset.id;
-        togglePreview();
+        togglePreview(false);
         if (dataset.url) {
             previewImg.src = dataset.url;
         } else {
