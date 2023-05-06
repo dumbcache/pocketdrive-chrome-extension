@@ -114,7 +114,7 @@
     min-width: 50%;
     height: 90vh;
     background-color: #0005;
-    backdrop-filter: blur(15px);
+    backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     z-index: 100;
 }
@@ -208,10 +208,17 @@
     }
     .header {
         gap: 1.5rem;
-        height: 15%;
+        height: initial;
+        padding: 1rem;
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 0;
+        background-color: #fff;
     }
     .main {
-        height: 85%;
+        height: initial;
+        padding-top: 6rem;
     }
     .main-wrapper {
         padding: 1rem;

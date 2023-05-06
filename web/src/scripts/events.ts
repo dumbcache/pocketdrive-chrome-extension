@@ -36,7 +36,7 @@ export function initTouchEvents() {
             }
             // swipe up
             if (touchStartY > touchEndY) {
-                // preview.hidden = true;
+                preview.hidden = true;
             }
         }
     }
@@ -63,16 +63,12 @@ export function initTouchEvents() {
         e.stopPropagation();
     });
     header.addEventListener("click", () => {
-        const mainWrapper = document.querySelector(
-            ".main-wrapper"
-        ) as HTMLDivElement;
-        mainWrapper.scrollTo(0, 0);
+        const main = document.querySelector(".main") as HTMLDivElement;
+        main.scrollTo(0, 0);
     });
     header.addEventListener("touchstart", () => {
-        const mainWrapper = document.querySelector(
-            ".main-wrapper"
-        ) as HTMLDivElement;
-        mainWrapper.scrollTo(0, 0);
+        const main = document.querySelector(".main") as HTMLDivElement;
+        main.scrollTo(0, 0);
     });
 }
 
