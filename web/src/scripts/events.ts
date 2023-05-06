@@ -63,7 +63,6 @@ export function initTouchEvents() {
         e.stopPropagation();
     });
     header.addEventListener("click", () => {
-        document.body.scrollTo(0, 0);
         const main = document.querySelector(".main-wrapper") as HTMLDivElement;
         main.scrollTo(0, 0);
     });
