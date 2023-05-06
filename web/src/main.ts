@@ -1,11 +1,7 @@
 import { getToken, isLoggedin, isUserOnline } from "./scripts/utils";
 import { generateCovers, crateMaincontent } from "./scripts/helpers";
 import "./css/app.css";
-import {
-    initMainEvents,
-    initPreviewFull,
-    previewChange,
-} from "./scripts/events";
+import { initMainEvents, previewChange } from "./scripts/events";
 
 let worker: Worker, childWorker: Worker;
 document.addEventListener("DOMContentLoaded", async () => {
