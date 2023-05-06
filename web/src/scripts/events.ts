@@ -1,6 +1,6 @@
 import { signUserOut, togglePreview } from "./utils";
 
-export function initTouchEvents() {
+export function initTouchEvents(childWorker: Worker) {
     let touchStartX = 0;
     let touchStartY = 0;
     let touchEndX = 0;
@@ -8,7 +8,7 @@ export function initTouchEvents() {
     const preview = document.querySelector(".preview") as HTMLDivElement;
     const header = document.querySelector(".header") as HTMLDivElement;
 
-    function checkDirection(childWorker: Worker) {
+    function checkDirection() {
         if (Math.abs(touchStartX - touchEndX) > 40) {
             //swipe left
             if (touchStartX > touchEndX) {
