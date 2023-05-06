@@ -14,6 +14,7 @@ export function initTouchEvents() {
 
     function checkDirection() {
         if (Math.abs(touchStartX - touchEndX) > 40) {
+            //swipe left
             if (touchStartX > touchEndX) {
                 // console.log(
                 //     document.querySelector(`[data-id='${e.target?.dataset.id}']`)
@@ -21,21 +22,21 @@ export function initTouchEvents() {
                 // );
             }
             if (touchStartX < touchEndX) {
+                //swipe right
                 // console.log(
                 //     document.querySelector(`[data-id='${e.target?.dataset.id}']`)
                 //         ?.parentNode?.nextElementSibling.firstChild
                 // );
-                // console.log("swipe right");
             }
         }
-        if (Math.abs(touchStartY - touchEndY) > 30) {
+        if (Math.abs(touchStartY - touchEndY) > 40) {
+            // swipe down
             if (touchStartY < touchEndY) {
-                console.log("swipe down");
                 preview.hidden = true;
             }
+            // swipe up
             if (touchStartY > touchEndY) {
-                console.log("swipe up");
-                preview.hidden = true;
+                // preview.hidden = true;
             }
         }
     }
