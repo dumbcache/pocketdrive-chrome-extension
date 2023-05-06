@@ -57,6 +57,10 @@ export function initTouchEvents() {
         }
     });
 
+    preview.addEventListener("touchmove", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
     header.addEventListener("click", () => {
         const mainWrapper = document.querySelector(
             ".main-wrapper"
