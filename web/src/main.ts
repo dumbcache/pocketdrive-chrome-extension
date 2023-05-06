@@ -44,6 +44,7 @@ if (window.Worker) {
             return;
         }
         if (data.context === "FETCH_FILES_FAILED") {
+            console.log(data);
             if (data.status === 401) {
                 getToken();
                 return;

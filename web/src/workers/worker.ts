@@ -47,9 +47,8 @@ async function fetchFiles(
 ) {
     const context = refresh === false ? "FETCH_FILES" : "REFRESH_FILES";
     if (refresh !== true) {
-        const [dirRes, imgsRes] = await krabsCache.matchAll(`/${data.parent}`, {
-            ignoreSearch: true,
-        });
+        const dirRes = await krabsCache.match(`/${data.parent}?type=dirs`);
+        const imgsRes = await krabsCache.match(`/${data.parent}?type=imgs`);
         if (dirRes && imgsRes) {
             const dirs = await dirRes.json();
             const imgs = await imgsRes.json();
@@ -108,19 +107,23 @@ async function fetchCovers(
 }
 
 onmessage = async ({ data }) => {
-    console.log(data.context);
     const krabsCache = await caches.open("krabs");
-    if (data.context === "FETCH_FILES") {
-        fetchFiles(data, krabsCache);
-    }
-    if (data.context === "FETCH_COVERS") {
-        fetchCovers(data, krabsCache);
-    }
-    if (data.context === "REFRESH_FILES") {
-        fetchFiles(data, krabsCache, true);
-    }
-    if (data.context === "REFRESH_COVERS") {
-        fetchCovers(data, krabsCache, true);
+    switch (data.context) {
+        case "FETCH_FILES":
+            fetchFiles(data, krabsCache);
+            return;
+
+        case "FETCH_COVERS":
+            fetchCovers(data, krabsCache);
+            return;
+
+        case "REFRESH_FILES":
+            fetchFiles(data, krabsCache, true);
+            return;
+
+        case "REFRESH_COVERS":
+            fetchCovers(data, krabsCache, true);
+            return;
     }
 };
 onmessageerror = (e) => console.warn(e);

@@ -49,6 +49,7 @@ export async function getFiles(
                 },
             });
             if (res.status !== 200) {
+                console.log(res.status, await res.text());
                 if (res.status === 401) {
                     reject({ status: 401 });
                 }
