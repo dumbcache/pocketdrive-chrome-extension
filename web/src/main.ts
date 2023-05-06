@@ -138,6 +138,7 @@ window.addEventListener("keydown", (e) => {
             return;
         case "Escape":
             togglePreview(true);
+            return;
     }
 });
 

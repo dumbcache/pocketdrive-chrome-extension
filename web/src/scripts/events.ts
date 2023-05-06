@@ -8,31 +8,29 @@ export function initTouchEvents() {
     const preview = document.querySelector(".preview") as HTMLDivElement;
     const header = document.querySelector(".header") as HTMLDivElement;
 
-    function checkDirection() {
+    function checkDirection(childWorker: Worker) {
         if (Math.abs(touchStartX - touchEndX) > 40) {
             //swipe left
             if (touchStartX > touchEndX) {
-                // console.log(
-                //     document.querySelector(`[data-id='${e.target?.dataset.id}']`)
-                //         ?.parentNode?.previousElementSibling.firstChild
-                // );
+                previewChange("PREV", childWorker);
+                return;
             }
+            //swipe right
             if (touchStartX < touchEndX) {
-                //swipe right
-                // console.log(
-                //     document.querySelector(`[data-id='${e.target?.dataset.id}']`)
-                //         ?.parentNode?.nextElementSibling.firstChild
-                // );
+                previewChange("NEXT", childWorker);
+                return;
             }
         }
         if (Math.abs(touchStartY - touchEndY) > 40) {
             // swipe down
             if (touchStartY < touchEndY) {
                 preview.hidden = true;
+                return;
             }
             // swipe up
             if (touchStartY > touchEndY) {
                 preview.hidden = true;
+                return;
             }
         }
     }
@@ -180,7 +178,7 @@ function initImgEvents(childWorker: Worker) {
 }
 
 export function initMainEvents(childWorker: Worker) {
-    initTouchEvents();
+    initTouchEvents(childWorker);
     initImgEvents(childWorker);
     initPreviewEvents(childWorker);
 }
