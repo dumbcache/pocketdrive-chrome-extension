@@ -128,10 +128,7 @@ window.addEventListener("keydown", (e) => {
             previewChange("PREV", childWorker);
             return;
         case "ArrowDown":
-            previewChange("NEXT", childWorker);
-            return;
-        case "ArrowUp":
-            previewChange("PREV", childWorker);
+            togglePreview(true);
             return;
         case "Escape":
             const preview = document.querySelector(

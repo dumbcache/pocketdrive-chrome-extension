@@ -113,7 +113,7 @@
     position: relative;
     min-width: 50%;
     height: 90vh;
-    background-color: #0005;
+    background-color: #000a;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     z-index: 100;
@@ -125,10 +125,6 @@
     bottom: 0;
     right: 0;
     left: 0;
-    background-color: #0005;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    z-index: 100;
 }
 
 .preview-tools {
