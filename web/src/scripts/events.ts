@@ -98,9 +98,54 @@ export function initPreviewFull() {
     });
 }
 
-export function initPreviewEvents() {
+function previewChange(
+    type: "PREV" | "NEXT",
+    e: MouseEvent,
+    childWorker: Worker
+) {
+    const previewImg = document.querySelector(
+        ".preview-img"
+    ) as HTMLImageElement;
+    const targetImg = document.querySelector(
+        `[data-id='${previewImg.dataset.id}']`
+    );
+    const targetParent = targetImg?.parentElement;
+    const latestParent =
+        type === "NEXT"
+            ? targetParent?.nextElementSibling
+            : targetParent?.previousElementSibling;
+    if (!latestParent) return;
+    const latestImg = latestParent?.firstElementChild as HTMLImageElement;
+    const latestId = latestImg.dataset.id;
+    previewImg.src = latestImg.src;
+    previewImg.dataset.id = latestId;
+    if (latestImg.dataset.url) {
+        previewImg.src = latestImg.dataset.url;
+    } else {
+        const token = window.localStorage.getItem("token")!;
+        childWorker.postMessage({
+            context: "FETCH_IMAGE",
+            id: latestId,
+            token,
+        });
+    }
+}
+
+export function initPreviewChange(childWorker: Worker) {
+    const previewPrev = document.querySelector(
+        ".preview-prev"
+    ) as HTMLDivElement;
+    const previewNext = document.querySelector(
+        ".preview-next"
+    ) as HTMLDivElement;
+    previewPrev.onclick = (e) => previewChange("PREV", e, childWorker);
+    previewNext.onclick = (e) => previewChange("NEXT", e, childWorker);
+}
+
+export function initPreviewEvents(childWorker: Worker) {
     initPreviewClose();
     initPreviewFull();
+    initPreviewChange(childWorker);
 }
 
 function initImgEvents(childWorker: Worker) {
@@ -135,5 +180,5 @@ function initImgEvents(childWorker: Worker) {
 export function initMainEvents(childWorker: Worker) {
     initTouchEvents();
     initImgEvents(childWorker);
-    initPreviewEvents();
+    initPreviewEvents(childWorker);
 }
