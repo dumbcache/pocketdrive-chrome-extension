@@ -98,11 +98,7 @@ export function initPreviewFull() {
     });
 }
 
-function previewChange(
-    type: "PREV" | "NEXT",
-    e: MouseEvent,
-    childWorker: Worker
-) {
+function previewChange(type: "PREV" | "NEXT", childWorker: Worker) {
     const previewImg = document.querySelector(
         ".preview-img"
     ) as HTMLImageElement;
@@ -138,8 +134,8 @@ export function initPreviewChange(childWorker: Worker) {
     const previewNext = document.querySelector(
         ".preview-next"
     ) as HTMLDivElement;
-    previewPrev.onclick = (e) => previewChange("PREV", e, childWorker);
-    previewNext.onclick = (e) => previewChange("NEXT", e, childWorker);
+    previewPrev.onclick = () => previewChange("PREV", childWorker);
+    previewNext.onclick = () => previewChange("NEXT", childWorker);
 }
 
 export function initPreviewEvents(childWorker: Worker) {
