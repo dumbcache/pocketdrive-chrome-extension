@@ -1,4 +1,9 @@
-import { getToken, isLoggedin, isUserOnline } from "./scripts/utils";
+import {
+    getToken,
+    isLoggedin,
+    isUserOnline,
+    togglePreview,
+} from "./scripts/utils";
 import { generateCovers, crateMaincontent } from "./scripts/helpers";
 import "./css/app.css";
 import { initMainEvents, previewChange } from "./scripts/events";
@@ -84,6 +89,7 @@ window.addEventListener("locationchange", async () => {
         const back = document.querySelector(
             ".back-button"
         ) as HTMLButtonElement;
+        togglePreview(true);
         pathname === "/" ? (back.hidden = true) : (back.hidden = false);
         const root =
             pathname === "/"
@@ -107,11 +113,13 @@ window.addEventListener("refresh", () => {
 });
 
 window.addEventListener("keydown", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (e.altKey || e.metaKey || e.ctrlKey) {
+        return;
+    }
     const preview = document.querySelector(".preview") as HTMLDivElement;
     if (preview.hidden) return;
-    // debugger;
+    e.preventDefault();
+    e.stopPropagation();
     switch (e.key) {
         case "ArrowRight":
             previewChange("NEXT", childWorker);

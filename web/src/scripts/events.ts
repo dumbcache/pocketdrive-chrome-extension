@@ -79,7 +79,6 @@ export function initMenuEvents() {
     back.addEventListener("click", (e) => {
         e.stopPropagation();
         window.history.back();
-        togglePreview(true);
     });
     signoutButton.addEventListener("click", signUserOut);
 }
