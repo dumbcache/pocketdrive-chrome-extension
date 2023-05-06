@@ -85,24 +85,6 @@ export function createImg(
     return frag;
 }
 
-export function previewCloseHandler() {
-    const preview = document.querySelector(".preview") as HTMLDivElement;
-    const previewClose = document.querySelector(
-        ".preview-close"
-    ) as HTMLDivElement;
-    preview.hidden = true;
-    previewClose.removeEventListener("click", previewCloseHandler);
-}
-
-export function togglePreview() {
-    const preview = document.querySelector(".preview") as HTMLDivElement;
-    const previewClose = document.querySelector(
-        ".preview-close"
-    ) as HTMLDivElement;
-    preview.hidden = false;
-    previewClose.addEventListener("click", previewCloseHandler);
-}
-
 export function generateCovers(id: string, imgs: GoogleFileRes) {
     const cover = document.querySelector(
         `[data-parent='${id}']`
@@ -144,7 +126,6 @@ export async function crateMaincontent(
     refresh: Boolean = false
 ) {
     const [dirs, imgs] = files;
-
     generateDirs(dirs.files, worker, refresh);
     generateImgs(imgs.files);
 }

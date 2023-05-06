@@ -28,6 +28,11 @@ export function isUserOnline(status: Boolean) {
     loadGSIScript();
 }
 
+export function togglePreview() {
+    const preview = document.querySelector(".preview") as HTMLDivElement;
+    preview.hidden = false;
+}
+
 export const loadGSIScript = () => {
     const src = "https://accounts.google.com/gsi/client";
     const header = document.querySelector(".header") as HTMLDivElement;

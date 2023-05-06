@@ -1,8 +1,4 @@
-// function getPrevElement(){}
-// function getNextElement(){}
-
-import { togglePreview } from "./helpers";
-import { signUserOut } from "./utils";
+import { signUserOut, togglePreview } from "./utils";
 
 export function initTouchEvents() {
     let touchStartX = 0;
@@ -82,10 +78,34 @@ export function initMenuEvents() {
     signoutButton.addEventListener("click", signUserOut);
 }
 
-function initImgClickEvent(childWorker: Worker) {
+export function initPreviewClose() {
+    const preview = document.querySelector(".preview") as HTMLDivElement;
+    const previewClose = document.querySelector(
+        ".preview-close"
+    ) as HTMLDivElement;
+    previewClose.addEventListener("click", () => {
+        preview.hidden = true;
+    });
+}
+
+export function initPreviewFull() {
+    const preview = document.querySelector(".preview") as HTMLDivElement;
+    const previewExpand = document.querySelector(
+        ".preview-expand"
+    ) as HTMLDivElement;
+    previewExpand.addEventListener("click", () => {
+        preview.classList.toggle("preview-full");
+    });
+}
+
+export function initPreviewEvents() {
+    initPreviewClose();
+    initPreviewFull();
+}
+
+function initImgEvents(childWorker: Worker) {
     const imgsEle = document.querySelector(".imgs") as HTMLDivElement;
     imgsEle?.addEventListener("click", async (e) => {
-        console.log(e);
         const target = e.target as HTMLImageElement;
         if (!target.classList.contains("img")) return;
         const dataset = target.dataset;
@@ -114,5 +134,6 @@ function initImgClickEvent(childWorker: Worker) {
 
 export function initMainEvents(childWorker: Worker) {
     initTouchEvents();
-    initImgClickEvent(childWorker);
+    initImgEvents(childWorker);
+    initPreviewEvents();
 }

@@ -4,7 +4,7 @@ export const DIR_MIME_TYPE = "application/vnd.google-apps.folder";
 export const IMG_MIME_TYPE = "image/";
 export const FILE_API = "https://www.googleapis.com/drive/v3/files";
 export const FIELDS_REQUIRED =
-    "files(id,name,appProperties,parents,thumbnailLink)";
+    "files(id,name,appProperties(origin),thumbnailLink)";
 
 function constructAPI(
     parent: string,
@@ -38,9 +38,12 @@ export async function getFiles(
     parent: string,
     token: string,
     mimeType: string,
-    pageSize: number = 100
+    pageSize?: number
 ): Promise<GoogleFileRes | undefined> {
     try {
+        if (!pageSize) {
+            pageSize = mimeType === DIR_MIME_TYPE ? 1000 : 100;
+        }
         return new Promise(async (resolve, reject) => {
             let res = await fetch(constructAPI(parent, mimeType, pageSize), {
                 method: "GET",
