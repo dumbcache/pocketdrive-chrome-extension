@@ -121,5 +121,6 @@ export function initMainEvents(childWorker: Worker) {
     const preview = document.querySelector(".preview") as HTMLDivElement;
     preview.addEventListener("scroll", (e) => {
         e.preventDefault();
+        e.stopPropagation();
     });
 }
