@@ -12,12 +12,12 @@ export function initTouchEvents(childWorker: Worker) {
         if (Math.abs(touchStartX - touchEndX) > 40) {
             //swipe left
             if (touchStartX > touchEndX) {
-                previewChange("PREV", childWorker);
+                previewChange("NEXT", childWorker);
                 return;
             }
             //swipe right
             if (touchStartX < touchEndX) {
-                previewChange("NEXT", childWorker);
+                previewChange("PREV", childWorker);
                 return;
             }
         }

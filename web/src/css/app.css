@@ -162,6 +162,9 @@
     object-fit: contain;
     object-position: top;
 }
+.preview-fade {
+    opacity: 1;
+}
 
 .dir {
     width: 300px;
@@ -277,8 +280,6 @@
     }
     .preview-body {
         height: 100%;
-        background-color: #0005;
-        backdrop-filter: blur(15px);
     }
     .preview-img {
         padding: 0;
