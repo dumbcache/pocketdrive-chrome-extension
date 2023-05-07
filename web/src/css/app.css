@@ -20,7 +20,7 @@
     flex-flow: row nowrap;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #000;
+    border-bottom: 1px solid #222;
     padding: 0rem 1rem;
     height: 10%;
 }
@@ -242,7 +242,7 @@
         top: 0;
         right: 0;
         left: 0;
-        background-color: #222;
+        background-color: #eee;
     }
     .main {
         height: initial;
@@ -321,12 +321,18 @@
     .preview-tools {
         background-color: inherit;
     }
+    .header {
+        border-bottom: 1px solid #333;
+    }
     @media (max-width: 600px) {
         .preview-tools {
             background: none;
         }
         .preview-close {
             filter: invert(0);
+        }
+        .header {
+            background-color: #222;
         }
     }
 }
