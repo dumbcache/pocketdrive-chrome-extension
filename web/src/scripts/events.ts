@@ -179,7 +179,6 @@ function initImgEvents(childWorker: Worker) {
 
 export function initUploadEvents(childWorker: Worker) {
     const main = document.querySelector(".main") as HTMLDivElement;
-    const dropZone = document.querySelector(".drop-zone") as HTMLDivElement;
     main.addEventListener("dragover", (e) => {
         e.preventDefault();
     });
@@ -207,7 +206,8 @@ export function initUploadEvents(childWorker: Worker) {
                     console.log(
                         uint8.buffer,
                         uint8.byteLength,
-                        uint8.BYTES_PER_ELEMENT
+                        uint8.BYTES_PER_ELEMENT,
+                        childWorker
                     );
                 };
                 reader.readAsArrayBuffer(img);
