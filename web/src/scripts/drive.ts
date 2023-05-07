@@ -1,4 +1,4 @@
-import type { GoogleFileRes } from "../types";
+import type { GoogleFileRes, ImgMeta, CreateResourceResponse } from "../types";
 
 export const DIR_MIME_TYPE = "application/vnd.google-apps.folder";
 export const IMG_MIME_TYPE = "image/";
@@ -66,3 +66,44 @@ export async function getFiles(
         console.warn(error);
     }
 }
+
+export const createImgMetadata = async (
+    imgMeta: ImgMeta,
+    accessToken: string
+) => {
+    const url =
+        "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable";
+    let req = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(imgMeta),
+    });
+    let { status, statusText } = req;
+    if (status !== 200)
+        throw new Error(
+            `error while creatingImgMetaData ${status} ${statusText}`
+        );
+    return { location: req.headers.get("Location") };
+};
+
+export const uploadImg = async (
+    location: string,
+    imgData: ArrayBuffer,
+    mimeType: string
+) => {
+    let req = await fetch(location, {
+        method: "PUT",
+        headers: {
+            "Content-Type": mimeType,
+        },
+        body: imgData,
+    });
+    let { status, statusText } = req;
+    let { id } = (await req.json()) as CreateResourceResponse;
+    if (status !== 200)
+        throw new Error(`error while uploadingImg ${status} ${statusText}`);
+    return { status, id };
+};

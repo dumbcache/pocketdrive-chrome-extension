@@ -29,9 +29,11 @@
     display: flex;
     gap: 2rem;
 }
+
 .signin-button,
 .back-button {
     width: fit-content;
+    color: #60f;
 }
 .signin-button:hover {
     filter: initial;
@@ -44,6 +46,15 @@
     justify-content: space-between;
     overscroll-behavior-y: contain;
 }
+
+.drop-zone {
+    background-color: #00f5;
+    /* position: absolute;
+    top: 0; */
+    width: 100%;
+    height: 100%;
+}
+
 .main ::-webkit-scrollbar {
     /* display: none; */
 }
@@ -52,6 +63,7 @@
     width: 100%;
     display: flex;
     flex-flow: column nowrap;
+    align-items: center;
     gap: 2rem;
     overflow-y: scroll;
     padding: 2rem;
@@ -87,6 +99,9 @@
 }
 .img-card {
     position: relative;
+    background-color: #ddd;
+    border-radius: 1rem;
+    height: fit-content;
 }
 .img-card:hover img {
     filter: brightness(0.5);
@@ -132,7 +147,7 @@
     top: 0;
     opacity: 0.2;
     /* transform: translate(0%, -50%); */
-    background-color: #eee;
+    background-color: #ddd;
     display: flex;
     align-items: center;
     flex-flow: column nowrap;
@@ -192,7 +207,7 @@
     border-radius: 1rem;
     overflow: hidden;
     gap: 1px;
-    background-color: #eee;
+    background-color: #ddd;
 }
 
 .cover:hover {
@@ -227,7 +242,7 @@
         top: 0;
         right: 0;
         left: 0;
-        background-color: #fff;
+        background-color: #222;
     }
     .main {
         height: initial;
@@ -273,7 +288,6 @@
         opacity: 1;
         border-radius: 50%;
         padding: 0.5rem;
-        background: none;
     }
     .preview-tools button:not(:first-child) {
         display: none;
@@ -289,5 +303,26 @@
     #search {
         max-width: 15rem;
         font-size: 1.3rem;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    button {
+        filter: invert(0.8);
+    }
+    .cover,
+    .img-card {
+        background-color: #333;
+    }
+    .preview {
+        background-color: #5555;
+    }
+    .preview-tools {
+        background-color: inherit;
+    }
+    @media (max-width: 600px) {
+        .preview-tools {
+            background: none;
+        }
     }
 }

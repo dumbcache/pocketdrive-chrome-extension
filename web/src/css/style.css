@@ -3,9 +3,9 @@
     font-size: 62.5%; /* 10px (default browser's 16px)*/
     line-height: 1.5;
 
-    color-scheme: light dark;
-    color: #111;
-    background-color: #fff;
+    color-scheme: dark light;
+    background-color: #f8f8f8;
+    color: #202020;
 
     font-synthesis: none;
     text-rendering: optimizeLegibility;
@@ -87,7 +87,7 @@ a {
     border-radius: 5px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: #022;
+    background: #052;
 }
 
 @media (max-width: 600px) {
@@ -95,7 +95,17 @@ a {
         width: 2.4rem;
     }
 }
-@media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: dark) {
+    :root {
+        background-color: #222;
+        color: #ddd;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #052;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #1459;
+    }
 }
 @media (prefers-reduced-motion: no-preference) {
 }

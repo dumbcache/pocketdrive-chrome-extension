@@ -28,3 +28,20 @@ declare global {
         google: any;
     }
 }
+
+export interface ImgMeta {
+    name?: string;
+    mimeType?: string;
+    parents?: [string];
+    appProperties?: {
+        origin: string;
+        src: string;
+    };
+}
+
+export interface CreateResourceResponse {
+    kind: string;
+    id: string;
+    name: string;
+    mimeType: string;
+}

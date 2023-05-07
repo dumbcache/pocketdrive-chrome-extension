@@ -177,8 +177,48 @@ function initImgEvents(childWorker: Worker) {
     });
 }
 
+export function initUploadEvents(childWorker: Worker) {
+    const main = document.querySelector(".main") as HTMLDivElement;
+    const dropZone = document.querySelector(".drop-zone") as HTMLDivElement;
+    main.addEventListener("dragover", (e) => {
+        e.preventDefault();
+    });
+    main.addEventListener("dragenter", () => {
+        main.classList.toggle("drop-zone");
+    });
+    main.addEventListener("dragleave", () => {
+        main.classList.toggle("drop-zone");
+    });
+    main.addEventListener("drop", (e) => {
+        e.preventDefault();
+        main.classList.toggle("drop-zone");
+        for (let img of e.dataTransfer?.files!) {
+            if (img.type.match("image/")) {
+                main.insertAdjacentHTML(
+                    "beforeend",
+                    `<img src="${URL.createObjectURL(
+                        img
+                    )}" alt="image" height=400>`
+                );
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const result = e.target?.result! as ArrayBuffer;
+                    const uint8 = new Uint8Array(result);
+                    console.log(
+                        uint8.buffer,
+                        uint8.byteLength,
+                        uint8.BYTES_PER_ELEMENT
+                    );
+                };
+                reader.readAsArrayBuffer(img);
+            }
+        }
+    });
+}
+
 export function initMainEvents(childWorker: Worker) {
     initTouchEvents(childWorker);
     initImgEvents(childWorker);
     initPreviewEvents(childWorker);
+    initUploadEvents(childWorker);
 }
