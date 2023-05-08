@@ -34,8 +34,8 @@ export interface ImgMeta {
     mimeType?: string;
     parents?: [string];
     appProperties?: {
-        origin: string;
-        src: string;
+        origin?: string;
+        src?: string;
     };
 }
 
@@ -48,6 +48,7 @@ export interface CreateResourceResponse {
 
 export interface DropItem {
     name: string;
+    mimeType: string;
     url?: string;
     bytes: Uint8Array;
     imgRef: string;

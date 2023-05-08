@@ -67,31 +67,35 @@ export async function getFiles(
     }
 }
 
-export const createImgMetadata = async (
+export const createImgMetadata = (
     imgMeta: ImgMeta,
-    accessToken: string
-) => {
-    const url =
-        "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable";
-    let req = await fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(imgMeta),
+    token: string
+): Promise<string> => {
+    return new Promise(async (resolve, reject) => {
+        const url =
+            "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable";
+        let req = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(imgMeta),
+        });
+        let { status, statusText } = req;
+        if (status !== 200) {
+            console.log(
+                `error while creatingImgMetaData ${status} ${statusText}`
+            );
+            reject({ status });
+        }
+        resolve(req.headers.get("Location")!);
     });
-    let { status, statusText } = req;
-    if (status !== 200)
-        throw new Error(
-            `error while creatingImgMetaData ${status} ${statusText}`
-        );
-    return { location: req.headers.get("Location") };
 };
 
 export const uploadImg = async (
     location: string,
-    imgData: ArrayBuffer,
+    bytes: Uint8Array,
     mimeType: string
 ) => {
     let req = await fetch(location, {
@@ -99,11 +103,12 @@ export const uploadImg = async (
         headers: {
             "Content-Type": mimeType,
         },
-        body: imgData,
+        body: bytes,
     });
     let { status, statusText } = req;
-    let { id } = (await req.json()) as CreateResourceResponse;
-    if (status !== 200)
-        throw new Error(`error while uploadingImg ${status} ${statusText}`);
-    return { status, id };
+    if (status !== 200) {
+        console.log(`error while uploadingImg ${status} ${statusText}`);
+        return { status };
+    }
+    return { status };
 };

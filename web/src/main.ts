@@ -77,6 +77,10 @@ if (window.Worker) {
                     return;
                 }
                 return;
+            case "DROP_SAVE":
+                return;
+            case "DROP_SAVE_FAILED":
+                return;
             case "IDB_RELOAD_REQUIRED":
                 return;
         }

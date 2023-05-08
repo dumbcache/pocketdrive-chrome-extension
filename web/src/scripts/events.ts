@@ -1,4 +1,4 @@
-import { DropItem, DropItems } from "../types";
+import { DropItems } from "../types";
 import { createDropItem } from "./helpers";
 import { signUserOut, togglePreview } from "./utils";
 
@@ -179,14 +179,37 @@ function initImgEvents(childWorker: Worker) {
     });
 }
 
-export function dropOkHandler(dropItems: DropItems) {}
+export function dropOkHandler(dropItems: DropItems, childWorker: Worker) {
+    const dropArea = document.querySelector(".drop-area") as HTMLDivElement;
+    for (let id in dropItems) {
+        const dropItem = dropArea.querySelector(
+            `[data-id='${id}']`
+        ) as HTMLDivElement;
+        let name = dropItem.querySelector(".name") as HTMLInputElement;
+        let url = dropItem.querySelector(".url") as HTMLInputElement;
+        dropItems[id].name = name.value.trim();
+        dropItems[id].url = url.value.trim();
+    }
+    const { pathname } = window.location;
+    const parent =
+        pathname === "/"
+            ? window.localStorage.getItem("root")!
+            : pathname.substring(1);
+    const token = window.localStorage.getItem("token");
+    childWorker.postMessage({
+        context: "DROP_SAVE",
+        dropItems,
+        parent,
+        token,
+    });
+}
 export function dropCancelHandler(dropItems: DropItems) {
     const dropZone = document.querySelector(".drop-zone") as HTMLDivElement;
     const dropArea = document.querySelector(".drop-area") as HTMLDivElement;
     dropZone.hidden = true;
-    for (let key in dropItems) {
-        URL.revokeObjectURL(dropItems[key].imgRef!);
-        delete dropItems[key];
+    for (let id in dropItems) {
+        URL.revokeObjectURL(dropItems[id].imgRef!);
+        delete dropItems[id];
     }
     dropArea.innerHTML = "";
 }
@@ -204,7 +227,7 @@ export function previewLoadDropItem(
     reader.onload = (e) => {
         const result = e.target?.result! as ArrayBuffer;
         const bytes = new Uint8Array(result);
-        dropItems[id] = { name: img.name, bytes, imgRef };
+        dropItems[id] = { name: img.name, mimeType: img.type, bytes, imgRef };
     };
     reader.readAsArrayBuffer(img);
 }
@@ -226,7 +249,7 @@ export function initUploadEvents(childWorker: Worker) {
     main.addEventListener("dragenter", () => {
         main.classList.toggle("drop-hover");
     });
-    main.addEventListener("dragleave", (e) => {
+    main.addEventListener("dragleave", () => {
         main.classList.toggle("drop-hover");
     });
     main.addEventListener("drop", (e) => {
@@ -241,7 +264,9 @@ export function initUploadEvents(childWorker: Worker) {
         }
         console.log(dropItems);
     });
-    dropOk.addEventListener("click", () => dropOkHandler(dropItems));
+    dropOk.addEventListener("click", () =>
+        dropOkHandler(dropItems, childWorker)
+    );
     dropCancel.addEventListener("click", () => dropCancelHandler(dropItems));
 }
 

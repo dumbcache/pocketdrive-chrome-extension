@@ -1,4 +1,5 @@
-import { downloadImage } from "../scripts/drive";
+import { createImgMetadata, downloadImage, uploadImg } from "../scripts/drive";
+import { DropItems, ImgMeta } from "../types";
 
 let idbRequest: IDBOpenDBRequest;
 (() => {
@@ -57,8 +58,47 @@ function checkForImgLocal(id: string, token: string) {
         postMessage({ context: "FETCH_IMAGE", id, blob: result.blob });
     };
 }
+
+async function dropSave(dropItems: DropItems, parent: string, token: string) {
+    for (let id in dropItems) {
+        const { name, url, mimeType, bytes } = dropItems[id];
+        console.log(name, url);
+        const imgMeta: ImgMeta = {
+            name: name || id,
+            mimeType,
+            parents: [parent],
+            appProperties: { origin: url || "" },
+        };
+        createImgMetadata(imgMeta, token)
+            .then(async (location) => {
+                console.log(location);
+                const { status } = await uploadImg(location, bytes, mimeType);
+                console.log({ status });
+                status === 200
+                    ? postMessage({
+                          context: "DROP_SAVE",
+                          id,
+                      })
+                    : postMessage({
+                          context: "DROP_SAVE_FAILED",
+                          id,
+                      });
+            })
+            .catch(() => {
+                postMessage({
+                    context: "DROP_SAVE_FAILED",
+                    id,
+                });
+            });
+    }
+}
 onmessage = ({ data }) => {
-    if (data.context === "FETCH_IMAGE") {
-        checkForImgLocal(data.id, data.token);
+    switch (data.context) {
+        case "FETCH_IMAGE":
+            checkForImgLocal(data.id, data.token);
+            return;
+        case "DROP_SAVE":
+            dropSave(data.dropItems, data.parent, data.token);
+            return;
     }
 };

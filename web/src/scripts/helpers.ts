@@ -136,10 +136,10 @@ export function createDropItem(src: string, id: number, name?: string) {
     return `
     <div class="drop-item" data-id="${id}">
         <img src="${src}" class="drop-img"/>
-        <input type="text" class="drop-input" placeholder="name" value="${
+        <input type="text" class="drop-input name" placeholder="name" value="${
             name || ""
         }" onclick="this.select();">
-        <input type="text" class="drop-input" placeholder="url" value="" onclick="this.select();">
+        <input type="text" class="drop-input url" placeholder="url" value="" onclick="this.select();">
     </div>
     `;
 }
