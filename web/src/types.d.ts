@@ -45,3 +45,14 @@ export interface CreateResourceResponse {
     name: string;
     mimeType: string;
 }
+
+export interface DropItem {
+    name: string;
+    url?: string;
+    bytes: Uint8Array;
+    imgRef: string;
+}
+
+export interface DropItems {
+    [id: number]: DropItem;
+}
