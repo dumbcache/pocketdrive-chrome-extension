@@ -1,3 +1,4 @@
+import { createDropItem } from "./helpers";
 import { signUserOut, togglePreview } from "./utils";
 
 export function initTouchEvents(childWorker: Worker) {
@@ -179,6 +180,8 @@ function initImgEvents(childWorker: Worker) {
 
 export function initUploadEvents(childWorker: Worker) {
     const main = document.querySelector(".main") as HTMLDivElement;
+    const dropZone = document.querySelector(".drop-zone") as HTMLDivElement;
+    const dropArea = document.querySelector(".drop-area") as HTMLDivElement;
     main.addEventListener("dragover", (e) => {
         e.preventDefault();
     });
@@ -190,25 +193,20 @@ export function initUploadEvents(childWorker: Worker) {
     });
     main.addEventListener("drop", (e) => {
         e.preventDefault();
+        dropZone.hidden = false;
         main.classList.toggle("drop-zone");
         for (let img of e.dataTransfer?.files!) {
             if (img.type.match("image/")) {
-                main.insertAdjacentHTML(
-                    "beforeend",
-                    `<img src="${URL.createObjectURL(
-                        img
-                    )}" alt="image" height=400>`
+                const dropItem = createDropItem(
+                    URL.createObjectURL(img),
+                    img.name
                 );
+                dropArea.insertAdjacentHTML("beforeend", dropItem);
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const result = e.target?.result! as ArrayBuffer;
-                    const uint8 = new Uint8Array(result);
-                    console.log(
-                        uint8.buffer,
-                        uint8.byteLength,
-                        uint8.BYTES_PER_ELEMENT,
-                        childWorker
-                    );
+                    const bytes = new Uint8Array(result);
+                    console.log(bytes, childWorker);
                 };
                 reader.readAsArrayBuffer(img);
             }

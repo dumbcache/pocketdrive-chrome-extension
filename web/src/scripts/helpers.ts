@@ -131,3 +131,17 @@ export async function crateMaincontent(
     generateDirs(dirs.files, worker, refresh);
     generateImgs(imgs.files);
 }
+
+export function createDropItem(src: string, name?: string, url?: string) {
+    return `
+    <div class="drop-item">
+        <img src="${src}" class="drop-img"/>
+        <div><input type="text" class="drop-input" placeholder="name" value="${
+            name || ""
+        }"></div>
+        <div><input type="text" class="drop-input" placeholder="url" value="${
+            url || ""
+        }"></div>
+    </div>
+    `;
+}
