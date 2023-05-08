@@ -176,12 +176,13 @@
 .drop-item {
     display: flex;
     flex-flow: column nowrap;
-    /* gap: 1rem; */
     background-color: #ddd;
+    height: 25rem;
+    max-width: 20rem;
 }
 .drop-item img {
-    height: 30rem;
-    max-width: 25rem;
+    height: 100%;
+    max-width: 100%;
     object-fit: cover;
     object-position: top;
     border-radius: 1rem;
@@ -189,7 +190,7 @@
 
 .drop-input {
     flex-shrink: 2;
-    max-width: 250px;
+    max-width: 100%;
     border: none;
     outline: none;
     border-radius: 0.5rem;
