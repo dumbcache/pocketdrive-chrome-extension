@@ -190,13 +190,14 @@
 .drop-item {
     display: flex;
     flex-flow: column nowrap;
-    /* background-color: #ddd; */
     position: relative;
+    border-radius: 1rem;
     max-width: 20rem;
 }
 .drop-item-uploading {
     filter: brightness(0.5);
     user-select: none;
+    display: block;
 }
 @keyframes spin {
     100% {
@@ -244,12 +245,13 @@
     background-color: #ccc;
 }
 .drop-hover {
-    background-color: #60f5;
+    background-color: #9de6;
 }
 .dir {
     width: 300px;
 }
 .img {
+    display: block;
     overflow: hidden;
     height: fit-content;
     max-width: 200px;
@@ -386,7 +388,28 @@
         background-color: inherit;
     }
     .header {
-        border-bottom: 1px solid #333;
+        border-bottom: 1px solid #444;
+    }
+    .drop-tools {
+        background-color: #222;
+        border-bottom: 1px solid #444;
+    }
+    .drop-input {
+        color: inherit;
+        background-color: #333;
+        border-bottom: 2px solid #000;
+    }
+    .drop-input::placeholder {
+        color: #666;
+    }
+    .drop-input:hover {
+        background-color: #222;
+    }
+    .drop-item {
+        background-color: #333;
+    }
+    .drop-hover {
+        background-color: #9de6;
     }
     @media (max-width: 600px) {
         .preview-tools {

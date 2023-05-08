@@ -1,4 +1,4 @@
-import type { GoogleFileRes, ImgMeta, CreateResourceResponse } from "../types";
+import type { GoogleFileRes, ImgMeta } from "../types";
 
 export const DIR_MIME_TYPE = "application/vnd.google-apps.folder";
 export const IMG_MIME_TYPE = "image/";
