@@ -2,6 +2,8 @@ import { DropItems } from "../types";
 import { createDropItem } from "./helpers";
 import { signUserOut, togglePreview } from "./utils";
 
+const dropItems: DropItems = {};
+
 export function initTouchEvents(childWorker: Worker) {
     let touchStartX = 0;
     let touchStartY = 0;
@@ -179,14 +181,49 @@ function initImgEvents(childWorker: Worker) {
     });
 }
 
-export function dropOkHandler(dropItems: DropItems, childWorker: Worker) {
+export function dropResultHandler(id: number, status: number) {
+    const dropArea = document.querySelector(".drop-area") as HTMLDivElement;
+    const dropItem = dropArea.querySelector(
+        `[data-id='${id}']`
+    ) as HTMLDivElement;
+    let dropProgress = dropItem.querySelector(
+        ".drop-progress"
+    ) as HTMLImageElement;
+    if (status !== 200) {
+        let dropImg = dropItem.querySelector(".drop-img") as HTMLImageElement;
+        let name = dropItem.querySelector(".name") as HTMLInputElement;
+        let url = dropItem.querySelector(".url") as HTMLInputElement;
+        name.hidden = false;
+        url.hidden = false;
+        dropProgress.hidden = true;
+        dropImg.classList.toggle("drop-item-uploading");
+        return;
+    }
+    dropProgress.src = "./src/assets/success.svg";
+    dropProgress.classList.toggle("drop-progress-result");
+    delete dropItems[id];
+    setTimeout(() => {
+        dropArea.removeChild(dropItem);
+    }, 5000);
+    return;
+}
+
+export function dropOkHandler(childWorker: Worker) {
     const dropArea = document.querySelector(".drop-area") as HTMLDivElement;
     for (let id in dropItems) {
         const dropItem = dropArea.querySelector(
             `[data-id='${id}']`
         ) as HTMLDivElement;
+        let dropImg = dropItem.querySelector(".drop-img") as HTMLImageElement;
+        dropImg.classList.toggle("drop-item-uploading");
+        let dropProgress = dropItem.querySelector(
+            ".drop-progress"
+        ) as HTMLImageElement;
+        dropProgress.hidden = false;
         let name = dropItem.querySelector(".name") as HTMLInputElement;
         let url = dropItem.querySelector(".url") as HTMLInputElement;
+        name.hidden = true;
+        url.hidden = true;
         dropItems[id].name = name.value.trim();
         dropItems[id].url = url.value.trim();
     }
@@ -203,7 +240,7 @@ export function dropOkHandler(dropItems: DropItems, childWorker: Worker) {
         token,
     });
 }
-export function dropCancelHandler(dropItems: DropItems) {
+export function dropCancelHandler() {
     const dropZone = document.querySelector(".drop-zone") as HTMLDivElement;
     const dropArea = document.querySelector(".drop-area") as HTMLDivElement;
     dropZone.hidden = true;
@@ -214,11 +251,7 @@ export function dropCancelHandler(dropItems: DropItems) {
     dropArea.innerHTML = "";
 }
 
-export function previewLoadDropItem(
-    img: File,
-    dropItems: DropItems,
-    dropArea: HTMLDivElement
-) {
+export function previewLoadDropItem(img: File, dropArea: HTMLDivElement) {
     const id = Date.now();
     const imgRef = URL.createObjectURL(img);
     const dropItem = createDropItem(imgRef, id, img.name);
@@ -233,7 +266,6 @@ export function previewLoadDropItem(
 }
 
 export function initUploadEvents(childWorker: Worker) {
-    const dropItems: DropItems = {};
     const main = document.querySelector(".main") as HTMLDivElement;
     const preview = document.querySelector(".preview") as HTMLDivElement;
     const dropZone = document.querySelector(".drop-zone") as HTMLDivElement;
@@ -259,15 +291,13 @@ export function initUploadEvents(childWorker: Worker) {
         for (let img of e.dataTransfer?.files!) {
             if (img.type.match("image/")) {
                 dropZone.hidden = false;
-                previewLoadDropItem(img, dropItems, dropArea);
+                previewLoadDropItem(img, dropArea);
             }
         }
         console.log(dropItems);
     });
-    dropOk.addEventListener("click", () =>
-        dropOkHandler(dropItems, childWorker)
-    );
-    dropCancel.addEventListener("click", () => dropCancelHandler(dropItems));
+    dropOk.addEventListener("click", () => dropOkHandler(childWorker));
+    dropCancel.addEventListener("click", () => dropCancelHandler());
 }
 
 export function initMainEvents(childWorker: Worker) {

@@ -6,7 +6,11 @@ import {
 } from "./scripts/utils";
 import { generateCovers, crateMaincontent } from "./scripts/helpers";
 import "./css/app.css";
-import { initMainEvents, previewChange } from "./scripts/events";
+import {
+    dropResultHandler,
+    initMainEvents,
+    previewChange,
+} from "./scripts/events";
 
 let worker: Worker, childWorker: Worker;
 document.addEventListener("DOMContentLoaded", async () => {
@@ -78,8 +82,14 @@ if (window.Worker) {
                 }
                 return;
             case "DROP_SAVE":
+                dropResultHandler(data.id, 200);
                 return;
             case "DROP_SAVE_FAILED":
+                dropResultHandler(data.id, data.status);
+                if (data.status === 401) {
+                    getToken();
+                    return;
+                }
                 return;
             case "IDB_RELOAD_REQUIRED":
                 return;

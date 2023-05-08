@@ -62,7 +62,6 @@ function checkForImgLocal(id: string, token: string) {
 async function dropSave(dropItems: DropItems, parent: string, token: string) {
     for (let id in dropItems) {
         const { name, url, mimeType, bytes } = dropItems[id];
-        console.log(name, url);
         const imgMeta: ImgMeta = {
             name: name || id,
             mimeType,
@@ -71,9 +70,7 @@ async function dropSave(dropItems: DropItems, parent: string, token: string) {
         };
         createImgMetadata(imgMeta, token)
             .then(async (location) => {
-                console.log(location);
-                const { status } = await uploadImg(location, bytes, mimeType);
-                console.log({ status });
+                const { status } = await uploadImg(location, bytes);
                 status === 200
                     ? postMessage({
                           context: "DROP_SAVE",
@@ -82,12 +79,14 @@ async function dropSave(dropItems: DropItems, parent: string, token: string) {
                     : postMessage({
                           context: "DROP_SAVE_FAILED",
                           id,
+                          status,
                       });
             })
-            .catch(() => {
+            .catch((e) => {
                 postMessage({
                     context: "DROP_SAVE_FAILED",
                     id,
+                    status: e.status,
                 });
             });
     }
@@ -99,6 +98,23 @@ onmessage = ({ data }) => {
             return;
         case "DROP_SAVE":
             dropSave(data.dropItems, data.parent, data.token);
+            // setTimeout(() => {
+            //     for (let id in data.dropItems) {
+            //         if (Number(id) % 2 === 0) {
+            //             console.log("divisible");
+            //             postMessage({
+            //                 context: "DROP_SAVE",
+            //                 id,
+            //             });
+            //         } else {
+            //             postMessage({
+            //                 context: "DROP_SAVE_FAILED",
+            //                 id,
+            //                 status: 500,
+            //             });
+            //         }
+            //     }
+            // }, 2000);
             return;
     }
 };

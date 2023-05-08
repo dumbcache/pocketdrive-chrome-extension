@@ -174,6 +174,7 @@
     padding: 1rem;
     justify-content: space-between;
     background-color: #eee;
+    z-index: 1;
 }
 .drop-tools button {
     width: 2.4rem;
@@ -190,9 +191,32 @@
     display: flex;
     flex-flow: column nowrap;
     /* background-color: #ddd; */
+    position: relative;
     max-width: 20rem;
 }
-.drop-item img {
+.drop-item-uploading {
+    filter: brightness(0.5);
+    user-select: none;
+}
+@keyframes spin {
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+.drop-progress {
+    filter: invert(1);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: spin 1.5s linear 0s infinite;
+    user-select: none;
+}
+.drop-progress-result {
+    animation: none;
+    filter: none;
+}
+.drop-img {
     height: 25rem;
     max-width: 100%;
     object-fit: cover;

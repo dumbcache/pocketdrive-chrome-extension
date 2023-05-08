@@ -95,14 +95,14 @@ export const createImgMetadata = (
 
 export const uploadImg = async (
     location: string,
-    bytes: Uint8Array,
-    mimeType: string
+    bytes: Uint8Array
+    // mimeType: string
 ) => {
     let req = await fetch(location, {
         method: "PUT",
-        headers: {
-            "Content-Type": mimeType,
-        },
+        // headers: {
+        //     "Content-Type": mimeType,
+        // },
         body: bytes,
     });
     let { status, statusText } = req;
