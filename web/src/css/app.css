@@ -107,8 +107,8 @@
 
 .img-link {
     position: absolute;
-    right: 5px;
-    top: 5px;
+    right: 0.5rem;
+    top: 0.5rem;
     max-width: fit-content;
 }
 .img-link img {
@@ -124,8 +124,8 @@
     min-width: 50%;
     height: 90vh;
     background-color: #000a;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(1rem);
+    -webkit-backdrop-filter: blur(1rem);
     z-index: 2;
     overflow-y: scroll;
 }
@@ -235,6 +235,7 @@
     transform: translate(-50%, -50%);
     animation: spin 1.5s linear 0s infinite;
     user-select: none;
+    width: 3rem;
 }
 .drop-progress-result {
     animation: none;
@@ -271,14 +272,15 @@
     background-color: #9de6;
 }
 .dir {
-    width: 300px;
+    width: 30rem;
 }
 .img {
     display: block;
     overflow: hidden;
     height: fit-content;
-    max-width: 200px;
+    max-width: 20rem;
     border-radius: 1rem;
+    border: none;
 }
 .img:hover {
     cursor: zoom-in;
@@ -286,7 +288,7 @@
 .cover {
     border: 1px solid #000;
     width: 100%;
-    height: 180px;
+    height: 18rem;
     display: grid;
     grid-template-rows: 60% 40%;
     grid-template-columns: 70% 30%;
@@ -308,6 +310,7 @@
     height: 100%;
     object-fit: cover;
     object-position: top;
+    border: none;
 }
 
 .cover img:nth-child(1) {
@@ -334,7 +337,7 @@
         background-color: #eee;
     }
     .picker-label {
-        width: 24px;
+        width: 2.4rem;
     }
     .main {
         height: initial;
@@ -361,7 +364,7 @@
         height: 9rem;
     }
     .img-link {
-        width: 20px;
+        width: 2rem;
     }
     .img-link img {
         visibility: visible;
@@ -405,6 +408,9 @@
     }
     .drop-img {
         height: 15rem;
+    }
+    .drop-progress {
+        width: 2.4rem;
     }
 }
 
