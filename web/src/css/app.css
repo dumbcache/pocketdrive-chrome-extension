@@ -30,7 +30,7 @@
     gap: 2rem;
 }
 .picker-label {
-    width: 24px;
+    width: 30px;
 }
 .picker-label:hover {
     filter: invert(0.5);
@@ -325,6 +325,9 @@
         right: 0;
         left: 0;
         background-color: #eee;
+    }
+    .picker-label {
+        width: 24px;
     }
     .main {
         height: initial;
