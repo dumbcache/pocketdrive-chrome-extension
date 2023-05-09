@@ -212,6 +212,8 @@ export function dropResultHandler(id: number, status: number) {
                 ".drop-zone"
             ) as HTMLDivElement;
             dropZone.hidden = true;
+            (document.querySelector(".common-url") as HTMLInputElement).value =
+                "";
         }
     }, 5000);
     return;
@@ -219,6 +221,9 @@ export function dropResultHandler(id: number, status: number) {
 
 export function dropOkHandler(childWorker: Worker) {
     const dropArea = document.querySelector(".drop-area") as HTMLDivElement;
+    const commonUrl = (
+        document.querySelector(".common-url") as HTMLInputElement
+    ).value;
     for (let id in dropItems) {
         const dropItem = dropArea.querySelector(
             `[data-id='${id}']`
@@ -230,11 +235,15 @@ export function dropOkHandler(childWorker: Worker) {
         ) as HTMLImageElement;
         dropProgress.hidden = false;
         let name = dropItem.querySelector(".name") as HTMLInputElement;
+        dropItems[id].name = name.value.trim();
         let url = dropItem.querySelector(".url") as HTMLInputElement;
+        if (commonUrl.trim() === "") {
+            dropItems[id].url = url.value.trim();
+        } else {
+            dropItems[id].url = commonUrl.trim();
+        }
         name.hidden = true;
         url.hidden = true;
-        dropItems[id].name = name.value.trim();
-        dropItems[id].url = url.value.trim();
     }
     const { pathname } = window.location;
     const parent =
@@ -261,6 +270,10 @@ export function dropCancelHandler() {
 }
 
 export function previewLoadDropItem(img: File, dropArea: HTMLDivElement) {
+    const dropParent = document.querySelector(
+        ".drop-parent"
+    ) as HTMLSpanElement;
+    dropParent.innerHTML = history.state?.dir || "root";
     const id = Date.now();
     const imgRef = URL.createObjectURL(img);
     const dropItem = createDropItem(imgRef, id, img.name);
@@ -304,7 +317,6 @@ export function initUploadEvents(childWorker: Worker) {
                 previewLoadDropItem(img, dropArea);
             }
         }
-        console.log(dropItems);
     });
     imgPicker.addEventListener("change", (e) => {
         e.preventDefault();

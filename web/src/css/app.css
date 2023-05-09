@@ -191,7 +191,16 @@
     z-index: 1;
 }
 .drop-tools button {
-    width: 2.4rem;
+    max-width: 2.4rem;
+}
+.drop-parent,
+.drop-input {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.common-url {
+    max-width: 20rem;
 }
 .drop-area {
     padding: 1rem;
@@ -385,7 +394,9 @@
         padding: 0;
         height: 100%;
     }
-
+    .common-url {
+        max-width: 15rem;
+    }
     .drop-input {
         font-size: 1.3rem;
     }
