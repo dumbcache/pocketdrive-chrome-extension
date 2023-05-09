@@ -392,7 +392,8 @@
 }
 
 @media (prefers-color-scheme: dark) {
-    button {
+    button,
+    .picker-label {
         filter: invert(0.8);
     }
     .cover,
@@ -410,9 +411,7 @@
     .header {
         border-bottom: 1px solid #444;
     }
-    .picker-label {
-        filter: invert(1);
-    }
+
     .drop-tools {
         background-color: #222;
         border-bottom: 1px solid #444;

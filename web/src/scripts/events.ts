@@ -320,6 +320,12 @@ export function initUploadEvents(childWorker: Worker) {
     });
     dropOk.addEventListener("click", () => dropOkHandler(childWorker));
     dropCancel.addEventListener("click", () => dropCancelHandler());
+    dropZone.addEventListener("touchmove", (e) => {
+        e.stopPropagation();
+    });
+    dropZone.addEventListener("touchstart", (e) => {
+        e.stopPropagation();
+    });
 }
 
 export function initMainEvents(childWorker: Worker) {
