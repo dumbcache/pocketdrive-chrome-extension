@@ -29,6 +29,16 @@
     display: flex;
     gap: 2rem;
 }
+.picker-label {
+    width: 24px;
+}
+.picker-label:hover {
+    filter: invert(0.5);
+    cursor: pointer;
+}
+#img-picker {
+    display: none;
+}
 
 .signin-button,
 .back-button {
@@ -233,7 +243,7 @@
 
 .drop-input {
     flex-shrink: 2;
-    max-width: 100%;
+    width: 100%;
     border: none;
     outline: none;
     border-radius: 0.5rem;
@@ -347,7 +357,8 @@
         visibility: visible;
         filter: invert(1);
     }
-    .preview {
+    .preview,
+    .drop-zone {
         position: fixed;
         top: 0px;
         width: 100%;
@@ -360,6 +371,7 @@
         opacity: 1;
         border-radius: 50%;
         padding: 0.5rem;
+        background: none;
     }
     .preview-tools button:not(:first-child) {
         display: none;
@@ -373,7 +385,6 @@
     }
 
     .drop-input {
-        max-width: 15rem;
         font-size: 1.3rem;
     }
 }

@@ -273,6 +273,7 @@ export function previewLoadDropItem(img: File, dropArea: HTMLDivElement) {
 
 export function initUploadEvents(childWorker: Worker) {
     const main = document.querySelector(".main") as HTMLDivElement;
+    const imgPicker = document.querySelector("#img-picker") as HTMLInputElement;
     const preview = document.querySelector(".preview") as HTMLDivElement;
     const dropZone = document.querySelector(".drop-zone") as HTMLDivElement;
     const dropArea = document.querySelector(".drop-area") as HTMLDivElement;
@@ -295,6 +296,19 @@ export function initUploadEvents(childWorker: Worker) {
         main.classList.toggle("drop-hover");
         preview.hidden = true;
         for (let img of e.dataTransfer?.files!) {
+            if (img.type.match("image/")) {
+                dropZone.hidden = false;
+                previewLoadDropItem(img, dropArea);
+            }
+        }
+        console.log(dropItems);
+    });
+    imgPicker.addEventListener("change", (e) => {
+        e.preventDefault();
+        const target = e.target as HTMLInputElement;
+        main.classList.toggle("drop-hover");
+        preview.hidden = true;
+        for (let img of target.files!) {
             if (img.type.match("image/")) {
                 dropZone.hidden = false;
                 previewLoadDropItem(img, dropArea);
