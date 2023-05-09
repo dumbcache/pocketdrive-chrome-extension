@@ -138,8 +138,8 @@ export function createDropItem(src: string, id: number, name?: string) {
         <img src="${src}" class="drop-img"/>
         <input type="text" class="drop-input name" placeholder="name" value="${
             name || ""
-        }" onclick="this.select();">
-        <input type="text" class="drop-input url" placeholder="url" value="" onclick="this.select();">
+        }" onclick="this.focus();this.select()">
+        <input type="text" class="drop-input url" placeholder="url" value="" onclick="this.focus();this.select();">
         <img src="./src/assets/progress.svg" class="drop-progress" hidden/>
     </div>
     `;

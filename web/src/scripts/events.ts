@@ -57,7 +57,7 @@ export function initTouchEvents(childWorker: Worker) {
     });
 
     preview.addEventListener("touchmove", (e) => {
-        e.preventDefault();
+        // e.preventDefault();
         e.stopPropagation();
     });
     header.addEventListener("click", () => {
@@ -306,7 +306,6 @@ export function initUploadEvents(childWorker: Worker) {
     imgPicker.addEventListener("change", (e) => {
         e.preventDefault();
         const target = e.target as HTMLInputElement;
-        main.classList.toggle("drop-hover");
         preview.hidden = true;
         for (let img of target.files!) {
             if (img.type.match("image/")) {
