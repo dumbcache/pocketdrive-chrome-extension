@@ -389,6 +389,12 @@
     .drop-input {
         font-size: 1.3rem;
     }
+    .drop-item {
+        max-width: 15rem;
+    }
+    .drop-img {
+        height: 15rem;
+    }
 }
 
 @media (prefers-color-scheme: dark) {
