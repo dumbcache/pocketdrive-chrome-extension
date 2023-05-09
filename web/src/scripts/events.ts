@@ -202,7 +202,7 @@ export function dropResultHandler(id: number, status: number) {
         dropImg.classList.toggle("drop-item-uploading");
         return;
     }
-    dropProgress.src = "./src/assets/success.svg";
+    dropProgress.src = new URL("../assets/success.svg", import.meta.url);
     dropProgress.classList.toggle("drop-progress-result");
     delete dropItems[id];
     setTimeout(() => {
