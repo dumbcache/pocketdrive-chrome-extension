@@ -17,6 +17,8 @@ export function createElement<T extends HTMLElement>(
 
 function anchorHandler(e: Event) {
     const { id, name } = (e.currentTarget as HTMLAnchorElement).dataset;
+    const { pathname } = window.location;
+    if (pathname.substring(1) === id) return;
     history.pushState({ dir: name, id }, "", id);
     togglePreview(true);
     window.dispatchEvent(new Event("locationchange"));
@@ -128,6 +130,10 @@ export async function crateMaincontent(
     refresh: Boolean = false
 ) {
     const [dirs, imgs] = files;
+    const warnStatus = document.querySelector(".file-status") as HTMLDivElement;
+    dirs.files.length === 0 && imgs.files.length === 0
+        ? (warnStatus.hidden = false)
+        : (warnStatus.hidden = true);
     generateDirs(dirs.files, worker, refresh);
     generateImgs(imgs.files);
 }
