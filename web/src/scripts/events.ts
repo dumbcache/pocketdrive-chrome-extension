@@ -204,6 +204,12 @@ export function dropResultHandler(id: number, status: number) {
     delete dropItems[id];
     setTimeout(() => {
         dropArea.removeChild(dropItem);
+        if (Object.entries(dropItems).length === 0) {
+            const dropZone = document.querySelector(
+                ".drop-zone"
+            ) as HTMLDivElement;
+            dropZone.hidden = true;
+        }
     }, 5000);
     return;
 }
