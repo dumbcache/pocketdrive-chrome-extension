@@ -233,6 +233,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    -webkit-animation: spin 1.5s linear 0s infinite;
     animation: spin 1.5s linear 0s infinite;
     user-select: none;
     width: 3rem;
