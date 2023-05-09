@@ -39,6 +39,7 @@ export function initTouchEvents(childWorker: Worker) {
         }
     }
     preview.addEventListener("touchstart", (e) => {
+        if (e.touches.length >= 2) return;
         e.stopPropagation();
         if ((e.target as HTMLImageElement).classList.contains("preview-img")) {
             if (e.changedTouches.length === 0) return;
@@ -47,6 +48,7 @@ export function initTouchEvents(childWorker: Worker) {
         }
     });
     preview.addEventListener("touchend", (e) => {
+        if (e.touches.length >= 2) return;
         e.stopPropagation();
         if ((e.target as HTMLImageElement).classList.contains("preview-img")) {
             if (e.changedTouches.length === 0) return;
@@ -57,7 +59,8 @@ export function initTouchEvents(childWorker: Worker) {
     });
 
     preview.addEventListener("touchmove", (e) => {
-        // e.preventDefault();
+        if (e.touches.length >= 2) return;
+        e.preventDefault();
         e.stopPropagation();
     });
     header.addEventListener("click", () => {
