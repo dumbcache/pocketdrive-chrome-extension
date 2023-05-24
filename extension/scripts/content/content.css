@@ -155,7 +155,8 @@ button:hover::before {
 .status {
     width: 250px;
     padding: 10px;
-    margin: 5px 2px;
+    margin: 5px 0px;
+    margin-left: auto;
     display: flex;
     position: relative;
     flex-flow: row nowrap;
@@ -258,7 +259,7 @@ button:hover::before {
     overflow-y: scroll;
     position: absolute;
     top: 35px;
-    max-height: 300px;
+    max-height: 340px;
     min-width: 200px;
     box-shadow: 0 0 5px 1px #0005;
     border-radius: 0px 0px 5px 5px;

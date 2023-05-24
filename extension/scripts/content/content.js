@@ -55,7 +55,7 @@ const init = async (sendResponse) => {
         const statusWrapper = createElement("div", [
             ["class", "status-wrapper"],
         ]);
-        shadow.append(statusWrapper, main, bulk);
+        shadow.append(main, statusWrapper, bulk);
         document.body.append(krab);
 
         /**************** Helper Functions *****************/
