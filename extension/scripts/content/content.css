@@ -261,6 +261,7 @@ button:hover::before {
     top: 35px;
     max-height: 340px;
     min-width: 200px;
+    max-width: 200px;
     box-shadow: 0 0 5px 1px #0005;
     border-radius: 0px 0px 5px 5px;
 }
