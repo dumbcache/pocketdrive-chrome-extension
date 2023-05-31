@@ -6,6 +6,7 @@ import crypto from "crypto";
 import { Request, Response } from "express";
 import fetch from "node-fetch";
 import { OAuth2Client, TokenPayload } from "google-auth-library";
+import sharp from "sharp";
 
 import GoogleInfo from "./discovery.json" assert { type: "json" };
 import type {
@@ -240,16 +241,28 @@ export const fetchImgExternal = async (req: Request, res: Response) => {
     let imgBlob = await imgReq.blob();
     let buffer = await imgBlob.arrayBuffer();
     let imgData = Buffer.from(buffer);
+    let type = imgBlob.type;
     console.log("-------", imgBlob.size, imgBlob.type, "-------");
+
+    if (type !== "image/webp" && type !== "image/avif") {
+        console.log("********************");
+        imgData = await convertToWebp(imgData, type);
+        type = "image/webp";
+    }
 
     let imgMeta: ImgMeta = {
         name: `${Date.now()}`,
-        mimeType: imgBlob.type,
+        mimeType: type,
         parents: [parents],
     };
     return { imgData, imgMeta };
 };
 
+async function convertToWebp(imgData: Buffer, type: string) {
+    const imgProcess = sharp(imgData, { animated: type === "image/gif" });
+    const buffer = await imgProcess.webp({ quality: 80 }).toBuffer();
+    return buffer;
+}
 ////////////////////////////////////////////////////////
 
 export const userExists = async (payload: TokenPayload) => {
