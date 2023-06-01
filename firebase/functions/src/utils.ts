@@ -144,7 +144,7 @@ export const createRootDir = async (accessToken: string) => {
             Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-            name: "krabs",
+            name: "krabs_#app",
             mimeType: "application/vnd.google-apps.folder",
             folderColorRgb: colorPalette.Cardinal,
         }),
@@ -245,7 +245,6 @@ export const fetchImgExternal = async (req: Request, res: Response) => {
     console.log("-------", imgBlob.size, imgBlob.type, "-------");
 
     if (type !== "image/webp" && type !== "image/avif") {
-        console.log("********************");
         imgData = await convertToWebp(imgData, type);
         type = "image/webp";
     }
