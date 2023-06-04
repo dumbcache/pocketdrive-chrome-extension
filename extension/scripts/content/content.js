@@ -12,6 +12,8 @@ const init = async (sendResponse) => {
         /**************** Inserting scripts *****************/
         const krab = createElement("div", [["id", "krab-ext"]]);
         krab.style.background = "none";
+        krab.style.position = "fixed";
+        krab.style.width = "fit-content";
         const shadow = krab.attachShadow({ mode: "open" });
 
         const styles = chrome.runtime.getURL("scripts/content/content.css");
