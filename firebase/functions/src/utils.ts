@@ -164,6 +164,7 @@ export const patchImgMetaData = async (
     accessToken: string
 ) => {
     const url = "https://www.googleapis.com/drive/v3/files/" + id;
+    imgMeta.appProperties!.src = "";
     let req = await fetch(url, {
         method: "Patch",
         headers: {
