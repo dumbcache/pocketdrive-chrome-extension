@@ -240,7 +240,11 @@ expressApp.route("/pics").post(validateUserMW, async (req, res) => {
             imgMeta.mimeType!
         );
         let { origin, src } = req.body;
-        patchImgMetaData(id, { appProperties: { origin, src } }, accessToken);
+        patchImgMetaData(
+            id,
+            { appProperties: { origin: decodeURI(origin), src } },
+            accessToken
+        );
         res.status(status).send();
     } catch (error) {
         console.error(error);
