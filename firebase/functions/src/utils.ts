@@ -232,12 +232,24 @@ export const fetchImgExternal = async (req: Request, res: Response) => {
     let { origin, src, parents } = req.body;
     let imgReq = await fetch(src, { headers: { Referer: origin } });
     if (imgReq.status !== 200) {
-        throw new Error(
-            `error while fetchingImgExternal ${imgReq.status} ${imgReq.statusText}`,
-            {
-                cause: await imgReq.text(),
+        if (imgReq.status === 403) {
+            imgReq = await fetch(src);
+            if (imgReq.status !== 200) {
+                throw new Error(
+                    `error while fetchingImgExternal ${imgReq.status} ${imgReq.statusText}`,
+                    {
+                        cause: await imgReq.text(),
+                    }
+                );
             }
-        );
+        } else {
+            throw new Error(
+                `error while fetchingImgExternal ${imgReq.status} ${imgReq.statusText}`,
+                {
+                    cause: await imgReq.text(),
+                }
+            );
+        }
     }
     let imgBlob = await imgReq.blob();
     let buffer = await imgBlob.arrayBuffer();
