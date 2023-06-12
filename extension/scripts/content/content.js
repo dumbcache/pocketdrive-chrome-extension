@@ -5,6 +5,8 @@ import {
     iconPath,
     initMain,
     initBulk,
+    downloadImage,
+    tempBlob,
 } from "./helper.js";
 
 const init = async (sendResponse) => {
@@ -447,6 +449,7 @@ const init = async (sendResponse) => {
                         let { src } = message;
                         mainImg.src = src;
                         tempBulk.add(src);
+                        downloadImage(src);
                         setTimeout(() => toggleMain(), 100);
                         break;
                     case "DIRS":
