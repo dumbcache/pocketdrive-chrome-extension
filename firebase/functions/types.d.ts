@@ -50,6 +50,7 @@ export interface HandleUser {
 export interface ImgMeta {
     name?: string;
     mimeType?: string;
+    description?: string;
     parents?: [string];
     appProperties?: {
         origin: string;

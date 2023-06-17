@@ -295,12 +295,16 @@ const init = async (sendResponse) => {
             status.querySelector(".img-progress").style.display = "none";
             status.querySelector(".ok-img").style.display = "initial";
         }
-        doneButton.addEventListener("click", async (e) => {
-            e.stopPropagation();
+
+        function doneHandler() {
             let { id, dirName } = selected.dataset;
             for (let src of tempBulk) {
                 toggleStatus(id, dirName, src);
             }
+        }
+        doneButton.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            doneHandler();
         });
 
         main.addEventListener("click", (e) => {
@@ -319,6 +323,24 @@ const init = async (sendResponse) => {
         });
 
         main.addEventListener("contextmenu", (e) => e.stopPropagation());
+
+        window.addEventListener("keydown", (e) => {
+            if (
+                e.key === "Enter" &&
+                !e.shiftKey &&
+                !e.altKey &&
+                !e.ctrlKey &&
+                !e.metaKey
+            ) {
+                if (main.style.display !== "none") {
+                    if (sendButton && sendButton?.style.display === "initial") {
+                        return;
+                    }
+                    e.stopPropagation();
+                    doneHandler();
+                }
+            }
+        });
 
         window.addEventListener("click", () => {
             if (main.style.display !== "none") {
