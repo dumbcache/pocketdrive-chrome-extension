@@ -65,7 +65,7 @@ export const initContextMenus = async () => {
 export const init = async () => {
     try {
         await refreshDirs();
-        await chrome.storage.local.set({ childDirs: {} });
+        chrome.storage.local.set({ childDirs: {} }, checkRuntimeError);
         chrome.storage.local.set({ recents: [] }, checkRuntimeError);
     } catch (error) {
         console.warn(error);
