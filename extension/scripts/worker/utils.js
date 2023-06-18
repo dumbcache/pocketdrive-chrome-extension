@@ -65,7 +65,7 @@ export const initContextMenus = async () => {
 export const init = async () => {
     try {
         await refreshDirs();
-        refreshChildDirs();
+        await chrome.storage.local.set({ childDirs: {} });
         chrome.storage.local.set({ recents: [] }, checkRuntimeError);
     } catch (error) {
         console.warn(error);
@@ -83,34 +83,6 @@ export const refreshDirs = async () => {
         let { dirs } = await chrome.storage.local.get();
         dirs = dirs ? [...dirs] : [];
         chrome.storage.local.set({ dirs }, checkRuntimeError);
-    }
-};
-export const refreshChildDirs = async () => {
-    try {
-        let { childDirs, dirs } = await chrome.storage.local.get([
-            "childDirs",
-            "dirs",
-        ]);
-        if (!childDirs) childDirs = {};
-        for (let child of Object.keys(childDirs)) {
-            let status = false;
-            for (let { id } of dirs) {
-                child === id && (status = true);
-            }
-            status || delete childDirs[child];
-        }
-        if (childDirs) {
-            for (let parent of Object.keys(childDirs)) {
-                const { data } = await fetchDirs(parent);
-                childDirs[parent] = data;
-            }
-            chrome.storage.local.set({ childDirs }, checkRuntimeError);
-        }
-    } catch (error) {
-        console.warn("Unable to Refresh childDirs:", error);
-        let { childDirs } = await chrome.storage.local.get("childDirs");
-        childDirs = childDirs ? { ...childDirs } : {};
-        chrome.storage.local.set({ childDirs }, checkRuntimeError);
     }
 };
 
