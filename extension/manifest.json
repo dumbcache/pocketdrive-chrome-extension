@@ -1,10 +1,10 @@
 {
     "manifest_version": 3,
-    "name": "Krabs Dev",
+    "name": "Pocket Drive Dev",
     "version": "1.0.0",
     "action": {
         "default_icon": {},
-        "default_title": "Krabs - Be eaten by me"
+        "default_title": "Pocket Drive - save images to google drive"
     },
     "icons": {
         "48": "images/krabs.png"
