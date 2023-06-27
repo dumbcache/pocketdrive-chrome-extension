@@ -1,7 +1,18 @@
-export const ENDPOINT = `http://127.0.0.1:5001/dumbcache4658/us-central1/krabs`;
+import {
+    fetchDirs,
+    uploadImg,
+    createImgMetadata,
+    fetchRootDir,
+} from "./drive.js";
+
+export const ENDPOINT = `http://127.0.0.1:5001/dumbcache4658/us-central1/pocketdrive`;
+export const REDIRECT_URI =
+    "https://ognfmpeihgfiajcogjioankoafklngpe.chromiumapp.org/redirect";
+export const OAUTH = `https://accounts.google.com/o/oauth2/v2/auth?client_id=206697063226-p09kl0nq355h6q5440qlbikob3h8553u.apps.googleusercontent.com&prompt=select_account&response_type=token&scope=openid email https://www.googleapis.com/auth/drive.file&redirect_uri=${REDIRECT_URI}`;
 
 export function checkRuntimeError() {
-    chrome.runtime.lastError && console.log(chrome.runtime.lastError);
+    chrome.runtime.lastError;
+    // && console.log(chrome.runtime.lastError);
 }
 
 function isSystemLink(link) {
@@ -64,6 +75,8 @@ export const initContextMenus = async () => {
 
 export const init = async () => {
     try {
+        const { token } = await chrome.storage.local.get("token");
+        await fetchRootDir(token);
         await refreshDirs();
         chrome.storage.local.set({ childDirs: {} }, checkRuntimeError);
         chrome.storage.local.set({ recents: [] }, checkRuntimeError);
@@ -100,31 +113,6 @@ export const updateRecents = async (id, dirName) => {
     chrome.storage.local.set({ recents }, checkRuntimeError);
 };
 
-export const fetchDirs = async (parent) => {
-    let url = `${ENDPOINT}/dirs/${parent}`;
-    const { token } = await chrome.storage.local.get("token");
-    let req = await fetch(url, {
-        method: "GET",
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    let { status, statusText } = req;
-    if (status === 401) {
-        chrome.storage.local.set({ token: null }, checkRuntimeError);
-        throw new Error("error while fetching dirs", {
-            cause: `${status} ${statusText} ${await req.text()}`,
-        });
-    }
-    if (status !== 200) {
-        throw new Error("error while fetching dirs", {
-            cause: `${status} ${statusText} ${await req.text()}`,
-        });
-    }
-    let data = await req.json();
-    return { status, data };
-};
-
 export const addtoLocalDirs = async (data, parents) => {
     const { root } = await chrome.storage.local.get("root");
     if (root === parents) {
@@ -139,36 +127,35 @@ export const addtoLocalDirs = async (data, parents) => {
         : (childDirs[parents] = [data]);
     chrome.storage.local.set({ childDirs }, checkRuntimeError);
 };
-export const createDir = async (name, parents) => {
-    let url = `${ENDPOINT}/dirs/`;
+
+export const saveimg = async (data) => {
+    let { origin, parents, blob } = data;
     const { token } = await chrome.storage.local.get("token");
-    let req = await fetch(url, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ dirName: name, parents }),
-    });
-    let { status, statusText } = req;
-    if (status === 401) {
-        chrome.storage.local.set({ token: null }, checkRuntimeError);
-        throw new Error("error while creating dirs", {
-            cause: `${status} ${statusText} ${await req.text()}`,
-        });
-    }
+    let imgMeta = {
+        name: `${Date.now()}`,
+        mimeType: "image/webp",
+        parents: [parents],
+        description: decodeURI(origin),
+    };
+    let { location } = await createImgMetadata(imgMeta, token);
+    let { status } = await uploadImg(
+        location,
+        new Uint8Array(blob).buffer,
+        imgMeta.mimeType
+    );
     if (status !== 200) {
-        throw new Error("error while fetching dirs", {
-            cause: `${status} ${statusText} ${await req.text()}`,
-        });
+        chrome.storage.local.remove("img", checkRuntimeError);
+        console.log("error while uploading img local", status);
+        if (status === 401) {
+            logout();
+            login();
+        }
     }
-    let data = await req.json();
-    addtoLocalDirs(data, parents);
-    return { status, data };
+    return { status };
 };
 
-export const uploadRequest = async (parents, img) => {
-    let url = `${ENDPOINT}/pics`;
+export const saveimgExternal = async (parents, img) => {
+    let url = `${ENDPOINT}/saveimg`;
     const { token } = await chrome.storage.local.get("token");
     let body = { ...img, parents };
     let req = await fetch(url, {
@@ -179,18 +166,14 @@ export const uploadRequest = async (parents, img) => {
         },
         body: JSON.stringify(body),
     });
-    let { status, statusText } = req;
-    if (status === 401) {
-        chrome.storage.local.set({ token: null }, checkRuntimeError);
-        throw new Error("error while uploading img", {
-            cause: `${status} ${statusText} ${await req.text()}`,
-        });
-    }
+    let { status } = req;
     if (status !== 200) {
+        if (status === 401) {
+            logout();
+            login();
+        }
         chrome.storage.local.remove("img", checkRuntimeError);
-        throw new Error("error while uploading img", {
-            cause: `${status} ${statusText}`,
-        });
+        console.log("error while uploading img external", status);
     }
     return { status };
 };

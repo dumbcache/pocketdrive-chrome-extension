@@ -1,15 +1,15 @@
 import { login, logout } from "./connection.js";
 import {
-    createDir,
-    fetchDirs,
     updateRecents,
-    uploadRequest,
     initContextMenus,
     init,
     isSystemPage,
     isLoggedIn,
     checkRuntimeError,
+    saveimg,
+    saveimgExternal,
 } from "./utils.js";
+import { fetchDirs, createDir } from "./drive.js";
 
 try {
     chrome.runtime.onInstalled.addListener(async () => {
@@ -79,10 +79,10 @@ try {
                     init();
                     return;
                 case "login":
-                    login(tab.id);
+                    login();
                     return;
                 case "logout":
-                    logout(tab.id);
+                    logout();
                     return;
                 case "save":
                     if (isSystemPage(tab)) return;
@@ -161,13 +161,22 @@ try {
             if (message.context === "SAVE") {
                 (async () => {
                     try {
-                        const { id, dirName, src } = message.data;
+                        const { id, dirName, src, blob } = message.data;
                         updateRecents(id, dirName);
-                        let { status } = await uploadRequest(id, {
-                            origin: sender.tab.url,
-                            src,
-                        });
-                        sendResponse({ code: status });
+                        if (blob) {
+                            let { status } = await saveimg({
+                                origin: sender.tab.url,
+                                parents: id,
+                                blob,
+                            });
+                            sendResponse({ code: status });
+                        } else {
+                            let { status } = await saveimgExternal(id, {
+                                origin: sender.tab.url,
+                                src,
+                            });
+                            sendResponse({ code: status });
+                        }
                         chrome.storage.local.remove("img", checkRuntimeError);
                     } catch (error) {
                         console.log(error);

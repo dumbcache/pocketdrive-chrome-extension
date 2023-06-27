@@ -8,7 +8,7 @@ const iconResources = {
     okIcon: "okIcon.svg",
     statusIcon: "statusIcon.svg",
 };
-export let tempBlob = null;
+export let tempBlob = { bytes: null };
 
 /**
  *
@@ -190,24 +190,27 @@ export function initBulk() {
 
     return { bulk, check, bulkOkButton, bulkCancelButton, selectedCount };
 }
-
+/**
+ *
+ * @param {string} url
+ */
 export function downloadImage(url) {
     const image = new Image();
     const c = document.createElement("canvas");
     const ctx = c.getContext("2d");
-
-    image.onload = function () {
-        c.width = this.naturalWidth; // update canvas size to match image
-        c.height = this.naturalHeight;
-        ctx.drawImage(this, 0, 0);
-        c.toBlob(async function (blob) {
-            tempBlob = blob;
-            console.log(tempBlob);
-        }, "image/webp");
-    };
-    image.onerror = function () {
-        console.log("couldn't download image");
-    };
-    image.crossOrigin = "anonymous"; // if from different origin
-    image.src = url;
+    if (url.endsWith(".png") || url.endsWith(".jpeg") || url.endsWith(".jpg")) {
+        image.onload = function () {
+            c.width = this.naturalWidth; // update canvas size to match image
+            c.height = this.naturalHeight;
+            ctx.drawImage(this, 0, 0);
+            c.toBlob(async function (blob) {
+                tempBlob.bytes = Array.from(
+                    new Uint8Array(await blob.arrayBuffer())
+                );
+            }, "image/webp");
+        };
+        image.onerror = function () {};
+        image.crossOrigin = "anonymous"; // if from different origin
+        image.src = url;
+    }
 }

@@ -1,11 +1,9 @@
-import { ENDPOINT, initContextMenus } from "./utils.js";
+import { initContextMenus, OAUTH } from "./utils.js";
+import { fetchRootDir } from "./drive.js";
 
-export const login = async (tabid) => {
-    console.log(ENDPOINT);
-    const req = await fetch(`${ENDPOINT}/logininfo/ext`);
-    const { url } = await req.json();
+export const login = async () => {
     chrome.identity.launchWebAuthFlow(
-        { url, interactive: true },
+        { url: OAUTH, interactive: true },
         async (redirectURL) => {
             chrome.runtime.lastError && "";
             if (!redirectURL) {
@@ -13,37 +11,20 @@ export const login = async (tabid) => {
                 return;
             }
             const url = new URL(redirectURL);
-            const id_token = url.hash.split("&")[0].split("=")[1];
-            let req = await fetch(`${ENDPOINT}/login`, {
-                method: "post",
-                headers: {
-                    "content-type": "application/json",
-                },
-                body: JSON.stringify({ id_token, app: "EXT" }),
-            });
-            if (req.status !== 200) {
-                console.log("login failed");
-                return;
+            const token = url.hash.split("&")[0].split("=")[1];
+            const { root } = await chrome.storage.local.get("root");
+            if (!root) {
+                const { root } = await fetchRootDir(token);
+                await chrome.storage.local.set({ root });
             }
-            const { root, token } = await req.json();
-            await chrome.storage.local.set({ root, token });
+            await chrome.storage.local.set({ token });
             await initContextMenus();
             console.log("session logged in");
         }
     );
 };
 
-export const logout = async (tabid) => {
-    const { token } = await chrome.storage.local.get("token");
-    let { status } = await fetch(`${ENDPOINT}/logout/EXT`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    if (status !== 200) {
-        console.log("logout failed");
-        return;
-    }
+export const logout = async () => {
     await chrome.storage.local.set({ token: null });
     console.log("session logged out");
 };

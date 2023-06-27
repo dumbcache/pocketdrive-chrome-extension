@@ -280,8 +280,9 @@ const init = async (sendResponse) => {
             main.style.display = "none";
             const { code } = await chrome.runtime.sendMessage({
                 context: "SAVE",
-                data: { id, dirName, src },
+                data: { id, dirName, src, blob: tempBlob.bytes },
             });
+            tempBlob.bytes = null;
             setTimeout(() => statusWrapper.removeChild(status), 2000);
             if (code !== 200) {
                 status.style.backgroundColor = "#fa5";
