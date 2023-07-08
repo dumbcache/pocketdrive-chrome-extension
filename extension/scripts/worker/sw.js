@@ -79,6 +79,7 @@ try {
                     init();
                     return;
                 case "login":
+                case "token":
                     login();
                     return;
                 case "logout":

@@ -64,6 +64,14 @@ export const initContextMenus = async () => {
         );
         chrome.contextMenus.create(
             {
+                id: "token",
+                title: "GetToken",
+                contexts: ["action"],
+            },
+            checkRuntimeError
+        );
+        chrome.contextMenus.create(
+            {
                 id: "logout",
                 title: "Logout",
                 contexts: ["action"],
@@ -147,7 +155,6 @@ export const saveimg = async (data) => {
         chrome.storage.local.remove("img", checkRuntimeError);
         console.log("error while uploading img local", status);
         if (status === 401) {
-            logout();
             login();
         }
     }
@@ -169,7 +176,6 @@ export const saveimgExternal = async (parents, img) => {
     let { status } = req;
     if (status !== 200) {
         if (status === 401) {
-            logout();
             login();
         }
         chrome.storage.local.remove("img", checkRuntimeError);
