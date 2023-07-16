@@ -35,11 +35,13 @@ try {
                     { path: "/images/krabs.png" },
                     checkRuntimeError
                 );
+                // init();
             } else {
                 chrome.action.setIcon(
                     { path: "/images/krabsOff.png" },
                     checkRuntimeError
                 );
+                // chrome.storage.local.clear(checkRuntimeError);
             }
             initContextMenus();
         }
