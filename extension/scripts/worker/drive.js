@@ -57,7 +57,7 @@ export const createRootDir = async (token) => {
 export const fetchDirs = async (parent) => {
     const { token } = await chrome.storage.local.get("token");
     const res = await fetch(
-        `${GDRIVE}?q='${parent}' in parents and mimeType='application/vnd.google-apps.folder'&fields=files(name,id)&orderBy=name`,
+        `${GDRIVE}?q='${parent}' in parents and mimeType='application/vnd.google-apps.folder'&fields=files(name,id)&orderBy=name&pageSize=1000`,
         {
             headers: { Authorization: `Bearer ${token}` },
         }
