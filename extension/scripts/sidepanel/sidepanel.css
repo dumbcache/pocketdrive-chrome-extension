@@ -1,0 +1,17 @@
+:root {
+    background-color: #222;
+    color: #ddd;
+    height: 100%;
+}
+
+body,
+#app,
+iframe {
+    height: 97%;
+    width: 97%;
+    zoom: 0.75;
+}
+
+iframe::-webkit-scrollbar {
+    display: none;
+}

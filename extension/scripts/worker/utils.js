@@ -64,6 +64,14 @@ export const initContextMenus = async () => {
         );
         chrome.contextMenus.create(
             {
+                id: "images",
+                title: "Images",
+                contexts: ["action"],
+            },
+            checkRuntimeError
+        );
+        chrome.contextMenus.create(
+            {
                 id: "token",
                 title: "GetToken",
                 contexts: ["action"],

@@ -85,6 +85,26 @@ try {
                 case "logout":
                     logout();
                     return;
+                case "images":
+                    try {
+                        console.log("clicked");
+                        const { token } = await isLoggedIn();
+                        if (!token) {
+                            login(tab.id);
+                            return;
+                        }
+                        if (isSystemPage(tab)) return;
+                        const exits = await chrome.tabs.sendMessage(tab.id, {
+                            context: "CHECK_IF_ROOT_EXISTS",
+                        });
+                        if (exits)
+                            chrome.tabs.sendMessage(tab.id, {
+                                context: "ACTION",
+                            });
+                    } catch (error) {
+                        console.warn("error", error);
+                    }
+                    return;
                 case "save":
                     if (isSystemPage(tab)) return;
                     const exists = await chrome.tabs.sendMessage(tab.id, {
@@ -103,25 +123,26 @@ try {
         }
     });
 
-    chrome.action.onClicked.addListener(async (tab) => {
-        try {
-            const { token } = await isLoggedIn();
-            if (!token) {
-                login(tab.id);
-                return;
-            }
-            if (isSystemPage(tab)) return;
-            const exits = await chrome.tabs.sendMessage(tab.id, {
-                context: "CHECK_IF_ROOT_EXISTS",
-            });
-            if (exits)
-                chrome.tabs.sendMessage(tab.id, {
-                    context: "ACTION",
-                });
-        } catch (error) {
-            console.warn("error", error);
-        }
-    });
+    // chrome.action.onClicked.addListener(async (tab) => {
+    //     try {
+    //         console.log("clicked");
+    //         const { token } = await isLoggedIn();
+    //         if (!token) {
+    //             login(tab.id);
+    //             return;
+    //         }
+    //         if (isSystemPage(tab)) return;
+    //         const exits = await chrome.tabs.sendMessage(tab.id, {
+    //             context: "CHECK_IF_ROOT_EXISTS",
+    //         });
+    //         if (exits)
+    //             chrome.tabs.sendMessage(tab.id, {
+    //                 context: "ACTION",
+    //             });
+    //     } catch (error) {
+    //         console.warn("error", error);
+    //     }
+    // });
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         /******** Related to content scripts *******/
         try {
