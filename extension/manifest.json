@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Pocket Drive Dev",
+    "name": "Pocket Drive",
     "version": "1.0.0",
     "action": {
         "default_icon": {},
@@ -16,6 +16,9 @@
         }
     ],
     "minimum_chrome_version": "93",
+    "side_panel": {
+        "default_path": "scripts/sidepanel/sidepanel.html"
+    },
     "background": {
         "service_worker": "scripts/worker/sw.js",
         "type": "module"
@@ -26,7 +29,8 @@
         "scripting",
         "contextMenus",
         "storage",
-        "identity"
+        "identity",
+        "sidePanel"
     ],
     "content_security_policy": {
         "extension_pages": "script-src 'self'; object-src 'self'"
