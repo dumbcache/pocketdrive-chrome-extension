@@ -24,7 +24,7 @@ function isSystemLink(link) {
 }
 
 export function isSystemPage(tab) {
-    return tab.active && isSystemLink(tab.url);
+    return tab?.active && isSystemLink(tab?.url);
 }
 
 export function isLoggedIn() {

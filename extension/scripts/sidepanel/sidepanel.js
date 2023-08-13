@@ -3,6 +3,7 @@ const ROOT_FOLDER = "#Pocket_Drive";
 
 const rootButton = document.querySelector(".root-button");
 const listButton = document.querySelector(".list-button");
+const listWrapper = document.querySelector(".list-wrapper");
 const recents = document.querySelector(".recents");
 const dirs = document.querySelector(".dirs");
 const childs = document.querySelector(".childs");
@@ -33,7 +34,8 @@ pdButton.addEventListener("click", () => {
 });
 /**@type {HTMLDivElement} */
 const selected = document.querySelector(".selected");
-selected.addEventListener("click", () => {
+selected.addEventListener("click", (e) => {
+    e.stopPropagation();
     const recents = document.querySelector(".recents");
     recents.hidden = !recents.hidden;
     dirs.hidden = true;
@@ -46,13 +48,30 @@ rootButton.addEventListener("click", () => {
     footer.style.display = "flex";
 });
 recents.addEventListener("click", (e) => {
+    e.stopPropagation();
     if (e.target.classList.contains("recent")) {
-        console.log(e.target.dataset);
         setSelected(e.target.dataset.id, e.target.innerText);
         recents.hidden = true;
     }
 });
-listButton.addEventListener("click", async () => {
+listWrapper.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    if (
+        e.target.classList.contains("dir") ||
+        e.target.classList.contains("child")
+    ) {
+        const id = e.target.dataset.id;
+        const name = e.target.innerText;
+        setSelected(id, name);
+        recents.hidden = true;
+        dirs.hidden = true;
+        const childDirs = await fetchChilds(id);
+        setChildList(childDirs);
+        childs.hidden = false;
+    }
+});
+listButton.addEventListener("click", async (e) => {
+    e.stopPropagation();
     recents.hidden = true;
     childs.hidden = true;
     dirs.hidden = !dirs.hidden;
@@ -151,6 +170,14 @@ function previewAndSetDropItems(files, parentID, parentName) {
     }
 }
 
+async function fetchChilds(id) {
+    const { status, childDirs } = await chrome.runtime.sendMessage({
+        context: "CHILD_DIRS",
+        data: { parents: id },
+    });
+    return childDirs;
+}
+
 function createImgElement(src) {
     const div = document.createElement("div");
     const img = new Image();
@@ -168,6 +195,7 @@ function createList(list, classname) {
         item.classList.add("item");
         item.dataset.id = i.id;
         item.innerText = i.name;
+        item.title = i.name;
         fragment.append(item);
     }
     return fragment;
@@ -182,12 +210,13 @@ function setDirList(list) {
     dirs.append(createList(list, "dir"));
 }
 function setChildList(list) {
-    dirs.innerHTML = "";
-    dirs.append(createList(list, "child"));
+    childs.innerHTML = "";
+    childs.append(createList(list, "child"));
 }
 function setSelected(id, name) {
     selected.dataset.id = id;
     selected.innerText = name;
+    selected.title = name;
 }
 
 async function setRecents() {
@@ -220,4 +249,10 @@ window.addEventListener("load", () => {
     addImagesToButtons();
     setRecents();
     setDirs();
+});
+
+window.addEventListener("click", () => {
+    dirs.hidden = true;
+    childs.hidden = true;
+    recents.hidden = true;
 });

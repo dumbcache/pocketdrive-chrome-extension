@@ -148,6 +148,7 @@ try {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         /******** Related to content scripts *******/
         try {
+            console.log(sender);
             if (isSystemPage(sender.tab)) return;
             if (message.context === "CHILD_DIRS") {
                 (async () => {
