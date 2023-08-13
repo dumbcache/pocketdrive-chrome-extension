@@ -1,5 +1,11 @@
 let dropItems = [];
+const ROOT_FOLDER = "#Pocket_Drive";
 
+const rootButton = document.querySelector(".root-button");
+const listButton = document.querySelector(".list-button");
+const recents = document.querySelector(".recents");
+const dirs = document.querySelector(".dirs");
+const childs = document.querySelector(".childs");
 /**
  * @type {HTMLIFrameElement}
  */
@@ -30,13 +36,28 @@ const selected = document.querySelector(".selected");
 selected.addEventListener("click", () => {
     const recents = document.querySelector(".recents");
     recents.hidden = !recents.hidden;
+    dirs.hidden = true;
+    childs.hidden = true;
 });
 
-const rootButton = document.querySelector(".root-button");
 rootButton.addEventListener("click", () => {
     pdWebsite.style.display = "none";
     appBody.style.display = "flex";
-    footer.style.display = "initial";
+    footer.style.display = "flex";
+});
+recents.addEventListener("click", (e) => {
+    if (e.target.classList.contains("recent")) {
+        console.log(e.target.dataset);
+        setSelected(e.target.dataset.id, e.target.innerText);
+        recents.hidden = true;
+    }
+});
+listButton.addEventListener("click", async () => {
+    recents.hidden = true;
+    childs.hidden = true;
+    dirs.hidden = !dirs.hidden;
+    const { root } = await chrome.storage.local.get("root");
+    setSelected(root, ROOT_FOLDER);
 });
 
 function toggleDropHighlight() {
@@ -139,35 +160,52 @@ function createImgElement(src) {
     return div;
 }
 
-function setRecentList(list) {
-    const recents = document.querySelector(".recents");
-    recents.innerHTML = "";
+function createList(list, classname) {
+    const fragment = document.createDocumentFragment();
     for (let i of list) {
-        const recent = document.createElement("li");
-        recent.classList.add("recent");
-        recent.dataset.id = i.id;
-        recent.innerText = i.name;
-        recents.append(recent);
+        const item = document.createElement("li");
+        item.classList.add(classname);
+        item.classList.add("item");
+        item.dataset.id = i.id;
+        item.innerText = i.name;
+        fragment.append(item);
     }
-    const recentWrapper = document.querySelector(".recent-wrapper");
-    recentWrapper.append(recents);
+    return fragment;
 }
 
-async function setRecent() {
+function setRecentList(list) {
+    recents.innerHTML = "";
+    recents.append(createList(list, "recent"));
+}
+function setDirList(list) {
+    dirs.innerHTML = "";
+    dirs.append(createList(list, "dir"));
+}
+function setChildList(list) {
+    dirs.innerHTML = "";
+    dirs.append(createList(list, "child"));
+}
+function setSelected(id, name) {
+    selected.dataset.id = id;
+    selected.innerText = name;
+}
+
+async function setRecents() {
     const { recents, root } = await chrome.storage.local.get();
     if (recents.length === 0) {
-        selected.dataset.id = root;
-        selected.innerText = "#Pocket_Drive";
+        setSelected(root, ROOT_FOLDER);
         return;
     }
-    selected.dataset.id = recents[0].id;
-    selected.innerText = recents[0].name;
+    setSelected(recents[0].id, recents[0].name);
     setRecentList(recents);
     return;
 }
-
-window.addEventListener("load", () => {
-    setRecent();
+async function setDirs() {
+    const { dirs } = await chrome.storage.local.get("dirs");
+    setDirList(dirs);
+    return;
+}
+function addImagesToButtons() {
     const img = new Image();
     img.classList.add("img");
     img.src = chrome.runtime.getURL("images/doneIcon.svg");
@@ -175,5 +213,11 @@ window.addEventListener("load", () => {
     const listIcon = new Image();
     listIcon.classList.add("img");
     listIcon.src = chrome.runtime.getURL("images/listIcon.svg");
-    document.querySelector(".list-icon")?.append(listIcon);
+    document.querySelector(".list-button")?.append(listIcon);
+}
+
+window.addEventListener("load", () => {
+    addImagesToButtons();
+    setRecents();
+    setDirs();
 });
