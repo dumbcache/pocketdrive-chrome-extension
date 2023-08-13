@@ -123,6 +123,8 @@ try {
         }
     });
 
+    chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+
     // chrome.action.onClicked.addListener(async (tab) => {
     //     try {
     //         console.log("clicked");
