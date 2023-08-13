@@ -11,6 +11,10 @@ const appBody = document.querySelector(".app-body");
 /**
  * @type {HTMLDivElement}
  */
+const footer = document.querySelector(".footer");
+/**
+ * @type {HTMLDivElement}
+ */
 const dropArea = document.querySelector(".drop-area");
 const pdButton = document.querySelector(".pd-button");
 pdButton.addEventListener("click", () => {
@@ -19,12 +23,20 @@ pdButton.addEventListener("click", () => {
      */
     pdWebsite.style.display = "initial";
     appBody.style.display = "none";
+    footer.style.display = "none";
+});
+/**@type {HTMLDivElement} */
+const selected = document.querySelector(".selected");
+selected.addEventListener("click", () => {
+    const recents = document.querySelector(".recents");
+    recents.hidden = !recents.hidden;
 });
 
 const rootButton = document.querySelector(".root-button");
 rootButton.addEventListener("click", () => {
     pdWebsite.style.display = "none";
     appBody.style.display = "flex";
+    footer.style.display = "initial";
 });
 
 function toggleDropHighlight() {
@@ -126,3 +138,42 @@ function createImgElement(src) {
     div.append(img);
     return div;
 }
+
+function setRecentList(list) {
+    const recents = document.querySelector(".recents");
+    recents.innerHTML = "";
+    for (let i of list) {
+        const recent = document.createElement("li");
+        recent.classList.add("recent");
+        recent.dataset.id = i.id;
+        recent.innerText = i.name;
+        recents.append(recent);
+    }
+    const recentWrapper = document.querySelector(".recent-wrapper");
+    recentWrapper.append(recents);
+}
+
+async function setRecent() {
+    const { recents, root } = await chrome.storage.local.get();
+    if (recents.length === 0) {
+        selected.dataset.id = root;
+        selected.innerText = "#Pocket_Drive";
+        return;
+    }
+    selected.dataset.id = recents[0].id;
+    selected.innerText = recents[0].name;
+    setRecentList(recents);
+    return;
+}
+
+window.addEventListener("load", () => {
+    setRecent();
+    const img = new Image();
+    img.classList.add("img");
+    img.src = chrome.runtime.getURL("images/doneIcon.svg");
+    document.querySelector(".save")?.append(img);
+    const listIcon = new Image();
+    listIcon.classList.add("img");
+    listIcon.src = chrome.runtime.getURL("images/listIcon.svg");
+    document.querySelector(".list-icon")?.append(listIcon);
+});

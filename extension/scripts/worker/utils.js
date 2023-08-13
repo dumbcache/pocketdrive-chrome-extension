@@ -95,7 +95,7 @@ export const init = async () => {
         await fetchRootDir(token);
         await refreshDirs();
         chrome.storage.local.set({ childDirs: {} }, checkRuntimeError);
-        chrome.storage.local.set({ recents: [] }, checkRuntimeError);
+        // chrome.storage.local.set({ recents: [] }, checkRuntimeError);
     } catch (error) {
         console.warn(error);
         console.log("cause:", error.cause);

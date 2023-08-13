@@ -12,7 +12,7 @@ export const fetchRootDir = async (token) => {
     );
     if (res.status !== 200) {
         if (res.status === 401) {
-            login();
+            // login();
             return;
         }
     }
@@ -46,7 +46,7 @@ export const createRootDir = async (token) => {
             data
         );
         if (status === 401) {
-            login();
+            // login();
             return;
         }
     }
@@ -64,7 +64,7 @@ export const fetchDirs = async (parent) => {
     );
     if (res.status !== 200) {
         if (res.status === 401) {
-            login();
+            // login();
             return;
         }
     }

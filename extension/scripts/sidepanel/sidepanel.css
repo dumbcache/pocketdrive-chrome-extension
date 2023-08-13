@@ -2,11 +2,16 @@
     --font-default: system-ui, Avenir, Helvetica, Arial, sans-serif;
     --size-system: 62.5%;
     --font-size-default: 1.6rem;
+
+    --color-primary: #ffffffa6;
+    --color-background: #111;
+    --color-purple: #784dca;
+    --color-purple-background: #251f36;
 }
 
 :root {
-    /* background-color: #222;
-    color: #ddd; */
+    background-color: var(--color-purple-background);
+    color: var(--color-primary);
     font-family: var(--font-default);
     font-size: var(--size-system);
     line-height: var(--line-height-default);
@@ -46,6 +51,15 @@ body,
     position: relative;
 }
 
+.btn {
+    font-size: inherit;
+    background: none;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    color: inherit;
+}
+
 .pocketdrive-website {
     position: relative;
     zoom: 0.75;
@@ -65,42 +79,70 @@ body,
     justify-content: space-between;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-purple);
+    background-color: var(--color-purple-background);
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
+.list-icon {
+}
 .selected {
     font-size: 1.4rem;
-    width: 15rem;
-    max-width: 15rem;
-    padding: 0.5rem;
+    width: 18rem;
+    max-width: 18rem;
+    padding: 0.7rem;
     text-decoration: none;
     outline: none;
-    border: none;
-    border-radius: 0.5rem;
-    background-color: #ddd;
+    border-bottom: 1px solid #ddd5;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
     cursor: pointer;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    user-select: none;
+    background-color: #333;
 }
 
 .selected:hover {
-    background-color: #ccc;
+    background-color: #444;
 }
 .root-button {
     color: #f00;
 }
 
 .pd-button:hover {
-    color: #555;
+    color: #aaa;
 }
 
-.btn {
-    font-size: inherit;
-    background: none;
-    border: none;
+.recents {
+    width: 18rem;
+    max-width: 18rem;
+    text-decoration: none;
     outline: none;
+    border: none;
+    position: absolute;
+    top: 4rem;
+    user-select: none;
+    background-color: #333;
+    border: 1px solid var(--color-purple);
+    border-top: none;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+.recent {
+    font-size: 1.4rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0.7rem;
     cursor: pointer;
+}
+.recent:hover {
+    background-color: #444;
 }
 
 .app-body {
@@ -110,14 +152,16 @@ body,
     justify-content: space-evenly;
     align-items: start;
     gap: 0.5rem;
+    padding: 1rem 0rem 10rem 0rem;
 }
 
 .drop-area {
-    height: calc(100% - 4rem);
+    height: calc(100% - 10rem);
     position: absolute;
-    top: 3rem;
+    top: 5rem;
     left: 0;
     right: 0;
+    z-index: 0;
 }
 .highlight {
     background-color: #00f5;
@@ -129,4 +173,43 @@ body,
     max-height: 30rem;
     object-fit: contain;
     border-radius: 0.5rem;
+}
+
+.footer {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-evenly;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    border-top: 1px solid var(--color-purple);
+    background-color: var(--color-purple-background);
+    z-index: 1;
+}
+#url {
+    width: 85%;
+    max-width: 85%;
+    padding: 0.7rem;
+    border: none;
+    border-bottom: 1px solid #ddd5;
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    outline: none;
+    background-color: #333;
+    color: inherit;
+}
+
+#url::placeholder {
+    color: #ddd5;
+}
+
+.img {
+    width: 2.4rem;
+    filter: invert(0.7);
+}
+.img:hover {
+    filter: invert(0.5);
 }

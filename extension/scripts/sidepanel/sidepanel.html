@@ -10,11 +10,18 @@
         <div class="app">
             <header class="header">
                 <button class="root-button btn">/r</button>
-                <div class="selected">#Pocket Drive</div>
+                <button class="btn list-icon"></button>
+                <div class="recent-wrapper">
+                    <div class="selected" data-id="">#Pocket Drive</div>
+                    <ul class="recents" hidden></ul>
+                </div>
                 <button class="pd-button btn">PD</button>
             </header>
-            <hr />
             <div class="app-body"></div>
+            <div class="footer">
+                <input type="text" name="url" id="url" placeholder="URL Here" />
+                <button class="btn save"></button>
+            </div>
             <div class="drop-area"></div>
             <iframe
                 class="pocketdrive-website"
@@ -23,6 +30,6 @@
             ></iframe>
         </div>
 
-        <script src="sidepanel.js"></script>
+        <script src="sidepanel.js" type="module"></script>
     </body>
 </html>
