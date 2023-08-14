@@ -146,11 +146,11 @@ export const addtoLocalDirs = async (data, parents) => {
 };
 
 export const saveimg = async (data) => {
-    let { origin, parents, blob } = data;
+    let { origin, parents, blob, mimeType } = data;
     const { token } = await chrome.storage.local.get("token");
     let imgMeta = {
         name: `${Date.now()}`,
-        mimeType: "image/webp",
+        mimeType: mimeType || "image/webp",
         parents: [parents],
         description: decodeURI(origin),
     };

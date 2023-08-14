@@ -3,6 +3,7 @@ const ROOT_FOLDER = "#Pocket_Drive";
 
 const rootButton = document.querySelector(".root-button");
 const listButton = document.querySelector(".list-button");
+const saveButton = document.querySelector(".save");
 const listWrapper = document.querySelector(".list-wrapper");
 const recents = document.querySelector(".recents");
 const dirs = document.querySelector(".dirs");
@@ -43,6 +44,8 @@ selected.addEventListener("click", (e) => {
     dirs.hidden = true;
     childs.hidden = true;
 });
+
+saveButton.addEventListener("click", saveImages);
 
 rootButton.addEventListener("click", () => {
     pdWebsite.style.display = "none";
@@ -106,9 +109,10 @@ dropArea.addEventListener("dragleave", toggleDropHighlight);
 dropArea.addEventListener("dragstart", (e) => e.preventDefault());
 dropArea.addEventListener("dragover", (e) => e.preventDefault());
 
-function previewAndSetDropItems(files, parentID, parentName) {
+function previewAndSetDropItems(files) {
     for (let img of files) {
         if (img.type.match("image/")) {
+            console.log(img.type);
             const id = Math.round(Math.random() * Date.now()).toString();
             const imgRef = URL.createObjectURL(img);
             const imgNew = createImgElement(imgRef);
@@ -123,18 +127,13 @@ function previewAndSetDropItems(files, parentID, parentName) {
                     /** @type {ArrayBuffer} */
                     const result = e.target?.result;
                     const bytes = new Uint8Array(result);
-                    dropItems = [
+                    dropItems = {
                         ...dropItems,
-                        {
-                            id,
-                            name: id,
+                        [id]: {
                             mimeType: img.type,
                             bytes,
-                            imgRef,
-                            parent: parentID,
-                            parentName: parentName,
                         },
-                    ];
+                    };
                 };
                 reader.readAsArrayBuffer(img);
             } else {
@@ -150,19 +149,13 @@ function previewAndSetDropItems(files, parentID, parentName) {
                         /**@type {ArrayBuffer} */
                         const result = await blob?.arrayBuffer();
                         const bytes = new Uint8Array(result);
-                        const imgRef = URL.createObjectURL(blob);
-                        dropItems = [
+                        dropItems = {
                             ...dropItems,
-                            {
-                                id,
-                                name: id,
+                            [id]: {
                                 mimeType: blob?.type,
                                 bytes,
-                                imgRef,
-                                parent: parentID,
-                                parentName: parentName,
                             },
-                        ];
+                        };
                     }, "image/webp");
                 };
                 image.onerror = function () {
@@ -172,6 +165,29 @@ function previewAndSetDropItems(files, parentID, parentName) {
                 image.src = imgRef;
             }
         }
+    }
+}
+
+async function saveImages() {
+    for (let i in dropItems) {
+        // const { code } = await chrome.runtime.sendMessage({
+        //     context: "SAVE",
+        //     data: {
+        //         id: selected.dataset.id,
+        //         dirName: selected.innerText,
+        //         src: document.querySelector("#url").value,
+        //         blob: dropItems[i].bytes,
+        //         mimeType: dropItems[i].mimeType,
+
+        //     },
+        // });
+        console.log({
+            id: selected.dataset.id,
+            dirName: selected.innerText,
+            src: document.querySelector("#url").value,
+            blob: dropItems[i].bytes,
+            mimeType: dropItems[i].mimeType,
+        });
     }
 }
 
