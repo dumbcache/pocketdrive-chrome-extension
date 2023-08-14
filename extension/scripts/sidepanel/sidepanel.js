@@ -37,6 +37,7 @@ const selected = document.querySelector(".selected");
 selected.addEventListener("click", (e) => {
     e.stopPropagation();
     setDefaultSelected();
+    document.querySelector(".history-icon").hidden = false;
     const recents = document.querySelector(".recents");
     recents.hidden = !recents.hidden;
     dirs.hidden = true;
@@ -66,6 +67,7 @@ listWrapper.addEventListener("click", async (e) => {
         setSelected(id, name);
         recents.hidden = true;
         dirs.hidden = true;
+        document.querySelector(".history-icon").hidden = true;
         let childDirs = await fetchChilds(id);
         childDirs ?? (childDirs = []);
         setChildList(childDirs);
@@ -77,6 +79,7 @@ listButton.addEventListener("click", async (e) => {
     recents.hidden = true;
     childs.hidden = true;
     dirs.hidden = !dirs.hidden;
+    document.querySelector(".history-icon").hidden = true;
     const { root } = await chrome.storage.local.get("root");
     setSelected(root, ROOT_FOLDER);
 });
@@ -181,12 +184,10 @@ async function fetchChilds(id) {
 }
 
 function createImgElement(src) {
-    const div = document.createElement("div");
     const img = new Image();
     img.src = src;
     img.classList.add("img");
-    div.append(img);
-    return div;
+    return img;
 }
 
 function createList(list, classname) {
@@ -225,9 +226,11 @@ async function setDefaultSelected() {
     const { recents, root } = await chrome.storage.local.get();
     if (recents.length === 0) {
         setSelected(root, ROOT_FOLDER);
+        createHistoryIconElement();
         return;
     }
     setSelected(recents[0].id, recents[0].name);
+    createHistoryIconElement();
 }
 
 async function setRecents() {
@@ -243,14 +246,22 @@ async function setDirs() {
 }
 
 function addImagesToButtons() {
-    const img = new Image();
-    img.classList.add("img");
-    img.src = chrome.runtime.getURL("images/doneIcon.svg");
-    document.querySelector(".save")?.append(img);
-    const listIcon = new Image();
-    listIcon.classList.add("img");
-    listIcon.src = chrome.runtime.getURL("images/listIcon.svg");
-    document.querySelector(".list-button")?.append(listIcon);
+    document
+        .querySelector(".save")
+        ?.append(
+            createImgElement(chrome.runtime.getURL("images/doneIcon.svg"))
+        );
+    document
+        .querySelector(".list-button")
+        ?.append(
+            createImgElement(chrome.runtime.getURL("images/listIcon.svg"))
+        );
+}
+
+function createHistoryIconElement() {
+    document.querySelector(".history-icon").src = chrome.runtime.getURL(
+        "images/historyIcon.svg"
+    );
 }
 
 window.addEventListener("click", () => {
