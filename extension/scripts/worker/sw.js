@@ -76,7 +76,7 @@ try {
         try {
             switch (info.menuItemId) {
                 case "refresh":
-                    init();
+                    init(true);
                     return;
                 case "login":
                 case "token":

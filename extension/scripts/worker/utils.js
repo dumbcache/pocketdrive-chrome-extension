@@ -89,13 +89,14 @@ export const initContextMenus = async () => {
     }
 };
 
-export const init = async () => {
+export const init = async (refresh = false) => {
     try {
         const { token } = await chrome.storage.local.get("token");
         await fetchRootDir(token);
         await refreshDirs();
         chrome.storage.local.set({ childDirs: {} }, checkRuntimeError);
-        // chrome.storage.local.set({ recents: [] }, checkRuntimeError);
+        if (refresh)
+            chrome.storage.local.set({ recents: [] }, checkRuntimeError);
     } catch (error) {
         console.warn(error);
         console.log("cause:", error.cause);

@@ -36,6 +36,7 @@ pdButton.addEventListener("click", () => {
 const selected = document.querySelector(".selected");
 selected.addEventListener("click", (e) => {
     e.stopPropagation();
+    setDefaultSelected();
     const recents = document.querySelector(".recents");
     recents.hidden = !recents.hidden;
     dirs.hidden = true;
@@ -65,7 +66,8 @@ listWrapper.addEventListener("click", async (e) => {
         setSelected(id, name);
         recents.hidden = true;
         dirs.hidden = true;
-        const childDirs = await fetchChilds(id);
+        let childDirs = await fetchChilds(id);
+        childDirs ?? (childDirs = []);
         setChildList(childDirs);
         childs.hidden = false;
     }
@@ -219,21 +221,27 @@ function setSelected(id, name) {
     selected.title = name;
 }
 
-async function setRecents() {
+async function setDefaultSelected() {
     const { recents, root } = await chrome.storage.local.get();
     if (recents.length === 0) {
         setSelected(root, ROOT_FOLDER);
         return;
     }
     setSelected(recents[0].id, recents[0].name);
+}
+
+async function setRecents() {
+    const { recents } = await chrome.storage.local.get();
     setRecentList(recents);
     return;
 }
+
 async function setDirs() {
     const { dirs } = await chrome.storage.local.get("dirs");
     setDirList(dirs);
     return;
 }
+
 function addImagesToButtons() {
     const img = new Image();
     img.classList.add("img");
@@ -245,14 +253,15 @@ function addImagesToButtons() {
     document.querySelector(".list-button")?.append(listIcon);
 }
 
-window.addEventListener("load", () => {
-    addImagesToButtons();
-    setRecents();
-    setDirs();
-});
-
 window.addEventListener("click", () => {
     dirs.hidden = true;
     childs.hidden = true;
     recents.hidden = true;
+});
+
+window.addEventListener("load", () => {
+    addImagesToButtons();
+    setDefaultSelected();
+    setRecents();
+    setDirs();
 });
