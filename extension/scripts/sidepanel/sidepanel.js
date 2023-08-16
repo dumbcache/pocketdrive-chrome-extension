@@ -80,6 +80,7 @@ const ROOT_FOLDER = "#Pocket_Drive";
 const rootButton = document.querySelector(".root-button");
 const listButton = document.querySelector(".list-button");
 const saveButton = document.querySelector(".save");
+const linkButton = document.querySelector(".link");
 const listWrapper = document.querySelector(".list-wrapper");
 const recents = document.querySelector(".recents");
 const dirs = document.querySelector(".dirs");
@@ -122,7 +123,13 @@ selected.addEventListener("click", (e) => {
 });
 
 saveButton.addEventListener("click", saveImages);
-
+linkButton.addEventListener("click", () => {
+    chrome.tabs
+        .query({ active: true, lastFocusedWindow: true })
+        .then(([tab]) => {
+            document.querySelector("#url").value = tab.url;
+        });
+});
 rootButton.addEventListener("click", () => {
     pdWebsite.style.display = "none";
     appBody.style.display = "flex";
@@ -188,11 +195,9 @@ window.addEventListener("dragover", (e) => e.preventDefault());
 function previewAndSetDropItems(files) {
     for (let img of files) {
         if (img.type.match("image/")) {
-            console.log(img.type);
             const id = Math.round(Math.random() * Date.now()).toString();
             const imgRef = URL.createObjectURL(img);
-            const imgNew = createDropElement(imgRef);
-            imgNew.dataset.id = id;
+            const imgNew = createDropElement(imgRef, id);
             appBody.append(imgNew);
             if (
                 img.type === "image/gif" ||
@@ -245,38 +250,45 @@ function previewAndSetDropItems(files) {
     }
 }
 
-function createDropElement(src) {
+function removeDropImage(id) {
+    console.log(document.querySelector(`[data-id='${id}']`));
+}
+function saveDropImage(id) {
+    console.log(document.querySelector(`[data-id='${id}']`));
+}
+
+function createDropElement(src, id) {
     const div = createElement("div", [["class", "drop"]]);
-    const cancelIcon = createImgElement(iconPath("cancelIcon"));
-    const doneIcon = createImgElement(iconPath("doneIcon"));
-    const cancelButton = createButtonElement(cancelIcon, "cancel-single");
-    const doneButton = createButtonElement(doneIcon, "done-single");
+    div.dataset.id = id;
+    const cancelIcon = createImgElement(iconPath("cancelIcon"), "cancel");
+    const doneIcon = createImgElement(iconPath("doneIcon"), "done");
+    const cancelButton = createButtonElement(
+        cancelIcon,
+        "cancel-single",
+        "cancel"
+    );
+    const doneButton = createButtonElement(doneIcon, "done-single", "done");
     const img = createImgElement(src, "drop-img");
     div.append(img, cancelButton, doneButton);
+
+    doneButton.addEventListener("click", () => saveDropImage(id));
+    cancelButton.addEventListener("click", () => removeDropImage(id));
     return div;
 }
 
 async function saveImages() {
-    for (let i in dropItems) {
-        // const { code } = await chrome.runtime.sendMessage({
-        //     context: "SAVE",
-        //     data: {
-        //         id: selected.dataset.id,
-        //         dirName: selected.innerText,
-        //         src: document.querySelector("#url").value,
-        //         blob: dropItems[i].bytes,
-        //         mimeType: dropItems[i].mimeType,
-
-        //     },
-        // });
-        console.log({
-            id: selected.dataset.id,
-            dirName: selected.innerText,
-            src: document.querySelector("#url").value,
-            blob: dropItems[i].bytes,
-            mimeType: dropItems[i].mimeType,
-        });
-    }
+    // for (let i in dropItems) {
+    //     const { code } = await chrome.runtime.sendMessage({
+    //         context: "SAVE",
+    //         data: {
+    //             id: selected.dataset.id,
+    //             dirName: selected.innerText,
+    //             src: document.querySelector("#url").value,
+    //             blob: dropItems[i].bytes,
+    //             mimeType: dropItems[i].mimeType,
+    //         },
+    //     });
+    // }
 }
 
 async function fetchChilds(id) {
