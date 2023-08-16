@@ -148,7 +148,6 @@ try {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         /******** Related to content scripts *******/
         try {
-            console.log(sender);
             if (isSystemPage(sender.tab)) return;
             if (message.context === "CHILD_DIRS") {
                 (async () => {
@@ -186,13 +185,16 @@ try {
             if (message.context === "SAVE") {
                 (async () => {
                     try {
-                        const { id, dirName, src, blob } = message.data;
+                        const { id, dirName, src, blob, mimeType } =
+                            message.data;
+                        console.log({ id, dirName, src, blob, mimeType });
                         updateRecents(id, dirName);
                         if (blob) {
                             let { status } = await saveimg({
-                                origin: sender.tab.url,
+                                origin: src || sender.tab.url,
                                 parents: id,
                                 blob,
+                                mimeType,
                             });
                             sendResponse({ code: status });
                         } else {

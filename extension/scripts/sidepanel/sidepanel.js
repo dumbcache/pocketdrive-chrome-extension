@@ -127,7 +127,7 @@ linkButton.addEventListener("click", () => {
     chrome.tabs
         .query({ active: true, lastFocusedWindow: true })
         .then(([tab]) => {
-            document.querySelector("#url").value = tab.url;
+            document.querySelector("#url").value = tab?.url;
         });
 });
 rootButton.addEventListener("click", () => {
@@ -208,12 +208,13 @@ function previewAndSetDropItems(files) {
                 reader.onload = (e) => {
                     /** @type {ArrayBuffer} */
                     const result = e.target?.result;
-                    const bytes = new Uint8Array(result);
+                    const bytes = Array.from(new Uint8Array(result));
                     dropItems = {
                         ...dropItems,
                         [id]: {
                             mimeType: img.type,
                             bytes,
+                            status: "",
                         },
                     };
                 };
@@ -230,12 +231,13 @@ function previewAndSetDropItems(files) {
                     c.toBlob(async function (blob) {
                         /**@type {ArrayBuffer} */
                         const result = await blob?.arrayBuffer();
-                        const bytes = new Uint8Array(result);
+                        const bytes = Array.from(new Uint8Array(result));
                         dropItems = {
                             ...dropItems,
                             [id]: {
                                 mimeType: blob?.type,
                                 bytes,
+                                status: "",
                             },
                         };
                     }, "image/webp");
@@ -251,10 +253,36 @@ function previewAndSetDropItems(files) {
 }
 
 function removeDropImage(id) {
-    console.log(document.querySelector(`[data-id='${id}']`));
+    const drop = document.querySelector(`[data-id='${id}']`);
+    delete dropItems[id];
+    appBody.removeChild(drop);
+    console.log(dropItems);
 }
-function saveDropImage(id) {
-    console.log(document.querySelector(`[data-id='${id}']`));
+
+async function saveDropImage(id) {
+    const drop = document.querySelector(`[data-id='${id}']`);
+    const status = drop.querySelector(".status");
+    status.style.display = "initial";
+    dropItems[id].status = "progress";
+    const item = dropItems[id];
+    const { code } = await chrome.runtime.sendMessage({
+        context: "SAVE",
+        data: {
+            id: selected.dataset.id,
+            dirName: selected.innerText,
+            src: document.querySelector("#url").value,
+            blob: item.bytes,
+            mimeType: item.mimeType,
+        },
+    });
+    if (code === 200) {
+        drop.querySelector(".status-ok").style.display = "initial";
+        status.style.display = "none";
+        dropItems[id].status = "success";
+        return;
+    }
+    status.style.display = "none";
+    dropItems[id].status = "";
 }
 
 function createDropElement(src, id) {
@@ -262,6 +290,8 @@ function createDropElement(src, id) {
     div.dataset.id = id;
     const cancelIcon = createImgElement(iconPath("cancelIcon"), "cancel");
     const doneIcon = createImgElement(iconPath("doneIcon"), "done");
+    const statusIcon = createImgElement(iconPath("statusIcon"), "status");
+    const okIcon = createImgElement(iconPath("okIcon"), "status-ok");
     const cancelButton = createButtonElement(
         cancelIcon,
         "cancel-single",
@@ -269,7 +299,7 @@ function createDropElement(src, id) {
     );
     const doneButton = createButtonElement(doneIcon, "done-single", "done");
     const img = createImgElement(src, "drop-img");
-    div.append(img, cancelButton, doneButton);
+    div.append(img, cancelButton, doneButton, statusIcon, okIcon);
 
     doneButton.addEventListener("click", () => saveDropImage(id));
     cancelButton.addEventListener("click", () => removeDropImage(id));
@@ -277,18 +307,14 @@ function createDropElement(src, id) {
 }
 
 async function saveImages() {
-    // for (let i in dropItems) {
-    //     const { code } = await chrome.runtime.sendMessage({
-    //         context: "SAVE",
-    //         data: {
-    //             id: selected.dataset.id,
-    //             dirName: selected.innerText,
-    //             src: document.querySelector("#url").value,
-    //             blob: dropItems[i].bytes,
-    //             mimeType: dropItems[i].mimeType,
-    //         },
-    //     });
-    // }
+    for (let i in dropItems) {
+        if (dropItems[i].status === "") {
+            saveDropImage(i);
+        }
+        if (dropItems[i].status === "success") {
+            removeDropImage(i);
+        }
+    }
 }
 
 async function fetchChilds(id) {
