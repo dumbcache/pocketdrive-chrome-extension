@@ -58,6 +58,8 @@ body,
     outline: none;
     cursor: pointer;
     color: inherit;
+    height: 2.4rem;
+    width: 2.4rem;
 }
 
 .pocketdrive-website {
@@ -168,6 +170,7 @@ body,
     align-items: start;
     gap: 0.5rem;
     padding: 1rem 0rem 10rem 0rem;
+    z-index: 1;
 }
 
 .drop-area {
@@ -205,8 +208,8 @@ body,
     z-index: 1;
 }
 #url {
-    width: 85%;
-    max-width: 85%;
+    width: 80%;
+    max-width: 80%;
     padding: 0.7rem;
     border: none;
     border-bottom: 1px solid #ddd5;
@@ -227,4 +230,39 @@ body,
 }
 .btn .img:hover {
     filter: invert(0.5);
+}
+.drop {
+    width: 15rem;
+    height: fit-content;
+    max-height: 30rem;
+    position: relative;
+}
+
+.drop:hover .drop-img {
+    filter: brightness(0.5);
+}
+.drop:hover .cancel-single,
+.drop:hover .done-single {
+    display: initial;
+}
+
+.cancel-single,
+.done-single {
+    position: absolute;
+    top: 0;
+    width: 2rem;
+    height: 2rem;
+    display: none;
+}
+.cancel-single {
+    left: 0;
+}
+.done-single {
+    right: 0;
+}
+
+.cancel-single .img,
+.done-single .img {
+    width: 100%;
+    filter: invert(1);
 }

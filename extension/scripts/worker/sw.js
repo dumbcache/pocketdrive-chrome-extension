@@ -62,7 +62,7 @@ try {
         }
         if (changes.recents) {
             let { newValue } = changes.recents;
-            if (newValue?.length > 10) {
+            if (newValue?.length > 50) {
                 newValue.pop();
                 chrome.storage.local.set(
                     { recents: newValue },

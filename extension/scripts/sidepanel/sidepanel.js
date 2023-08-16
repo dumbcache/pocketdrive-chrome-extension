@@ -1,3 +1,79 @@
+const iconResources = {
+    addIcon: "addIcon.svg",
+    sendIcon: "sendIcon.svg",
+    cancelIcon: "cancelIcon.svg",
+    doneIcon: "doneIcon.svg",
+    listIcon: "listIcon.svg",
+    errorIcon: "errorIcon.svg",
+    okIcon: "okIcon.svg",
+    statusIcon: "statusIcon.svg",
+};
+export let tempBlob = { bytes: null };
+
+/**
+ *
+ * @param {string} icon
+ * @returns {string}
+ */
+export function iconPath(icon) {
+    const relative = "images";
+    return chrome.runtime.getURL(`${relative}/${iconResources[icon]}`);
+}
+
+/**
+ * @returns {HTMLElement}
+ */
+export function createElement(type, attributes = [], ...childNodes) {
+    const element = document.createElement(type);
+    for (let [key, val] of attributes) {
+        element.setAttribute(key, val);
+    }
+    childNodes.length !== 0 && element.append(...childNodes);
+    return element;
+}
+
+/**
+ *
+ * @param {HTMLImageElement | string} childNode
+ * @param {...string} classNames
+ * @returns {HTMLButtonElement}
+ */
+export function createButtonElement(childNode, ...classNames) {
+    const button = document.createElement("button");
+    button.classList.add("btn", ...classNames);
+    childNode && button.append(childNode);
+    return button;
+}
+
+/**
+ * @param {string} string
+ * @param {...string} classNames
+ * @returns {HTMLImageElement}
+ */
+export function createImgElement(src, ...classNames) {
+    const img = document.createElement("img");
+    img.src = src;
+    img.classList.add("img", ...classNames);
+    return img;
+}
+
+/**
+ * @returns {DocumentFragment}
+ */
+export function createListElement(list, classname) {
+    const fragment = document.createDocumentFragment();
+    for (let { id, name } of list) {
+        const item = createElement("li", [
+            ["class", `item ${classname}`],
+            ["data-id", id],
+            ["title", name],
+        ]);
+        item.innerText = name;
+        fragment.append(item);
+    }
+    return fragment;
+}
+
 let dropItems = [];
 const ROOT_FOLDER = "#Pocket_Drive";
 
@@ -103,11 +179,11 @@ function dropHandler(e) {
     }
 }
 
-dropArea.addEventListener("drop", dropHandler);
-dropArea.addEventListener("dragenter", toggleDropHighlight);
-dropArea.addEventListener("dragleave", toggleDropHighlight);
-dropArea.addEventListener("dragstart", (e) => e.preventDefault());
-dropArea.addEventListener("dragover", (e) => e.preventDefault());
+window.addEventListener("drop", dropHandler);
+window.addEventListener("dragenter", toggleDropHighlight);
+window.addEventListener("dragleave", toggleDropHighlight);
+window.addEventListener("dragstart", (e) => e.preventDefault());
+window.addEventListener("dragover", (e) => e.preventDefault());
 
 function previewAndSetDropItems(files) {
     for (let img of files) {
@@ -115,7 +191,8 @@ function previewAndSetDropItems(files) {
             console.log(img.type);
             const id = Math.round(Math.random() * Date.now()).toString();
             const imgRef = URL.createObjectURL(img);
-            const imgNew = createImgElement(imgRef);
+            const imgNew = createDropElement(imgRef);
+            imgNew.dataset.id = id;
             appBody.append(imgNew);
             if (
                 img.type === "image/gif" ||
@@ -168,6 +245,17 @@ function previewAndSetDropItems(files) {
     }
 }
 
+function createDropElement(src) {
+    const div = createElement("div", [["class", "drop"]]);
+    const cancelIcon = createImgElement(iconPath("cancelIcon"));
+    const doneIcon = createImgElement(iconPath("doneIcon"));
+    const cancelButton = createButtonElement(cancelIcon, "cancel-single");
+    const doneButton = createButtonElement(doneIcon, "done-single");
+    const img = createImgElement(src, "drop-img");
+    div.append(img, cancelButton, doneButton);
+    return div;
+}
+
 async function saveImages() {
     for (let i in dropItems) {
         // const { code } = await chrome.runtime.sendMessage({
@@ -199,38 +287,17 @@ async function fetchChilds(id) {
     return childDirs;
 }
 
-function createImgElement(src) {
-    const img = new Image();
-    img.src = src;
-    img.classList.add("img");
-    return img;
-}
-
-function createList(list, classname) {
-    const fragment = document.createDocumentFragment();
-    for (let i of list) {
-        const item = document.createElement("li");
-        item.classList.add(classname);
-        item.classList.add("item");
-        item.dataset.id = i.id;
-        item.innerText = i.name;
-        item.title = i.name;
-        fragment.append(item);
-    }
-    return fragment;
-}
-
 function setRecentList(list) {
     recents.innerHTML = "";
-    recents.append(createList(list, "recent"));
+    recents.append(createListElement(list, "recent"));
 }
 function setDirList(list) {
     dirs.innerHTML = "";
-    dirs.append(createList(list, "dir"));
+    dirs.append(createListElement(list, "dir"));
 }
 function setChildList(list) {
     childs.innerHTML = "";
-    childs.append(createList(list, "child"));
+    childs.append(createListElement(list, "child"));
 }
 function setSelected(id, name) {
     selected.dataset.id = id;
@@ -261,19 +328,6 @@ async function setDirs() {
     return;
 }
 
-function addImagesToButtons() {
-    document
-        .querySelector(".save")
-        ?.append(
-            createImgElement(chrome.runtime.getURL("images/doneIcon.svg"))
-        );
-    document
-        .querySelector(".list-button")
-        ?.append(
-            createImgElement(chrome.runtime.getURL("images/listIcon.svg"))
-        );
-}
-
 function createHistoryIconElement() {
     document.querySelector(".history-icon").src = chrome.runtime.getURL(
         "images/historyIcon.svg"
@@ -287,7 +341,6 @@ window.addEventListener("click", () => {
 });
 
 window.addEventListener("load", () => {
-    addImagesToButtons();
     setDefaultSelected();
     setRecents();
     setDirs();
