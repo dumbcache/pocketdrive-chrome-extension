@@ -191,7 +191,8 @@ try {
                         updateRecents(id, dirName);
                         if (blob) {
                             let { status } = await saveimg({
-                                origin: src || sender.tab.url,
+                                origin:
+                                    src === undefined ? sender.tab.url : src,
                                 parents: id,
                                 blob,
                                 mimeType,

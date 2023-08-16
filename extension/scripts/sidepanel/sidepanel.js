@@ -261,6 +261,8 @@ function removeDropImage(id) {
 
 async function saveDropImage(id) {
     const drop = document.querySelector(`[data-id='${id}']`);
+    const overlay = drop.querySelector(".overlay");
+    overlay.style.display = "initial";
     const status = drop.querySelector(".status");
     status.style.display = "initial";
     dropItems[id].status = "progress";
@@ -283,6 +285,7 @@ async function saveDropImage(id) {
     }
     status.style.display = "none";
     dropItems[id].status = "";
+    overlay.style.display = "none";
 }
 
 function createDropElement(src, id) {
@@ -299,7 +302,8 @@ function createDropElement(src, id) {
     );
     const doneButton = createButtonElement(doneIcon, "done-single", "done");
     const img = createImgElement(src, "drop-img");
-    div.append(img, cancelButton, doneButton, statusIcon, okIcon);
+    const overlay = createElement("div", [["class", "overlay"]]);
+    div.append(img, cancelButton, doneButton, overlay, statusIcon, okIcon);
 
     doneButton.addEventListener("click", () => saveDropImage(id));
     cancelButton.addEventListener("click", () => removeDropImage(id));
