@@ -74,6 +74,7 @@ export function createListElement(list, classname) {
     return fragment;
 }
 
+let autosave = false;
 let dropItems = [];
 const ROOT_FOLDER = "#Pocket_Drive";
 
@@ -81,6 +82,7 @@ const app = document.querySelector(".app");
 const rootButton = document.querySelector(".root-button");
 const listButton = document.querySelector(".list-button");
 const saveButton = document.querySelector(".save");
+const autoSaveButton = document.querySelector(".autosave");
 const linkButton = document.querySelector(".link");
 const listWrapper = document.querySelector(".list-wrapper");
 const recents = document.querySelector(".recents");
@@ -127,9 +129,14 @@ function setCurrentTabURL() {
         .query({ active: true, lastFocusedWindow: true })
         .then(([tab]) => {
             document.querySelector("#url").value = tab?.url;
+            document.querySelector("#url").title = tab?.url;
         });
 }
 
+autoSaveButton.addEventListener("click", () => {
+    autosave = !autosave;
+    autoSaveButton.classList.toggle("autosave-toggle");
+});
 saveButton.addEventListener("click", saveImages);
 linkButton.addEventListener("click", setCurrentTabURL);
 rootButton.addEventListener("click", () => {
@@ -220,6 +227,7 @@ function previewAndSetDropItems(files) {
                             status: "",
                         },
                     };
+                    if (autosave) saveImages();
                 };
                 reader.readAsArrayBuffer(img);
             } else {
@@ -243,6 +251,7 @@ function previewAndSetDropItems(files) {
                                 status: "",
                             },
                         };
+                        if (autosave) saveImages();
                     }, "image/webp");
                 };
                 image.onerror = function () {

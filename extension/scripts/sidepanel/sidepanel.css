@@ -199,6 +199,7 @@ body,
     border-top: 1px solid var(--color-purple);
     background-color: var(--color-purple-background);
     z-index: 1;
+    gap: 1rem;
 }
 #url {
     width: 80%;
@@ -224,6 +225,18 @@ body,
 .btn .img:hover {
     filter: invert(0.5);
 }
+
+.footer .btn,
+.footer .img {
+    width: 2rem;
+}
+.autosave .img:hover {
+    filter: invert(0.7);
+}
+.autosave.autosave-toggle .img {
+    filter: none;
+}
+
 .drop {
     width: 15rem;
     height: fit-content;
