@@ -163,6 +163,7 @@ body,
 }
 
 .app-body {
+    min-height: 100vh;
     position: relative;
     display: flex;
     flex-flow: row wrap;
@@ -173,14 +174,6 @@ body,
     z-index: 1;
 }
 
-.drop-area {
-    height: calc(100% - 10rem);
-    position: absolute;
-    top: 5rem;
-    left: 0;
-    right: 0;
-    z-index: 0;
-}
 .highlight {
     background-color: #00f5;
 }

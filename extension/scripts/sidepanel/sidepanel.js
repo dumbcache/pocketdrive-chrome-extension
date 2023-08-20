@@ -77,6 +77,7 @@ export function createListElement(list, classname) {
 let dropItems = [];
 const ROOT_FOLDER = "#Pocket_Drive";
 
+const app = document.querySelector(".app");
 const rootButton = document.querySelector(".root-button");
 const listButton = document.querySelector(".list-button");
 const saveButton = document.querySelector(".save");
@@ -100,7 +101,6 @@ const footer = document.querySelector(".footer");
 /**
  * @type {HTMLDivElement}
  */
-const dropArea = document.querySelector(".drop-area");
 const pdButton = document.querySelector(".pd-button");
 pdButton.addEventListener("click", () => {
     /**
@@ -122,14 +122,16 @@ selected.addEventListener("click", (e) => {
     childs.hidden = true;
 });
 
-saveButton.addEventListener("click", saveImages);
-linkButton.addEventListener("click", () => {
+function setCurrentTabURL() {
     chrome.tabs
         .query({ active: true, lastFocusedWindow: true })
         .then(([tab]) => {
             document.querySelector("#url").value = tab?.url;
         });
-});
+}
+
+saveButton.addEventListener("click", saveImages);
+linkButton.addEventListener("click", setCurrentTabURL);
 rootButton.addEventListener("click", () => {
     pdWebsite.style.display = "none";
     appBody.style.display = "flex";
@@ -171,7 +173,7 @@ listButton.addEventListener("click", async (e) => {
 });
 
 function toggleDropHighlight() {
-    dropArea.classList.toggle("highlight");
+    app.classList.toggle("highlight");
 }
 
 /**
@@ -180,7 +182,8 @@ function toggleDropHighlight() {
  */
 function dropHandler(e) {
     e.preventDefault();
-    dropArea.classList.remove("highlight");
+    app.classList.remove("highlight");
+    setCurrentTabURL();
     if (e.dataTransfer?.files) {
         previewAndSetDropItems(e.dataTransfer.files);
     }
@@ -311,6 +314,7 @@ function createDropElement(src, id) {
 }
 
 async function saveImages() {
+    setRecents();
     for (let i in dropItems) {
         if (dropItems[i].status === "") {
             saveDropImage(i);
