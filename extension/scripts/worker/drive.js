@@ -12,7 +12,7 @@ export const fetchRootDir = async (token) => {
     );
     if (res.status !== 200) {
         if (res.status === 401) {
-            // login();
+            login();
             return;
         }
     }
@@ -64,7 +64,7 @@ export const fetchDirs = async (parent) => {
     );
     if (res.status !== 200) {
         if (res.status === 401) {
-            // login();
+            login();
             return;
         }
     }
@@ -115,7 +115,6 @@ export const createImgMetadata = async (imgMeta, token) => {
     let { status, statusText } = req;
     if (status !== 200) {
         if (status === 401) {
-            login();
             return;
         }
 
@@ -139,7 +138,6 @@ export const uploadImg = async (location, imgData, mimeType) => {
     let data = await req.json();
     if (status !== 200)
         if (status === 401) {
-            login();
         }
     console.log(`error while uploadingImg ${status} ${statusText}`, {
         cause: data,

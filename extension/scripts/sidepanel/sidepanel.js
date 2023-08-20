@@ -159,13 +159,18 @@ listWrapper.addEventListener("click", async (e) => {
     ) {
         const id = e.target.dataset.id;
         const name = e.target.innerText;
-        setSelected(id, name);
         recents.hidden = true;
         dirs.hidden = true;
         document.querySelector(".history-icon").hidden = true;
-        let childDirs = await fetchChilds(id);
+        let { status, childDirs } = await fetchChilds(id);
+        if (status !== 200) {
+            selected.style.backgroundColor = "#f00";
+            setTimeout(() => (selected.style.backgroundColor = "#333"));
+            return;
+        }
         childDirs ?? (childDirs = []);
         setChildList(childDirs);
+        setSelected(id, name);
         childs.hidden = false;
     }
 });
@@ -339,7 +344,7 @@ async function fetchChilds(id) {
         context: "CHILD_DIRS",
         data: { parents: id },
     });
-    return childDirs;
+    return { status, childDirs };
 }
 
 function setRecentList(list) {
