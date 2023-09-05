@@ -249,6 +249,10 @@ const init = async (sendResponse) => {
             }
         });
 
+        search.addEventListener("keydown", (e) => {
+            e.stopPropagation();
+        });
+
         search.addEventListener("click", (e) => {
             e.stopPropagation();
         });

@@ -35,13 +35,13 @@ try {
                     { path: "/images/krabs.png" },
                     checkRuntimeError
                 );
-                init();
+                // init();
             } else {
                 chrome.action.setIcon(
                     { path: "/images/krabsOff.png" },
                     checkRuntimeError
                 );
-                chrome.storage.local.clear(checkRuntimeError);
+                // chrome.storage.local.clear(checkRuntimeError);
             }
             initContextMenus();
         }
@@ -62,7 +62,7 @@ try {
         }
         if (changes.recents) {
             let { newValue } = changes.recents;
-            if (newValue?.length > 10) {
+            if (newValue?.length > 50) {
                 newValue.pop();
                 chrome.storage.local.set(
                     { recents: newValue },
@@ -76,13 +76,34 @@ try {
         try {
             switch (info.menuItemId) {
                 case "refresh":
-                    init();
+                    init(true);
                     return;
                 case "login":
+                case "token":
                     login();
                     return;
                 case "logout":
                     logout();
+                    return;
+                case "images":
+                    try {
+                        console.log("clicked");
+                        const { token } = await isLoggedIn();
+                        if (!token) {
+                            login(tab.id);
+                            return;
+                        }
+                        if (isSystemPage(tab)) return;
+                        const exits = await chrome.tabs.sendMessage(tab.id, {
+                            context: "CHECK_IF_ROOT_EXISTS",
+                        });
+                        if (exits)
+                            chrome.tabs.sendMessage(tab.id, {
+                                context: "ACTION",
+                            });
+                    } catch (error) {
+                        console.warn("error", error);
+                    }
                     return;
                 case "save":
                     if (isSystemPage(tab)) return;
@@ -102,25 +123,28 @@ try {
         }
     });
 
-    chrome.action.onClicked.addListener(async (tab) => {
-        try {
-            const { token } = await isLoggedIn();
-            if (!token) {
-                login(tab.id);
-                return;
-            }
-            if (isSystemPage(tab)) return;
-            const exits = await chrome.tabs.sendMessage(tab.id, {
-                context: "CHECK_IF_ROOT_EXISTS",
-            });
-            if (exits)
-                chrome.tabs.sendMessage(tab.id, {
-                    context: "ACTION",
-                });
-        } catch (error) {
-            console.warn("error", error);
-        }
-    });
+    chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+
+    // chrome.action.onClicked.addListener(async (tab) => {
+    //     try {
+    //         console.log("clicked");
+    //         const { token } = await isLoggedIn();
+    //         if (!token) {
+    //             login(tab.id);
+    //             return;
+    //         }
+    //         if (isSystemPage(tab)) return;
+    //         const exits = await chrome.tabs.sendMessage(tab.id, {
+    //             context: "CHECK_IF_ROOT_EXISTS",
+    //         });
+    //         if (exits)
+    //             chrome.tabs.sendMessage(tab.id, {
+    //                 context: "ACTION",
+    //             });
+    //     } catch (error) {
+    //         console.warn("error", error);
+    //     }
+    // });
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         /******** Related to content scripts *******/
         try {
@@ -161,13 +185,17 @@ try {
             if (message.context === "SAVE") {
                 (async () => {
                     try {
-                        const { id, dirName, src, blob } = message.data;
+                        const { id, dirName, src, blob, mimeType } =
+                            message.data;
+                        console.log({ id, dirName, src, blob, mimeType });
                         updateRecents(id, dirName);
                         if (blob) {
                             let { status } = await saveimg({
-                                origin: sender.tab.url,
+                                origin:
+                                    src === undefined ? sender.tab.url : src,
                                 parents: id,
                                 blob,
+                                mimeType,
                             });
                             sendResponse({ code: status });
                         } else {

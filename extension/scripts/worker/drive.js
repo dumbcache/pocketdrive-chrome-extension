@@ -12,7 +12,6 @@ export const fetchRootDir = async (token) => {
     );
     if (res.status !== 200) {
         if (res.status === 401) {
-            logout();
             login();
             return;
         }
@@ -47,8 +46,7 @@ export const createRootDir = async (token) => {
             data
         );
         if (status === 401) {
-            logout();
-            login();
+            // login();
             return;
         }
     }
@@ -59,14 +57,13 @@ export const createRootDir = async (token) => {
 export const fetchDirs = async (parent) => {
     const { token } = await chrome.storage.local.get("token");
     const res = await fetch(
-        `${GDRIVE}?q='${parent}' in parents and mimeType='application/vnd.google-apps.folder'&fields=files(name,id)&orderBy=name`,
+        `${GDRIVE}?q='${parent}' in parents and mimeType='application/vnd.google-apps.folder'&fields=files(name,id)&orderBy=name&pageSize=1000`,
         {
             headers: { Authorization: `Bearer ${token}` },
         }
     );
     if (res.status !== 200) {
         if (res.status === 401) {
-            logout();
             login();
             return;
         }
@@ -92,7 +89,6 @@ export const createDir = async (dirName, parents) => {
     let { status, statusText } = req;
     if (status !== 200) {
         if (status === 401) {
-            logout();
             login();
             return;
         }
@@ -119,8 +115,6 @@ export const createImgMetadata = async (imgMeta, token) => {
     let { status, statusText } = req;
     if (status !== 200) {
         if (status === 401) {
-            logout();
-            login();
             return;
         }
 
@@ -144,8 +138,6 @@ export const uploadImg = async (location, imgData, mimeType) => {
     let data = await req.json();
     if (status !== 200)
         if (status === 401) {
-            logout();
-            login();
         }
     console.log(`error while uploadingImg ${status} ${statusText}`, {
         cause: data,

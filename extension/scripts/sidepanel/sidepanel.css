@@ -1,0 +1,304 @@
+:root {
+    --font-default: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    --size-system: 62.5%;
+    --font-size-default: 1.6rem;
+
+    --color-primary: #ffffffa6;
+    --color-background: #111;
+    --color-purple: #784dca;
+    --color-purple-background: #251f36;
+}
+
+:root {
+    background-color: var(--color-purple-background);
+    color: var(--color-primary);
+    font-family: var(--font-default);
+    font-size: var(--size-system);
+    line-height: var(--line-height-default);
+    height: 100%;
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+*,
+*::before,
+*::after {
+    margin: 0rem;
+    padding: 0rem;
+    box-sizing: inherit;
+    scroll-behavior: inherit;
+}
+
+body {
+    font-size: var(--font-size-default);
+}
+
+body,
+.app {
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+.btn {
+    font-size: inherit;
+    background: none;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    color: inherit;
+    height: 2.4rem;
+    width: 2.4rem;
+}
+
+.pocketdrive-website {
+    position: relative;
+    zoom: 0.75;
+    display: none;
+    height: calc(100% - 6rem);
+    width: 100%;
+    overflow-x: scroll;
+}
+
+.pocketdrive-website::-webkit-scrollbar {
+    display: none;
+}
+
+.header {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-purple);
+    background-color: var(--color-purple-background);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.selected {
+    font-size: 1.4rem;
+    width: 18rem;
+    max-width: 18rem;
+    padding: 0.7rem;
+    padding-right: 2rem;
+    text-decoration: none;
+    outline: none;
+    border-bottom: 1px solid #ddd5;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: none;
+    background-color: #333;
+}
+
+.selected:hover {
+    background-color: #444;
+}
+
+.history-icon {
+    width: 1.7rem;
+    filter: invert(0.5);
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translate(-10%, -50%);
+}
+
+.root-button {
+    color: #f00;
+}
+
+.pd-button:hover {
+    color: #aaa;
+}
+
+.list-wrapper {
+    position: relative;
+}
+
+.list {
+    width: 18rem;
+    max-width: 18rem;
+    max-height: 59rem;
+    text-decoration: none;
+    outline: none;
+    border: none;
+    position: absolute;
+    top: 3rem;
+    user-select: none;
+    background-color: #333;
+    border: 1px solid var(--color-purple);
+    border-top: none;
+    border-radius: 0.5rem;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+.item {
+    font-size: 1.4rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0.7rem;
+    cursor: pointer;
+}
+.item:hover {
+    background-color: #444;
+}
+
+.app-body {
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-evenly;
+    align-items: start;
+    gap: 0.5rem;
+    padding: 1rem 0rem 10rem 0rem;
+    z-index: 1;
+}
+
+.highlight {
+    background-color: #00f5;
+}
+
+.img {
+    width: 15rem;
+    height: fit-content;
+    max-height: 30rem;
+    object-fit: contain;
+    border-radius: 0.5rem;
+}
+
+.footer {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-evenly;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    border-top: 1px solid var(--color-purple);
+    background-color: var(--color-purple-background);
+    z-index: 1;
+    gap: 1rem;
+}
+#url {
+    width: 80%;
+    max-width: 80%;
+    padding: 0.7rem;
+    border: none;
+    border-bottom: 1px solid #ddd5;
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    outline: none;
+    background-color: #333;
+    color: inherit;
+}
+
+#url::placeholder {
+    color: #ddd5;
+}
+
+.btn .img {
+    width: 2.4rem;
+    filter: invert(0.7);
+}
+.btn .img:hover {
+    filter: invert(0.5);
+}
+
+.footer .btn,
+.footer .img {
+    width: 2rem;
+}
+.autosave .img:hover {
+    filter: invert(0.7);
+}
+.autosave.autosave-toggle .img {
+    filter: none;
+}
+
+.drop {
+    width: 15rem;
+    height: fit-content;
+    max-height: 30rem;
+    position: relative;
+}
+
+.overlay {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #0008;
+}
+
+.drop:hover .drop-img {
+    filter: brightness(0.5);
+}
+.drop:hover .cancel-single,
+.drop:hover .done-single {
+    display: initial;
+}
+
+.cancel-single,
+.done-single {
+    position: absolute;
+    top: 0;
+    width: 2rem;
+    height: 2rem;
+    display: none;
+}
+.cancel-single {
+    left: 0;
+}
+.done-single {
+    right: 0;
+}
+
+.cancel-single .img,
+.done-single .img {
+    width: 100%;
+    filter: invert(1);
+}
+
+.status,
+.status-ok {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2.4rem;
+    filter: invert(1);
+}
+
+@keyframes spin {
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+.status {
+    animation: spin 1.5s linear 0s infinite;
+}

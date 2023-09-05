@@ -153,6 +153,7 @@ export const fetchImgExternal = async (req: Request, res: Response) => {
     let buffer = await imgBlob.arrayBuffer();
     let imgData = Buffer.from(buffer);
     let type = imgBlob.type;
+    console.log("-----", src, "-----");
     console.log("-------", imgBlob.size, imgBlob.type, "-------");
 
     if (type !== "image/webp" && type !== "image/avif") {

@@ -24,7 +24,7 @@ function isSystemLink(link) {
 }
 
 export function isSystemPage(tab) {
-    return tab.active && isSystemLink(tab.url);
+    return tab?.active && isSystemLink(tab?.url);
 }
 
 export function isLoggedIn() {
@@ -64,6 +64,22 @@ export const initContextMenus = async () => {
         );
         chrome.contextMenus.create(
             {
+                id: "images",
+                title: "Images",
+                contexts: ["action"],
+            },
+            checkRuntimeError
+        );
+        chrome.contextMenus.create(
+            {
+                id: "token",
+                title: "GetToken",
+                contexts: ["action"],
+            },
+            checkRuntimeError
+        );
+        chrome.contextMenus.create(
+            {
                 id: "logout",
                 title: "Logout",
                 contexts: ["action"],
@@ -73,13 +89,14 @@ export const initContextMenus = async () => {
     }
 };
 
-export const init = async () => {
+export const init = async (refresh = false) => {
     try {
         const { token } = await chrome.storage.local.get("token");
         await fetchRootDir(token);
         await refreshDirs();
         chrome.storage.local.set({ childDirs: {} }, checkRuntimeError);
-        chrome.storage.local.set({ recents: [] }, checkRuntimeError);
+        if (refresh)
+            chrome.storage.local.set({ recents: [] }, checkRuntimeError);
     } catch (error) {
         console.warn(error);
         console.log("cause:", error.cause);
@@ -129,11 +146,11 @@ export const addtoLocalDirs = async (data, parents) => {
 };
 
 export const saveimg = async (data) => {
-    let { origin, parents, blob } = data;
+    let { origin, parents, blob, mimeType } = data;
     const { token } = await chrome.storage.local.get("token");
     let imgMeta = {
         name: `${Date.now()}`,
-        mimeType: "image/webp",
+        mimeType: mimeType || "image/webp",
         parents: [parents],
         description: decodeURI(origin),
     };
@@ -147,7 +164,6 @@ export const saveimg = async (data) => {
         chrome.storage.local.remove("img", checkRuntimeError);
         console.log("error while uploading img local", status);
         if (status === 401) {
-            logout();
             login();
         }
     }
@@ -169,7 +185,6 @@ export const saveimgExternal = async (parents, img) => {
     let { status } = req;
     if (status !== 200) {
         if (status === 401) {
-            logout();
             login();
         }
         chrome.storage.local.remove("img", checkRuntimeError);
