@@ -8,7 +8,7 @@ import {
 const HOSTNAME = new URL(chrome.runtime.getURL("")).hostname;
 export const ENDPOINT = `http://127.0.0.1:5001/dumbcache4658/us-central1/pocketdrive`;
 export const REDIRECT_URI = `https://${HOSTNAME}.chromiumapp.org/redirect`;
-export const OAUTH = `https://accounts.google.com/o/oauth2/v2/auth?client_id=206697063226-p09kl0nq355h6q5440qlbikob3h8553u.apps.googleusercontent.com&prompt=select_account&response_type=token&scope=openid email https://www.googleapis.com/auth/drive.file&redirect_uri=${REDIRECT_URI}`;
+export const OAUTH = `https://accounts.google.com/o/oauth2/v2/auth?client_id=206697063226-p09kl0nq355h6q5440qlbikob3h8553u.apps.googleusercontent.com&prompt=select_account&response_type=token&scope=email https://www.googleapis.com/auth/drive.file&redirect_uri=${REDIRECT_URI}`;
 
 export function checkRuntimeError() {
     chrome.runtime.lastError;
@@ -192,3 +192,29 @@ export const saveimgExternal = async (parents, img) => {
     }
     return { status };
 };
+
+export async function getUserInfo(accessToken) {
+    const req = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    });
+    return await req.json();
+}
+
+export async function setUser(userinfo, token) {
+    const { email } = userinfo;
+    await chrome.storage.local.set({ active: email });
+    let data = await chrome.storage.local.get(email);
+    data = data[email];
+    if (!data) {
+        const { root } = await fetchRootDir(token);
+        await chrome.storage.local.set({
+            [email]: { token, root, recents: [], childDirs: {}, dirs: [] },
+        });
+    } else {
+        data.token = token;
+        await chrome.storage.local.set({ [email]: data });
+    }
+}

@@ -1,4 +1,4 @@
-import { initContextMenus, OAUTH } from "./utils.js";
+import { getUserInfo, initContextMenus, OAUTH, setUser } from "./utils.js";
 import { fetchRootDir } from "./drive.js";
 
 export const login = async () => {
@@ -12,6 +12,8 @@ export const login = async () => {
             }
             const url = new URL(redirectURL);
             const token = url.hash.split("&")[0].split("=")[1];
+            const userinfo = await getUserInfo(token);
+            await setUser(userinfo, token);
             const { root } = await chrome.storage.local.get("root");
             if (!root) {
                 const { root } = await fetchRootDir(token);
