@@ -19,8 +19,8 @@ export const login = async () => {
 };
 
 export const logout = async () => {
-    const { active } = await chrome.storage.local.get("active");
-    await chrome.storage.local.remove(active);
-    await chrome.storage.local.set({ active: "" });
+    let { active, users } = await chrome.storage.local.get();
+    users = users.filter((user) => user !== active);
+    await chrome.storage.local.set({ users });
     console.log("session logged out");
 };

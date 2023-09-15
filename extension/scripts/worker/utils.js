@@ -91,8 +91,7 @@ export const initContextMenus = async () => {
 
 export const init = async (refresh = false) => {
     try {
-        const { tokens, active } = await chrome.storage.local.get();
-        const token = tokens[active];
+        const token = await getToken();
         await fetchRootDir(token);
         await refreshDirs();
         chrome.storage.local.set({ childDirs: {} }, checkRuntimeError);
@@ -106,49 +105,47 @@ export const init = async (refresh = false) => {
 
 export const refreshDirs = async () => {
     try {
-        let { root } = await chrome.storage.local.get("root");
+        let { active, dirs } = await chrome.storage.local.get();
+        let root = await getRoot();
         let { data } = await fetchDirs(root);
-        chrome.storage.local.set({ dirs: data }, checkRuntimeError);
+        dirs[active] = data;
+        chrome.storage.local.set({ dirs }, checkRuntimeError);
     } catch (error) {
         console.warn("Unable to Refresh dirs:", error);
         let { dirs } = await chrome.storage.local.get();
-        dirs = dirs ? [...dirs] : [];
+        dirs = dirs ? { ...dirs } : {};
         chrome.storage.local.set({ dirs }, checkRuntimeError);
     }
 };
 
 export const updateRecents = async (id, dirName) => {
-    let { recents } = await chrome.storage.local.get("recents");
-    if (!recents) {
-        chrome.storage.local.set(
-            { recents: [{ id, name: dirName }] },
-            checkRuntimeError
-        );
+    let { active, recents } = await chrome.storage.local.get();
+    if (!recents[active]) {
+        recents[active] = [{ id, name: dirName }];
+        chrome.storage.local.set({ recents }, checkRuntimeError);
         return;
     }
-    recents = recents.filter((item) => item.id !== id);
-    recents.unshift({ id, name: dirName });
+    recents[active] = recents[active].filter((item) => item.id !== id);
+    recents[active].unshift({ id, name: dirName });
     chrome.storage.local.set({ recents }, checkRuntimeError);
 };
 
 export const addtoLocalDirs = async (data, parents) => {
-    const { root } = await chrome.storage.local.get("root");
-    if (root === parents) {
-        let { dirs = [] } = await chrome.storage.local.get("dirs");
-        dirs.unshift(data);
+    const { active, roots, dirs, childDirs } = await chrome.storage.local.get();
+    if (roots[active] === parents) {
+        dirs[active].unshift(data);
         chrome.storage.local.set({ dirs }, checkRuntimeError);
         return;
     }
-    let { childDirs } = await chrome.storage.local.get("childDirs");
-    childDirs[parents]
-        ? childDirs[parents].unshift(data)
-        : (childDirs[parents] = [data]);
+    childDirs[active][parents]
+        ? childDirs[active][parents].unshift(data)
+        : (childDirs[active][parents] = [data]);
     chrome.storage.local.set({ childDirs }, checkRuntimeError);
 };
 
 export const saveimg = async (data) => {
     let { origin, parents, blob, mimeType } = data;
-    const { token } = await chrome.storage.local.get("token");
+    let token = await getToken();
     let imgMeta = {
         name: `${Date.now()}`,
         mimeType: mimeType || "image/webp",
@@ -173,7 +170,7 @@ export const saveimg = async (data) => {
 
 export const saveimgExternal = async (parents, img) => {
     let url = `${ENDPOINT}/saveimg`;
-    const { token } = await chrome.storage.local.get("token");
+    const token = await getToken();
     let body = { ...img, parents };
     let req = await fetch(url, {
         method: "POST",
@@ -245,4 +242,34 @@ export async function setUser(userinfo, token) {
             roots,
         });
     }
+}
+
+export async function removeUser(newValue) {
+    const { active, roots, tokens, childDirs, dirs, recents } =
+        await chrome.storage.local.get();
+    if (!newValue.includes(active)) {
+        delete roots[active];
+        delete tokens[active];
+        delete dirs[active];
+        delete childDirs[active];
+        delete recents[active];
+        await chrome.storage.local.set({
+            active: newValue[0] ?? "",
+            roots,
+            tokens,
+            dirs,
+            recents,
+            childDirs,
+        });
+    }
+}
+
+export async function getToken() {
+    const { active, tokens } = await chrome.storage.local.get();
+    return tokens[active];
+}
+
+export async function getRoot() {
+    const { active, roots } = await chrome.storage.local.get();
+    return roots[active];
 }

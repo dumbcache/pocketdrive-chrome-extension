@@ -8,6 +8,7 @@ import {
     checkRuntimeError,
     saveimg,
     saveimgExternal,
+    removeUser,
 } from "./utils.js";
 import { fetchDirs, createDir } from "./drive.js";
 
@@ -32,7 +33,6 @@ try {
 
     chrome.storage.onChanged.addListener(async (changes) => {
         if (changes.active) {
-            console.log(changes);
             let { newValue } = changes.active;
             if (newValue) {
                 chrome.action.setIcon(
@@ -53,8 +53,20 @@ try {
             initContextMenus();
         }
 
+        if (changes.users) {
+            let { newValue, oldValue } = changes.users;
+            if (newValue?.length === 0) {
+                await chrome.storage.local.clear();
+                return;
+            }
+            if (newValue?.length < oldValue?.length) {
+                removeUser(newValue);
+            }
+        }
+
         if (changes.dirs) {
             let { newValue } = changes.dirs;
+            const { active } = await chrome.storage.local.get("active");
             const [tab] = await chrome.tabs.query({
                 active: true,
             });
@@ -63,17 +75,19 @@ try {
                 tab.id,
                 {
                     context: "DIRS",
-                    data: newValue,
+                    data: newValue[active],
                 },
                 checkRuntimeError
             );
         }
+
         if (changes.recents) {
             let { newValue } = changes.recents;
+            const { active } = await chrome.storage.local.get("active");
             if (newValue?.length > 50) {
                 newValue.pop();
                 chrome.storage.local.set(
-                    { recents: newValue },
+                    { recents: newValue[active] },
                     checkRuntimeError
                 );
             }

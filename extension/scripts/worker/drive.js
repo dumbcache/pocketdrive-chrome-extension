@@ -1,5 +1,5 @@
 import { login, logout } from "./connection.js";
-import { addtoLocalDirs } from "./utils.js";
+import { addtoLocalDirs, getToken } from "./utils.js";
 
 export const GDRIVE = "https://www.googleapis.com/drive/v3/files";
 
@@ -57,7 +57,7 @@ export const createRootDir = async (token) => {
 };
 
 export const fetchDirs = async (parent) => {
-    const { token } = await chrome.storage.local.get("token");
+    const token = await getToken();
     const res = await fetch(
         `${GDRIVE}?q='${parent}' in parents and mimeType='application/vnd.google-apps.folder'&fields=files(name,id)&orderBy=name&pageSize=1000`,
         {
@@ -75,7 +75,7 @@ export const fetchDirs = async (parent) => {
 };
 
 export const createDir = async (dirName, parents) => {
-    const { token } = await chrome.storage.local.get("token");
+    const token = await getToken();
     const req = await fetch(GDRIVE, {
         method: "POST",
         headers: {
