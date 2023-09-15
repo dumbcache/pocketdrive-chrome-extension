@@ -13,8 +13,8 @@ import { fetchDirs, createDir } from "./drive.js";
 
 try {
     chrome.runtime.onInstalled.addListener(async () => {
-        const { token } = await isLoggedIn();
-        if (!token) {
+        const { active } = await chrome.storage.local.get("active");
+        if (!active) {
             chrome.action.setIcon(
                 { path: "/images/krabsOff.png" },
                 checkRuntimeError
@@ -25,26 +25,34 @@ try {
         initContextMenus();
         init();
         chrome.action.setIcon({ path: "/images/krabs.png" }, checkRuntimeError);
+        chrome.action.setBadgeText({ text: active[0] }, checkRuntimeError);
     });
 
+    chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+
     chrome.storage.onChanged.addListener(async (changes) => {
-        if (changes.token) {
-            let { newValue } = changes.token;
+        if (changes.active) {
+            console.log(changes);
+            let { newValue } = changes.active;
             if (newValue) {
                 chrome.action.setIcon(
                     { path: "/images/krabs.png" },
                     checkRuntimeError
                 );
-                // init();
+                chrome.action.setBadgeText(
+                    { text: newValue[0] },
+                    checkRuntimeError
+                );
             } else {
                 chrome.action.setIcon(
                     { path: "/images/krabsOff.png" },
                     checkRuntimeError
                 );
-                // chrome.storage.local.clear(checkRuntimeError);
+                chrome.action.setBadgeText({ text: "" }, checkRuntimeError);
             }
             initContextMenus();
         }
+
         if (changes.dirs) {
             let { newValue } = changes.dirs;
             const [tab] = await chrome.tabs.query({
@@ -123,28 +131,6 @@ try {
         }
     });
 
-    chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
-
-    // chrome.action.onClicked.addListener(async (tab) => {
-    //     try {
-    //         console.log("clicked");
-    //         const { token } = await isLoggedIn();
-    //         if (!token) {
-    //             login(tab.id);
-    //             return;
-    //         }
-    //         if (isSystemPage(tab)) return;
-    //         const exits = await chrome.tabs.sendMessage(tab.id, {
-    //             context: "CHECK_IF_ROOT_EXISTS",
-    //         });
-    //         if (exits)
-    //             chrome.tabs.sendMessage(tab.id, {
-    //                 context: "ACTION",
-    //             });
-    //     } catch (error) {
-    //         console.warn("error", error);
-    //     }
-    // });
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         /******** Related to content scripts *******/
         try {

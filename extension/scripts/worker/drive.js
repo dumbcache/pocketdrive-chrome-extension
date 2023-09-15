@@ -50,7 +50,9 @@ export const createRootDir = async (token) => {
             return;
         }
     }
-    await chrome.storage.local.set({ root: data.id });
+    const { active, roots } = await chrome.storage.local.get();
+    roots[active] = data.id;
+    await chrome.storage.local.set({ roots });
     return data;
 };
 

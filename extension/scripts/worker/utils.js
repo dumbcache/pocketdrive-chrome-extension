@@ -34,8 +34,8 @@ export function isLoggedIn() {
 export const initContextMenus = async () => {
     chrome.contextMenus.removeAll(checkRuntimeError);
 
-    const { token } = await isLoggedIn();
-    if (!token) {
+    const { active } = await chrome.storage.local.get("active");
+    if (!active) {
         chrome.contextMenus.create(
             {
                 id: "login",
@@ -91,7 +91,8 @@ export const initContextMenus = async () => {
 
 export const init = async (refresh = false) => {
     try {
-        const { token } = await chrome.storage.local.get("token");
+        const { tokens, active } = await chrome.storage.local.get();
+        const token = tokens[active];
         await fetchRootDir(token);
         await refreshDirs();
         chrome.storage.local.set({ childDirs: {} }, checkRuntimeError);
@@ -205,16 +206,43 @@ export async function getUserInfo(accessToken) {
 
 export async function setUser(userinfo, token) {
     const { email } = userinfo;
-    await chrome.storage.local.set({ active: email });
-    let data = await chrome.storage.local.get(email);
-    data = data[email];
-    if (!data) {
-        const { root } = await fetchRootDir(token);
-        await chrome.storage.local.set({
-            [email]: { token, root, recents: [], childDirs: {}, dirs: [] },
-        });
+
+    /**
+     * @type {import("../../types.js").User}
+     */
+    let { users, active, tokens, dirs, childDirs, recents, roots } =
+        await chrome.storage.local.get();
+    users ?? (users = []);
+    if (users.length === 0) {
+        active ?? (active = "");
+        dirs ?? (dirs = {});
+        childDirs ?? (childDirs = {});
+        recents ?? (recents = {});
+        roots ?? (roots = {});
+        tokens ?? (tokens = {});
+    }
+
+    if (users.includes(email)) {
+        tokens[email] = token;
+        active = email;
+        chrome.storage.local.set({ tokens, active });
     } else {
-        data.token = token;
-        await chrome.storage.local.set({ [email]: data });
+        active = email;
+        users.push(email);
+        tokens[email] = token;
+        recents[email] = [];
+        dirs[email] = [];
+        childDirs[email] = {};
+        const { root } = await fetchRootDir(token);
+        roots[email] = root;
+        chrome.storage.local.set({
+            active,
+            users,
+            tokens,
+            dirs,
+            childDirs,
+            recents,
+            roots,
+        });
     }
 }

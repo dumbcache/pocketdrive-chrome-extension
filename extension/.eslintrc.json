@@ -1,0 +1,11 @@
+{
+    "root": true,
+    "extends": "eslint:recommended",
+    "env": {
+        "es2023": true
+    },
+    "ignorePatterns": [],
+    "rules": {
+        "no-undef": "off"
+    }
+}

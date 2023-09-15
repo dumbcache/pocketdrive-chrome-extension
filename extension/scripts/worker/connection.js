@@ -1,5 +1,4 @@
-import { getUserInfo, initContextMenus, OAUTH, setUser } from "./utils.js";
-import { fetchRootDir } from "./drive.js";
+import { getUserInfo, OAUTH, setUser } from "./utils.js";
 
 export const login = async () => {
     chrome.identity.launchWebAuthFlow(
@@ -14,19 +13,14 @@ export const login = async () => {
             const token = url.hash.split("&")[0].split("=")[1];
             const userinfo = await getUserInfo(token);
             await setUser(userinfo, token);
-            const { root } = await chrome.storage.local.get("root");
-            if (!root) {
-                const { root } = await fetchRootDir(token);
-                await chrome.storage.local.set({ root });
-            }
-            await chrome.storage.local.set({ token });
-            await initContextMenus();
             console.log("session logged in");
         }
     );
 };
 
 export const logout = async () => {
-    await chrome.storage.local.set({ token: null });
+    const { active } = await chrome.storage.local.get("active");
+    await chrome.storage.local.remove(active);
+    await chrome.storage.local.set({ active: "" });
     console.log("session logged out");
 };
