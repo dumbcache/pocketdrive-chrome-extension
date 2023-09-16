@@ -180,8 +180,8 @@ listButton.addEventListener("click", async (e) => {
     childs.hidden = true;
     dirs.hidden = !dirs.hidden;
     document.querySelector(".history-icon").hidden = true;
-    const { root } = await chrome.storage.local.get("root");
-    setSelected(root, ROOT_FOLDER);
+    const { roots, active } = await chrome.storage.local.get();
+    setSelected(roots[active], ROOT_FOLDER);
 });
 
 function toggleDropHighlight() {
@@ -322,9 +322,23 @@ function createDropElement(src, id) {
     const overlay = createElement("div", [["class", "overlay"]]);
     div.append(img, cancelButton, doneButton, overlay, statusIcon, okIcon);
 
-    doneButton.addEventListener("click", () => saveDropImage(id));
-    cancelButton.addEventListener("click", () => removeDropImage(id));
+    doneButton.addEventListener("click", () => {
+        saveDropImage(id);
+        clearImages();
+    });
+    cancelButton.addEventListener("click", () => {
+        removeDropImage(id);
+        clearImages();
+    });
     return div;
+}
+
+function clearImages() {
+    for (let i in dropItems) {
+        if (dropItems[i].status === "success") {
+            removeDropImage(i);
+        }
+    }
 }
 
 async function saveImages() {
@@ -333,10 +347,8 @@ async function saveImages() {
         if (dropItems[i].status === "") {
             saveDropImage(i);
         }
-        if (dropItems[i].status === "success") {
-            removeDropImage(i);
-        }
     }
+    clearImages();
 }
 
 async function fetchChilds(id) {
@@ -344,6 +356,7 @@ async function fetchChilds(id) {
         context: "CHILD_DIRS",
         data: { parents: id },
     });
+    console.log(childDirs);
     return { status, childDirs };
 }
 
@@ -366,9 +379,10 @@ function setSelected(id, name) {
 }
 
 async function setDefaultSelected() {
-    const { recents, root } = await chrome.storage.local.get();
+    let { recents, roots, active } = await chrome.storage.local.get();
+    recents = recents[active];
     if (recents.length === 0) {
-        setSelected(root, ROOT_FOLDER);
+        setSelected(roots[active], ROOT_FOLDER);
         createHistoryIconElement();
         return;
     }
@@ -377,14 +391,14 @@ async function setDefaultSelected() {
 }
 
 async function setRecents() {
-    const { recents } = await chrome.storage.local.get();
-    setRecentList(recents);
+    const { recents, active } = await chrome.storage.local.get();
+    setRecentList(recents[active]);
     return;
 }
 
 async function setDirs() {
-    const { dirs } = await chrome.storage.local.get("dirs");
-    setDirList(dirs);
+    const { dirs, active } = await chrome.storage.local.get();
+    setDirList(dirs[active]);
     return;
 }
 
