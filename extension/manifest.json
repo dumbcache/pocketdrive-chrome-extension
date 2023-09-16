@@ -2,12 +2,19 @@
     "manifest_version": 3,
     "name": "Pocket Drive",
     "version": "1.0.0",
+    "icons": {
+        "48": "images/krabs.png"
+    },
     "action": {
         "default_icon": {},
         "default_title": "Pocket Drive - save images to google drive"
     },
-    "icons": {
-        "48": "images/krabs.png"
+    "sidebar_action": {
+        "default_icon": {
+            "48": "images/krabs.png"
+        },
+        "default_panel": "scripts/sidepanel/sidepanel.html",
+        "open_at_install": false
     },
     "content_scripts": [
         {
@@ -15,22 +22,17 @@
             "matches": ["https://*/*"]
         }
     ],
-    "minimum_chrome_version": "93",
-    "side_panel": {
-        "default_path": "scripts/sidepanel/sidepanel.html"
-    },
     "background": {
-        "service_worker": "scripts/worker/sw.js",
+        "scripts": ["scripts/worker/sw.js"],
         "type": "module"
     },
     "permissions": [
         "activeTab",
-        "tabs",
-        "scripting",
         "contextMenus",
-        "storage",
         "identity",
-        "sidePanel",
+        "scripting",
+        "storage",
+        "tabs",
         "unlimitedStorage"
     ],
     "content_security_policy": {
@@ -44,11 +46,16 @@
             }
         }
     },
-    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApp3y+uSkWCfxhvmFIes3r5Po98ZwLKGR3NXdXKJPpT/npSZJpfJOfUvc0X0DDlVIfNbelIQtooGbn25k990Vq1nj0ZP6opk1fzAXbkFlfFCKYcbx/udPeuW+TGojkGhDAV3Dpfz/xq7eF6MX3FZ+5fj2NkwhFNjpqj6UHZLMdyo4/EEEqHbD2KEsarwo7Um5OwmbUCWHU9EfDktg+1nENoI8xaNxVG1VVUTrAff/9FsguDpcvINfPFYiQCJA42dOi+7VQGg2Fe8MeCjkWUtBJV+koo7ce69+ddsfWKS4Lq7he56D2UQ85j1SNDE0JngHE/6EI6P23MpNP/feaMxtGwIDAQAB",
     "web_accessible_resources": [
         {
             "resources": ["images/*", "assets/*", "scripts/content/*"],
             "matches": ["https://*/*"]
         }
-    ]
+    ],
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "pocketdrive@ext",
+            "strict_min_version": "42.0"
+        }
+    }
 }

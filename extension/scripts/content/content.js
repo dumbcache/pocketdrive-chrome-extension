@@ -18,7 +18,7 @@ const init = async (sendResponse) => {
         krab.style.width = "fit-content";
         const shadow = krab.attachShadow({ mode: "open" });
 
-        const styles = chrome.runtime.getURL("scripts/content/content.css");
+        const styles = browser.runtime.getURL("scripts/content/content.css");
         const styleElement = createElement("link", [
             ["rel", "stylesheet"],
             ["href", styles],
@@ -30,7 +30,7 @@ const init = async (sendResponse) => {
             roots = {},
             dirs = {},
             active,
-        } = await chrome.storage.local.get();
+        } = await browser.storage.local.get();
         let root = roots[active];
         let tempDirs = dirs[active];
         let tempParent = roots[active];
@@ -140,7 +140,7 @@ const init = async (sendResponse) => {
             sendButton.style.display = "none";
             dirStatusIcon.style.display = "initial";
 
-            await chrome.runtime.sendMessage({
+            await browser.runtime.sendMessage({
                 context: "CREATE_DIR",
                 data: {
                     name: name,
@@ -173,7 +173,7 @@ const init = async (sendResponse) => {
                 return;
             }
 
-            const { status, childDirs } = await chrome.runtime.sendMessage({
+            const { status, childDirs } = await browser.runtime.sendMessage({
                 context: "CHILD_DIRS",
                 data: { parents: id },
             });
@@ -214,7 +214,7 @@ const init = async (sendResponse) => {
         });
 
         rootButton.addEventListener("click", async (e) => {
-            let { roots, active } = await chrome.storage.local.get();
+            let { roots, active } = await browser.storage.local.get();
             let root = roots[active];
             selected.dataset.id = root;
             selected.dataset.dirName = "root";
@@ -285,7 +285,7 @@ const init = async (sendResponse) => {
             hideToggles();
             statusWrapper.append(status);
             main.style.display = "none";
-            const { code } = await chrome.runtime.sendMessage({
+            const { code } = await browser.runtime.sendMessage({
                 context: "SAVE",
                 data: { id, dirName, src, blob: tempBlob.bytes },
             });
@@ -386,7 +386,7 @@ const init = async (sendResponse) => {
         /**************** Popup toggler *****************/
         async function toggleMain() {
             let { recents: recentDirs, active } =
-                await chrome.storage.local.get();
+                await browser.storage.local.get();
             recentDirs = recentDirs[active];
             if (recentDirs?.length > 0) {
                 selected.setAttribute("data-id", recentDirs[0].id);
@@ -463,8 +463,8 @@ const init = async (sendResponse) => {
         });
 
         sendResponse(true);
-        /**************** Chrome message handling *****************/
-        chrome.runtime.onMessage.addListener((message) => {
+        /**************** browser message handling *****************/
+        browser.runtime.onMessage.addListener((message) => {
             try {
                 switch (message.context) {
                     case "ACTION":
@@ -525,7 +525,7 @@ const init = async (sendResponse) => {
     }
 };
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     try {
         if (message.context === "CHECK_IF_ROOT_EXISTS") {
             const root = document.getElementById("krab-ext");

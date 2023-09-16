@@ -1,10 +1,10 @@
 import { getUserInfo, OAUTH, setUser } from "./utils.js";
 
 export const login = async () => {
-    chrome.identity.launchWebAuthFlow(
+    browser.identity.launchWebAuthFlow(
         { url: OAUTH, interactive: true },
         async (redirectURL) => {
-            chrome.runtime.lastError && "";
+            browser.runtime.lastError && "";
             if (!redirectURL) {
                 console.log("redirect failed");
                 return;
@@ -19,8 +19,8 @@ export const login = async () => {
 };
 
 export const logout = async () => {
-    let { active, users } = await chrome.storage.local.get();
+    let { active, users } = await browser.storage.local.get();
     users = users.filter((user) => user !== active);
-    await chrome.storage.local.set({ users });
+    await browser.storage.local.set({ users });
     console.log("session logged out");
 };

@@ -1,7 +1,7 @@
 import { login, logout } from "./connection.js";
 import { addtoLocalDirs, getToken } from "./utils.js";
 
-export const GDRIVE = "https://www.googleapis.com/drive/v3/files";
+const GDRIVE = "https://www.googleapis.com/drive/v3/files";
 
 export const fetchRootDir = async (token) => {
     const res = await fetch(
@@ -50,9 +50,9 @@ export const createRootDir = async (token) => {
             return;
         }
     }
-    const { active, roots } = await chrome.storage.local.get();
+    const { active, roots } = await browser.storage.local.get();
     roots[active] = data.id;
-    await chrome.storage.local.set({ roots });
+    await browser.storage.local.set({ roots });
     return data;
 };
 

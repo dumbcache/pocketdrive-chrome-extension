@@ -5,21 +5,20 @@ import {
     fetchRootDir,
 } from "./drive.js";
 
-const HOSTNAME = new URL(chrome.runtime.getURL("")).hostname;
 export const ENDPOINT = `http://127.0.0.1:5001/dumbcache4658/us-central1/pocketdrive`;
-export const REDIRECT_URI = `https://${HOSTNAME}.chromiumapp.org/redirect`;
+export const REDIRECT_URI = browser.identity.getRedirectURL() + "redirect";
 export const OAUTH = `https://accounts.google.com/o/oauth2/v2/auth?client_id=206697063226-p09kl0nq355h6q5440qlbikob3h8553u.apps.googleusercontent.com&prompt=select_account&response_type=token&scope=email https://www.googleapis.com/auth/drive.file&redirect_uri=${REDIRECT_URI}`;
 
 export function checkRuntimeError() {
-    chrome.runtime.lastError;
-    // && console.log(chrome.runtime.lastError);
+    browser.runtime.lastError;
+    // && console.log(browser.runtime.lastError);
 }
 
 function isSystemLink(link) {
     return (
-        link.startsWith("chrome://") ||
-        link.startsWith("chrome-extension://") ||
-        link.startsWith("chrome-search://")
+        link.startsWith("browser://") ||
+        link.startsWith("browser-extension://") ||
+        link.startsWith("browser-search://")
     );
 }
 
@@ -28,15 +27,15 @@ export function isSystemPage(tab) {
 }
 
 export function isLoggedIn() {
-    return chrome.storage.local.get("token");
+    return browser.storage.local.get("token");
 }
 
 export const initContextMenus = async () => {
-    chrome.contextMenus.removeAll(checkRuntimeError);
+    browser.contextMenus.removeAll(checkRuntimeError);
 
-    const { active } = await chrome.storage.local.get("active");
+    const { active } = await browser.storage.local.get("active");
     if (!active) {
-        chrome.contextMenus.create(
+        browser.contextMenus.create(
             {
                 id: "login",
                 title: "Login",
@@ -46,7 +45,7 @@ export const initContextMenus = async () => {
         );
         return;
     } else {
-        chrome.contextMenus.create(
+        browser.contextMenus.create(
             {
                 id: "save",
                 title: "Save",
@@ -54,7 +53,7 @@ export const initContextMenus = async () => {
             },
             checkRuntimeError
         );
-        chrome.contextMenus.create(
+        browser.contextMenus.create(
             {
                 id: "refresh",
                 title: "Refresh",
@@ -62,7 +61,7 @@ export const initContextMenus = async () => {
             },
             checkRuntimeError
         );
-        chrome.contextMenus.create(
+        browser.contextMenus.create(
             {
                 id: "images",
                 title: "Images",
@@ -70,7 +69,7 @@ export const initContextMenus = async () => {
             },
             checkRuntimeError
         );
-        chrome.contextMenus.create(
+        browser.contextMenus.create(
             {
                 id: "token",
                 title: "GetToken",
@@ -78,7 +77,7 @@ export const initContextMenus = async () => {
             },
             checkRuntimeError
         );
-        chrome.contextMenus.create(
+        browser.contextMenus.create(
             {
                 id: "logout",
                 title: "Logout",
@@ -96,10 +95,13 @@ export const init = async (refresh = false) => {
         await refreshDirs();
         if (refresh) {
             const { active, recents, childDirs } =
-                await chrome.storage.local.get();
+                await browser.storage.local.get();
             childDirs[active] = {};
             recents[active] = [];
-            chrome.storage.local.set({ recents, childDirs }, checkRuntimeError);
+            browser.storage.local.set(
+                { recents, childDirs },
+                checkRuntimeError
+            );
         }
     } catch (error) {
         console.warn(error);
@@ -109,42 +111,43 @@ export const init = async (refresh = false) => {
 
 export const refreshDirs = async () => {
     try {
-        let { active, dirs } = await chrome.storage.local.get();
+        let { active, dirs } = await browser.storage.local.get();
         let root = await getRoot();
         let { data } = await fetchDirs(root);
         dirs[active] = data;
-        chrome.storage.local.set({ dirs }, checkRuntimeError);
+        browser.storage.local.set({ dirs }, checkRuntimeError);
     } catch (error) {
         console.warn("Unable to Refresh dirs:", error);
-        let { dirs } = await chrome.storage.local.get();
+        let { dirs } = await browser.storage.local.get();
         dirs = dirs ? { ...dirs } : {};
-        chrome.storage.local.set({ dirs }, checkRuntimeError);
+        browser.storage.local.set({ dirs }, checkRuntimeError);
     }
 };
 
 export const updateRecents = async (id, dirName) => {
-    let { active, recents } = await chrome.storage.local.get();
+    let { active, recents } = await browser.storage.local.get();
     if (!recents[active]) {
         recents[active] = [{ id, name: dirName }];
-        chrome.storage.local.set({ recents }, checkRuntimeError);
+        browser.storage.local.set({ recents }, checkRuntimeError);
         return;
     }
     recents[active] = recents[active].filter((item) => item.id !== id);
     recents[active].unshift({ id, name: dirName });
-    chrome.storage.local.set({ recents }, checkRuntimeError);
+    browser.storage.local.set({ recents }, checkRuntimeError);
 };
 
 export const addtoLocalDirs = async (data, parents) => {
-    const { active, roots, dirs, childDirs } = await chrome.storage.local.get();
+    const { active, roots, dirs, childDirs } =
+        await browser.storage.local.get();
     if (roots[active] === parents) {
         dirs[active].unshift(data);
-        chrome.storage.local.set({ dirs }, checkRuntimeError);
+        browser.storage.local.set({ dirs }, checkRuntimeError);
         return;
     }
     childDirs[active][parents]
         ? childDirs[active][parents].unshift(data)
         : (childDirs[active][parents] = [data]);
-    chrome.storage.local.set({ childDirs }, checkRuntimeError);
+    browser.storage.local.set({ childDirs }, checkRuntimeError);
 };
 
 export const saveimg = async (data) => {
@@ -163,7 +166,7 @@ export const saveimg = async (data) => {
         imgMeta.mimeType
     );
     if (status !== 200) {
-        chrome.storage.local.remove("img", checkRuntimeError);
+        browser.storage.local.remove("img", checkRuntimeError);
         console.log("error while uploading img local", status);
         if (status === 401) {
             login();
@@ -189,7 +192,7 @@ export const saveimgExternal = async (parents, img) => {
         if (status === 401) {
             login();
         }
-        chrome.storage.local.remove("img", checkRuntimeError);
+        browser.storage.local.remove("img", checkRuntimeError);
         console.log("error while uploading img external", status);
     }
     return { status };
@@ -212,7 +215,7 @@ export async function setUser(userinfo, token) {
      * @type {import("../../types.js").User}
      */
     let { users, active, tokens, dirs, childDirs, recents, roots } =
-        await chrome.storage.local.get();
+        await browser.storage.local.get();
     users ?? (users = []);
     if (users.length === 0) {
         active ?? (active = "");
@@ -226,7 +229,7 @@ export async function setUser(userinfo, token) {
     if (users.includes(email)) {
         tokens[email] = token;
         active = email;
-        chrome.storage.local.set({ tokens, active });
+        browser.storage.local.set({ tokens, active });
     } else {
         active = email;
         users.push(email);
@@ -236,7 +239,7 @@ export async function setUser(userinfo, token) {
         childDirs[email] = {};
         const { root } = await fetchRootDir(token);
         roots[email] = root;
-        chrome.storage.local.set({
+        await browser.storage.local.set({
             active,
             users,
             tokens,
@@ -250,14 +253,15 @@ export async function setUser(userinfo, token) {
 
 export async function removeUser(newValue) {
     const { active, roots, tokens, childDirs, dirs, recents } =
-        await chrome.storage.local.get();
+        await browser.storage.local.get();
+    console.log({ active, roots, tokens, childDirs, dirs, recents });
     if (!newValue.includes(active)) {
         delete roots[active];
         delete tokens[active];
         delete dirs[active];
         delete childDirs[active];
         delete recents[active];
-        await chrome.storage.local.set({
+        await browser.storage.local.set({
             active: newValue[0] ?? "",
             roots,
             tokens,
@@ -269,15 +273,15 @@ export async function removeUser(newValue) {
 }
 
 export async function getActive() {
-    const { active } = await chrome.storage.local.get("active");
+    const { active } = await browser.storage.local.get("active");
     return active;
 }
 export async function getToken() {
-    const { active, tokens } = await chrome.storage.local.get();
+    const { active, tokens } = await browser.storage.local.get();
     return tokens[active];
 }
 
 export async function getRoot() {
-    const { active, roots } = await chrome.storage.local.get();
+    const { active, roots } = await browser.storage.local.get();
     return roots[active];
 }

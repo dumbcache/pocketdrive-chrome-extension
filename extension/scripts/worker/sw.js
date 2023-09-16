@@ -13,10 +13,10 @@ import {
 import { fetchDirs, createDir } from "./drive.js";
 
 try {
-    chrome.runtime.onInstalled.addListener(async () => {
-        const { active } = await chrome.storage.local.get("active");
+    browser.runtime.onInstalled.addListener(async () => {
+        const { active } = await browser.storage.local.get("active");
         if (!active) {
-            chrome.action.setIcon(
+            browser.action.setIcon(
                 { path: "/images/krabsOff.png" },
                 checkRuntimeError
             );
@@ -25,30 +25,35 @@ try {
         }
         initContextMenus();
         init();
-        chrome.action.setIcon({ path: "/images/krabs.png" }, checkRuntimeError);
-        chrome.action.setBadgeText({ text: active[0] }, checkRuntimeError);
+        browser.action.setIcon(
+            { path: "/images/krabs.png" },
+            checkRuntimeError
+        );
+        browser.action.setBadgeText({ text: active[0] }, checkRuntimeError);
     });
 
-    chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+    browser.action.onClicked.addListener(() => {
+        browser.sidebarAction.toggle();
+    });
 
-    chrome.storage.onChanged.addListener(async (changes) => {
+    browser.storage.onChanged.addListener(async (changes) => {
         if (changes.active) {
             let { newValue } = changes.active;
             if (newValue) {
-                chrome.action.setIcon(
+                browser.action.setIcon(
                     { path: "/images/krabs.png" },
                     checkRuntimeError
                 );
-                chrome.action.setBadgeText(
+                browser.action.setBadgeText(
                     { text: newValue[0] },
                     checkRuntimeError
                 );
             } else {
-                chrome.action.setIcon(
+                browser.action.setIcon(
                     { path: "/images/krabsOff.png" },
                     checkRuntimeError
                 );
-                chrome.action.setBadgeText({ text: "" }, checkRuntimeError);
+                browser.action.setBadgeText({ text: "" }, checkRuntimeError);
             }
             initContextMenus();
         }
@@ -56,7 +61,7 @@ try {
         if (changes.users) {
             let { newValue, oldValue } = changes.users;
             if (newValue?.length === 0) {
-                await chrome.storage.local.clear();
+                await browser.storage.local.clear();
                 return;
             }
             if (newValue?.length < oldValue?.length) {
@@ -66,35 +71,39 @@ try {
 
         if (changes.dirs) {
             let { newValue } = changes.dirs;
-            const { active } = await chrome.storage.local.get("active");
-            const [tab] = await chrome.tabs.query({
-                active: true,
-            });
-            if (isSystemPage(tab)) return;
-            chrome.tabs.sendMessage(
-                tab.id,
-                {
-                    context: "DIRS",
-                    data: newValue[active],
-                },
-                checkRuntimeError
-            );
-        }
-
-        if (changes.recents) {
-            let { newValue } = changes.recents;
-            const { active } = await chrome.storage.local.get("active");
-            if (newValue[active]?.length > 50) {
-                newValue[active].pop();
-                chrome.storage.local.set(
-                    { recents: newValue[active] },
+            if (newValue) {
+                const { active } = await browser.storage.local.get("active");
+                const [tab] = await browser.tabs.query({
+                    active: true,
+                });
+                if (isSystemPage(tab)) return;
+                browser.tabs.sendMessage(
+                    tab.id,
+                    {
+                        context: "DIRS",
+                        data: newValue[active],
+                    },
                     checkRuntimeError
                 );
             }
         }
+
+        if (changes.recents) {
+            let { newValue } = changes.recents;
+            if (newValue) {
+                const { active } = await browser.storage.local.get("active");
+                if (newValue[active]?.length > 50) {
+                    newValue[active].pop();
+                    browser.storage.local.set(
+                        { recents: newValue[active] },
+                        checkRuntimeError
+                    );
+                }
+            }
+        }
     });
 
-    chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+    browser.contextMenus.onClicked.addListener(async (info, tab) => {
         try {
             switch (info.menuItemId) {
                 case "refresh":
@@ -110,11 +119,11 @@ try {
                 case "images":
                     try {
                         if (isSystemPage(tab)) return;
-                        const exits = await chrome.tabs.sendMessage(tab.id, {
+                        const exits = await browser.tabs.sendMessage(tab.id, {
                             context: "CHECK_IF_ROOT_EXISTS",
                         });
                         if (exits)
-                            chrome.tabs.sendMessage(tab.id, {
+                            browser.tabs.sendMessage(tab.id, {
                                 context: "ACTION",
                             });
                     } catch (error) {
@@ -123,11 +132,11 @@ try {
                     return;
                 case "save":
                     if (isSystemPage(tab)) return;
-                    const exists = await chrome.tabs.sendMessage(tab.id, {
+                    const exists = await browser.tabs.sendMessage(tab.id, {
                         context: "CHECK_IF_ROOT_EXISTS",
                     });
                     if (exists)
-                        chrome.tabs.sendMessage(tab.id, {
+                        browser.tabs.sendMessage(tab.id, {
                             context: "SELECTION",
                             status: 200,
                             src: info.srcUrl,
@@ -139,7 +148,7 @@ try {
         }
     });
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
         /******** Related to content scripts *******/
         try {
             if (isSystemPage(sender.tab)) return;
@@ -148,11 +157,11 @@ try {
                     try {
                         let { parents } = message.data;
                         let { childDirs, active } =
-                            await chrome.storage.local.get();
+                            await browser.storage.local.get();
                         if (childDirs[active][parents] === undefined) {
                             let { status, data } = await fetchDirs(parents);
                             childDirs[active][parents] = data;
-                            chrome.storage.local.set(
+                            browser.storage.local.set(
                                 { childDirs },
                                 checkRuntimeError
                             );
@@ -197,7 +206,7 @@ try {
                             });
                             sendResponse({ code: status });
                         }
-                        chrome.storage.local.remove("img", checkRuntimeError);
+                        browser.storage.local.remove("img", checkRuntimeError);
                     } catch (error) {
                         console.log(error);
                         sendResponse({ status: 500 });
@@ -209,7 +218,7 @@ try {
                 (async () => {
                     const { name, parents } = message.data;
                     const { status, data } = await createDir(name, parents);
-                    chrome.tabs.sendMessage(sender.tab.id, {
+                    browser.tabs.sendMessage(sender.tab.id, {
                         context: "CREATE_DIR",
                         status,
                         data,
@@ -218,7 +227,7 @@ try {
             }
         } catch (error) {
             console.warn(error, `cause: ${error.cause}`);
-            chrome.tabs.sendMessage(sender.tab.id, {
+            browser.tabs.sendMessage(sender.tab.id, {
                 context: message.context,
                 status: 500,
             });

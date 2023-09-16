@@ -17,7 +17,7 @@ export let tempBlob = { bytes: null };
  */
 export function iconPath(icon) {
     const relative = "images";
-    return chrome.runtime.getURL(`${relative}/${iconResources[icon]}`);
+    return browser.runtime.getURL(`${relative}/${iconResources[icon]}`);
 }
 
 /**
@@ -170,7 +170,7 @@ export function initBulk() {
         cancelIcon,
         "bulk-cancel-button"
     );
-    const okIconPath = chrome.runtime.getURL("images/doneIcon.svg");
+    const okIconPath = browser.runtime.getURL("images/doneIcon.svg");
     const okIcon = createImgElement(okIconPath, "ok-img");
     const bulkOkButton = createButtonElement(okIcon, "bulk-ok-button");
     const selectedCount = createElement("span", [], 0);

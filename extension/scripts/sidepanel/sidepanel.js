@@ -17,7 +17,7 @@ export let tempBlob = { bytes: null };
  */
 export function iconPath(icon) {
     const relative = "images";
-    return chrome.runtime.getURL(`${relative}/${iconResources[icon]}`);
+    return browser.runtime.getURL(`${relative}/${iconResources[icon]}`);
 }
 
 /**
@@ -125,7 +125,7 @@ selected.addEventListener("click", (e) => {
 });
 
 function setCurrentTabURL() {
-    chrome.tabs
+    browser.tabs
         .query({ active: true, lastFocusedWindow: true })
         .then(([tab]) => {
             document.querySelector("#url").value = tab?.url;
@@ -180,8 +180,8 @@ listButton.addEventListener("click", async (e) => {
     childs.hidden = true;
     dirs.hidden = !dirs.hidden;
     document.querySelector(".history-icon").hidden = true;
-    const { root } = await chrome.storage.local.get("root");
-    setSelected(root, ROOT_FOLDER);
+    const { roots, active } = await browser.storage.local.get();
+    setSelected(roots[active], ROOT_FOLDER);
 });
 
 function toggleDropHighlight() {
@@ -197,7 +197,19 @@ function dropHandler(e) {
     app.classList.remove("highlight");
     setCurrentTabURL();
     if (e.dataTransfer?.files) {
+        console.log(e);
         previewAndSetDropItems(e.dataTransfer.files);
+        ((e) => {
+            const image = e.dataTransfer.mozGetDataAt(
+                "application/x-moz-nativeimage",
+                0
+            );
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(image, 0, 0);
+            const dataUrl = canvas.toDataURL();
+            console.log(dataUrl);
+        })(e);
     }
 }
 
@@ -269,6 +281,48 @@ function previewAndSetDropItems(files) {
     }
 }
 
+/** @param {DataTransfer} */
+function firefoxImage(dataTransfer) {
+    for (let img of files) {
+        if (img.type.match("application/x-moz-nativeimage")) {
+            const id = Math.round(Math.random() * Date.now()).toString();
+            // const imgRef = URL.createObjectURL(img);
+            // const imgNew = createDropElement(imgRef, id);
+            // appBody.append(imgNew);
+
+            const image = new Image();
+            const c = document.createElement("canvas");
+            const ctx = c.getContext("2d");
+            c.width = img.naturalWidth; // update canvas size to match image
+            c.height = img.naturalHeight;
+            ctx.drawImage(img, 0, 0);
+            const dataURL = c.toDataURL("image/webp");
+            console.log(dataURL);
+            // image.onload = function () {
+            //     c.toBlob(async function (blob) {
+            //         /**@type {ArrayBuffer} */
+            //         const result = await blob?.arrayBuffer();
+            //         const bytes = Array.from(new Uint8Array(result));
+            //         dropItems = {
+            //             ...dropItems,
+            //             [id]: {
+            //                 mimeType: blob?.type,
+            //                 bytes,
+            //                 status: "",
+            //             },
+            //         };
+            //         if (autosave) saveImages();
+            //     }, "image/webp");
+            // };
+            // image.onerror = function () {
+            //     alert("Error in loading");
+            // };
+            // image.crossOrigin = ""; // if from different origin
+            // image.src = imgRef;
+        }
+    }
+}
+
 function removeDropImage(id) {
     const drop = document.querySelector(`[data-id='${id}']`);
     delete dropItems[id];
@@ -284,7 +338,7 @@ async function saveDropImage(id) {
     status.style.display = "initial";
     dropItems[id].status = "progress";
     const item = dropItems[id];
-    const { code } = await chrome.runtime.sendMessage({
+    const { code } = await browser.runtime.sendMessage({
         context: "SAVE",
         data: {
             id: selected.dataset.id,
@@ -340,7 +394,7 @@ async function saveImages() {
 }
 
 async function fetchChilds(id) {
-    const { status, childDirs } = await chrome.runtime.sendMessage({
+    const { status, childDirs } = await browser.runtime.sendMessage({
         context: "CHILD_DIRS",
         data: { parents: id },
     });
@@ -366,9 +420,10 @@ function setSelected(id, name) {
 }
 
 async function setDefaultSelected() {
-    const { recents, root } = await chrome.storage.local.get();
+    let { recents, roots, active } = await browser.storage.local.get();
+    recents = recents[active];
     if (recents.length === 0) {
-        setSelected(root, ROOT_FOLDER);
+        setSelected(roots[active], ROOT_FOLDER);
         createHistoryIconElement();
         return;
     }
@@ -377,19 +432,19 @@ async function setDefaultSelected() {
 }
 
 async function setRecents() {
-    const { recents } = await chrome.storage.local.get();
-    setRecentList(recents);
+    const { recents, active } = await browser.storage.local.get();
+    setRecentList(recents[active]);
     return;
 }
 
 async function setDirs() {
-    const { dirs } = await chrome.storage.local.get("dirs");
-    setDirList(dirs);
+    const { dirs, active } = await browser.storage.local.get();
+    setDirList(dirs[active]);
     return;
 }
 
 function createHistoryIconElement() {
-    document.querySelector(".history-icon").src = chrome.runtime.getURL(
+    document.querySelector(".history-icon").src = browser.runtime.getURL(
         "images/historyIcon.svg"
     );
 }

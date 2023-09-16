@@ -1,3 +1,3 @@
 (async () => {
-    import(chrome.runtime.getURL("scripts/content/content.js"));
+    import(browser.runtime.getURL("scripts/content/content.js"));
 })();
