@@ -66,7 +66,6 @@ export const fetchDirs = async (parent) => {
     );
     if (res.status !== 200) {
         if (res.status === 401) {
-            login();
             return;
         }
     }

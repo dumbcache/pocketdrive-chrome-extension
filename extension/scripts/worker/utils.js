@@ -94,9 +94,13 @@ export const init = async (refresh = false) => {
         const token = await getToken();
         await fetchRootDir(token);
         await refreshDirs();
-        chrome.storage.local.set({ childDirs: {} }, checkRuntimeError);
-        if (refresh)
-            chrome.storage.local.set({ recents: [] }, checkRuntimeError);
+        if (refresh) {
+            const { active, recents, childDirs } =
+                await chrome.storage.local.get();
+            childDirs[active] = {};
+            recents[active] = [];
+            chrome.storage.local.set({ recents, childDirs }, checkRuntimeError);
+        }
     } catch (error) {
         console.warn(error);
         console.log("cause:", error.cause);
@@ -264,6 +268,10 @@ export async function removeUser(newValue) {
     }
 }
 
+export async function getActive() {
+    const { active } = await chrome.storage.local.get("active");
+    return active;
+}
 export async function getToken() {
     const { active, tokens } = await chrome.storage.local.get();
     return tokens[active];

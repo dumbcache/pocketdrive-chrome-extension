@@ -26,12 +26,14 @@ const init = async (sendResponse) => {
         shadow.append(styleElement);
 
         /**************** Resource Urls *****************/
-        let { root = "", dirs = [] } = await chrome.storage.local.get([
-            "root",
-            "dirs",
-        ]);
-        let tempDirs = dirs;
-        let tempParent = root;
+        let {
+            roots = {},
+            dirs = {},
+            active,
+        } = await chrome.storage.local.get();
+        let root = roots[active];
+        let tempDirs = dirs[active];
+        let tempParent = roots[active];
         const tempBulk = new Set();
         /**************** Element declarations *****************/
 
@@ -51,7 +53,7 @@ const init = async (sendResponse) => {
             listButton,
             mainImg,
             rootButton,
-        } = initMain(root, dirs);
+        } = initMain(root, dirs[active] ?? []);
 
         const { bulk, check, bulkOkButton, bulkCancelButton, selectedCount } =
             initBulk();
@@ -212,7 +214,8 @@ const init = async (sendResponse) => {
         });
 
         rootButton.addEventListener("click", async (e) => {
-            let { root } = await chrome.storage.local.get("root");
+            let { roots, active } = await chrome.storage.local.get();
+            let root = roots[active];
             selected.dataset.id = root;
             selected.dataset.dirName = "root";
             selected.innerText = "root";
@@ -382,9 +385,9 @@ const init = async (sendResponse) => {
 
         /**************** Popup toggler *****************/
         async function toggleMain() {
-            let { recents: recentDirs } = await chrome.storage.local.get(
-                "recents"
-            );
+            let { recents: recentDirs, active } =
+                await chrome.storage.local.get();
+            recentDirs = recentDirs[active];
             if (recentDirs?.length > 0) {
                 selected.setAttribute("data-id", recentDirs[0].id);
                 selected.setAttribute("data-dir-name", recentDirs[0].name);

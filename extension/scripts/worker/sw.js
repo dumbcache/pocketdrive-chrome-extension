@@ -84,8 +84,8 @@ try {
         if (changes.recents) {
             let { newValue } = changes.recents;
             const { active } = await chrome.storage.local.get("active");
-            if (newValue?.length > 50) {
-                newValue.pop();
+            if (newValue[active]?.length > 50) {
+                newValue[active].pop();
                 chrome.storage.local.set(
                     { recents: newValue[active] },
                     checkRuntimeError
@@ -109,12 +109,6 @@ try {
                     return;
                 case "images":
                     try {
-                        console.log("clicked");
-                        const { token } = await isLoggedIn();
-                        if (!token) {
-                            login(tab.id);
-                            return;
-                        }
                         if (isSystemPage(tab)) return;
                         const exits = await chrome.tabs.sendMessage(tab.id, {
                             context: "CHECK_IF_ROOT_EXISTS",
@@ -153,12 +147,11 @@ try {
                 (async () => {
                     try {
                         let { parents } = message.data;
-                        let { childDirs } = await chrome.storage.local.get(
-                            "childDirs"
-                        );
-                        if (childDirs[parents] === undefined) {
+                        let { childDirs, active } =
+                            await chrome.storage.local.get();
+                        if (childDirs[active][parents] === undefined) {
                             let { status, data } = await fetchDirs(parents);
-                            childDirs[parents] = data;
+                            childDirs[active][parents] = data;
                             chrome.storage.local.set(
                                 { childDirs },
                                 checkRuntimeError
@@ -171,7 +164,7 @@ try {
                         }
                         sendResponse({
                             status: 200,
-                            childDirs: childDirs[parents],
+                            childDirs: childDirs[active][parents],
                         });
                     } catch (error) {
                         console.warn(error);
@@ -187,7 +180,6 @@ try {
                     try {
                         const { id, dirName, src, blob, mimeType } =
                             message.data;
-                        console.log({ id, dirName, src, blob, mimeType });
                         updateRecents(id, dirName);
                         if (blob) {
                             let { status } = await saveimg({
