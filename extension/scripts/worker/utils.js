@@ -156,6 +156,7 @@ export const saveimg = async (data) => {
         parents: [parents],
         description: decodeURI(origin),
     };
+    console.log(imgMeta, token);
     let { location } = await createImgMetadata(imgMeta, token);
     let { status } = await uploadImg(
         location,

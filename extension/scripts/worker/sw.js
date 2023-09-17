@@ -83,13 +83,11 @@ try {
 
         if (changes.recents) {
             let { newValue } = changes.recents;
-            const { active } = await chrome.storage.local.get("active");
+            const { active, recents } = await chrome.storage.local.get();
             if (newValue[active]?.length > 50) {
                 newValue[active].pop();
-                chrome.storage.local.set(
-                    { recents: newValue[active] },
-                    checkRuntimeError
-                );
+                recents[active] = newValue[active];
+                chrome.storage.local.set({ recents }, checkRuntimeError);
             }
         }
     });

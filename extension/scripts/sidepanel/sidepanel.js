@@ -325,10 +325,12 @@ function createDropElement(src, id) {
     doneButton.addEventListener("click", () => {
         saveDropImage(id);
         clearImages();
+        setRecents();
     });
     cancelButton.addEventListener("click", () => {
         removeDropImage(id);
         clearImages();
+        setRecents();
     });
     return div;
 }
