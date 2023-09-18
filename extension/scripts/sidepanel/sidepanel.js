@@ -62,13 +62,16 @@ export function createImgElement(src, ...classNames) {
  */
 export function createListElement(list, classname) {
     const fragment = document.createDocumentFragment();
-    for (let { id, name } of list) {
-        const item = createElement("li", [
-            ["class", `item ${classname}`],
-            ["data-id", id],
-            ["title", name],
-        ]);
-        item.innerText = name;
+    for (let { id, name, parentName } of list) {
+        const item = createElement(
+            "li",
+            [
+                ["class", `item ${classname}`],
+                ["data-id", id],
+                ["title", classname === "recent" ? parentName : name],
+            ],
+            name
+        );
         fragment.append(item);
     }
     return fragment;
@@ -76,6 +79,8 @@ export function createListElement(list, classname) {
 
 let autosave = false;
 let dropItems = [];
+let selectedName = "";
+let parentName = "";
 const ROOT_FOLDER = "#Pocket_Drive";
 
 const app = document.querySelector(".app");
@@ -172,6 +177,13 @@ listWrapper.addEventListener("click", async (e) => {
         setChildList(childDirs);
         setSelected(id, name);
         childs.hidden = false;
+        if (e.target.classList.contains("dir")) {
+            selectedName = name;
+            parentName = "Pocket_#Drive";
+        } else {
+            parentName = selectedName;
+            selectedName = name;
+        }
     }
 });
 listButton.addEventListener("click", async (e) => {
@@ -289,6 +301,7 @@ async function saveDropImage(id) {
         data: {
             id: selected.dataset.id,
             dirName: selected.innerText,
+            parentName: parentName,
             src: document.querySelector("#url").value,
             blob: item.bytes,
             mimeType: item.mimeType,
@@ -389,6 +402,7 @@ async function setDefaultSelected() {
         return;
     }
     setSelected(recents[0].id, recents[0].name);
+    parentName = recents[0].parentName;
     createHistoryIconElement();
 }
 

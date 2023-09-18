@@ -137,11 +137,10 @@ export const uploadImg = async (location, imgData, mimeType) => {
     });
     let { status, statusText } = req;
     let data = await req.json();
-    if (status !== 200)
-        if (status === 401) {
-        }
-    console.log(`error while uploadingImg ${status} ${statusText}`, {
-        cause: data,
-    });
+    if (status !== 200) {
+        console.log(`error while uploadingImg ${status} ${statusText}`, {
+            cause: data,
+        });
+    }
     return { status, id: data.id };
 };

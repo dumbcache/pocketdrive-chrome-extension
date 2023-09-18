@@ -122,15 +122,15 @@ export const refreshDirs = async () => {
     }
 };
 
-export const updateRecents = async (id, dirName) => {
+export const updateRecents = async (id, dirName, parentName) => {
     let { active, recents } = await chrome.storage.local.get();
     if (!recents[active]) {
-        recents[active] = [{ id, name: dirName }];
+        recents[active] = [{ id, name: dirName, parentName }];
         chrome.storage.local.set({ recents }, checkRuntimeError);
         return;
     }
     recents[active] = recents[active].filter((item) => item.id !== id);
-    recents[active].unshift({ id, name: dirName });
+    recents[active].unshift({ id, name: dirName, parentName });
     chrome.storage.local.set({ recents }, checkRuntimeError);
 };
 
@@ -156,7 +156,6 @@ export const saveimg = async (data) => {
         parents: [parents],
         description: decodeURI(origin),
     };
-    console.log(imgMeta, token);
     let { location } = await createImgMetadata(imgMeta, token);
     let { status } = await uploadImg(
         location,
