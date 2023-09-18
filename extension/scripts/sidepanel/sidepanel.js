@@ -213,6 +213,9 @@ function dropHandler(e) {
     }
 }
 
+window.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") saveImages();
+});
 window.addEventListener("drop", dropHandler);
 window.addEventListener("dragenter", toggleDropHighlight);
 window.addEventListener("dragleave", toggleDropHighlight);
