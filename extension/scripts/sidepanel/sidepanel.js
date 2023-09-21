@@ -90,6 +90,7 @@ const saveButton = document.querySelector(".save");
 const autoSaveButton = document.querySelector(".autosave");
 const addButton = document.querySelector(".add-button");
 const createWrapper = document.querySelector(".create-wrapper");
+const createForm = document.querySelector(".create-form");
 const linkButton = document.querySelector(".link");
 const listWrapper = document.querySelector(".list-wrapper");
 const recents = document.querySelector(".recents");
@@ -143,10 +144,15 @@ function setCurrentTabURL() {
 async function handleDirCreate(e) {
     e.preventDefault();
     const parent = selected.dataset.id;
+    let name = document.querySelector(".child-name").value.trim();
+    name = name
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
     const { status } = await chrome.runtime.sendMessage({
         context: "CREATE_DIR",
         data: {
-            name: document.querySelector(".child-name").value,
+            name,
             parents: parent,
         },
     });
@@ -164,8 +170,16 @@ addButton.addEventListener("click", () => {
     parent.innerText = selected.innerText;
     createWrapper.style.display =
         createWrapper.style.display === "grid" ? "none" : "grid";
+    document.querySelector(".child-name").focus();
 });
-createWrapper.addEventListener("submit", handleDirCreate);
+createForm.addEventListener("submit", handleDirCreate);
+createForm.addEventListener("click", (e) => {
+    e.stopPropagation();
+});
+
+createWrapper.addEventListener("click", () => {
+    createWrapper.style.display = "none";
+});
 
 autoSaveButton.addEventListener("click", () => {
     autosave = !autosave;
