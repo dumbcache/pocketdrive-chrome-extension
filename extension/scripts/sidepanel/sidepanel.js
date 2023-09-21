@@ -217,7 +217,9 @@ addButton.addEventListener("click", () => {
     parent.innerText = selected.innerText;
     createWrapper.style.display =
         createWrapper.style.display === "grid" ? "none" : "grid";
-    document.querySelector(".child-name").focus();
+    const child = document.querySelector(".child-name");
+    child.value = "";
+    child.focus();
 });
 createForm.addEventListener("submit", handleDirCreate);
 createForm.addEventListener("click", (e) => {
