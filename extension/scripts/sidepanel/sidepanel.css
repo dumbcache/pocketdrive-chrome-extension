@@ -186,6 +186,33 @@ body,
     border-radius: 0.5rem;
 }
 
+.create-wrapper {
+    display: none;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #6665;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 1;
+    place-content: center;
+}
+.create-form {
+    background-color: var(--color-purple-background);
+    padding: 2rem 1rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-flow: column nowrap;
+    border-radius: 0.5rem;
+}
+
+.parent-name {
+    color: #f00;
+    padding-left: 0.7rem;
+    font-size: 1.4rem;
+}
 .footer {
     display: flex;
     flex-flow: row nowrap;
@@ -201,7 +228,8 @@ body,
     z-index: 1;
     gap: 1rem;
 }
-#url {
+#url,
+.child-name {
     width: 80%;
     max-width: 80%;
     padding: 0.7rem;
@@ -214,7 +242,13 @@ body,
     color: inherit;
 }
 
-#url::placeholder {
+.child-name {
+    width: 100%;
+    max-width: 100%;
+}
+
+#url::placeholder,
+.child-name::placeholder {
     color: #ddd5;
 }
 

@@ -207,12 +207,13 @@ try {
                 (async () => {
                     const { name, parents } = message.data;
                     const { status, data } = await createDir(name, parents);
-                    chrome.tabs.sendMessage(sender.tab.id, {
+                    sendResponse({
                         context: "CREATE_DIR",
                         status,
                         data,
                     });
                 })();
+                return true;
             }
         } catch (error) {
             console.warn(error, `cause: ${error.cause}`);

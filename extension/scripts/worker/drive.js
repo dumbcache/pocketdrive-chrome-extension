@@ -98,7 +98,7 @@ export const createDir = async (dirName, parents) => {
         });
     }
     const { id, name } = await req.json();
-    addtoLocalDirs({ id, name }, parents);
+    await addtoLocalDirs({ id, name }, parents);
     return { status, data: { id, name } };
 };
 

@@ -88,6 +88,8 @@ const rootButton = document.querySelector(".root-button");
 const listButton = document.querySelector(".list-button");
 const saveButton = document.querySelector(".save");
 const autoSaveButton = document.querySelector(".autosave");
+const addButton = document.querySelector(".add-button");
+const createWrapper = document.querySelector(".create-wrapper");
 const linkButton = document.querySelector(".link");
 const listWrapper = document.querySelector(".list-wrapper");
 const recents = document.querySelector(".recents");
@@ -137,6 +139,33 @@ function setCurrentTabURL() {
             document.querySelector("#url").title = tab?.url;
         });
 }
+
+async function handleDirCreate(e) {
+    e.preventDefault();
+    const parent = selected.dataset.id;
+    const { status } = await chrome.runtime.sendMessage({
+        context: "CREATE_DIR",
+        data: {
+            name: document.querySelector(".child-name").value,
+            parents: parent,
+        },
+    });
+    if (status === 200) {
+        createWrapper.style.display = "none";
+        const { active, childDirs } = await chrome.storage.local.get();
+        setChildList(childDirs[active][parent]);
+        childs.hidden = false;
+    }
+}
+
+addButton.addEventListener("click", () => {
+    const parent = document.querySelector(".parent-name");
+    parent.dataset.id = selected.dataset.id;
+    parent.innerText = selected.innerText;
+    createWrapper.style.display =
+        createWrapper.style.display === "grid" ? "none" : "grid";
+});
+createWrapper.addEventListener("submit", handleDirCreate);
 
 autoSaveButton.addEventListener("click", () => {
     autosave = !autosave;
@@ -374,7 +403,6 @@ async function fetchChilds(id) {
         context: "CHILD_DIRS",
         data: { parents: id },
     });
-    console.log(childDirs);
     return { status, childDirs };
 }
 
