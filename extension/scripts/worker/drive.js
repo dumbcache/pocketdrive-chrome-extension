@@ -56,6 +56,31 @@ export const createRootDir = async (token) => {
     return data;
 };
 
+export const fetchParent = async (id) => {
+    const token = await getToken();
+    const res1 = await fetch(`${GDRIVE}/${id}?fields=parents`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res1.status !== 200) {
+        if (res1.status === 401) {
+            login();
+            return;
+        }
+    }
+    const { parents } = await res1.json();
+    const res2 = await fetch(`${GDRIVE}/${parents[0]}?fields=name,id`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res2.status !== 200) {
+        if (res2.status === 401) {
+            login();
+            return;
+        }
+    }
+    const data = await res2.json();
+    return { status: 200, data };
+};
+
 export const fetchDirs = async (parent) => {
     const token = await getToken();
     const res = await fetch(

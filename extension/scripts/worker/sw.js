@@ -10,7 +10,7 @@ import {
     saveimgExternal,
     removeUser,
 } from "./utils.js";
-import { fetchDirs, createDir } from "./drive.js";
+import { fetchDirs, createDir, fetchParent } from "./drive.js";
 
 try {
     chrome.runtime.onInstalled.addListener(async () => {
@@ -71,23 +71,27 @@ try {
                 active: true,
             });
             if (isSystemPage(tab)) return;
-            chrome.tabs.sendMessage(
-                tab.id,
-                {
-                    context: "DIRS",
-                    data: newValue[active],
-                },
-                checkRuntimeError
-            );
+            if (newValue) {
+                chrome.tabs.sendMessage(
+                    tab.id,
+                    {
+                        context: "DIRS",
+                        data: newValue[active],
+                    },
+                    checkRuntimeError
+                );
+            }
         }
 
         if (changes.recents) {
             let { newValue } = changes.recents;
             const { active, recents } = await chrome.storage.local.get();
-            if (newValue[active]?.length > 50) {
-                newValue[active].pop();
-                recents[active] = newValue[active];
-                chrome.storage.local.set({ recents }, checkRuntimeError);
+            if (newValue) {
+                if (newValue[active]?.length > 50) {
+                    newValue[active].pop();
+                    recents[active] = newValue[active];
+                    chrome.storage.local.set({ recents }, checkRuntimeError);
+                }
             }
         }
     });
@@ -203,12 +207,21 @@ try {
                 })();
                 return true;
             }
+            if (message.context === "FETCH_PARENT") {
+                (async () => {
+                    const { status, data } = await fetchParent(message.id);
+                    sendResponse({
+                        status,
+                        data,
+                    });
+                })();
+                return true;
+            }
             if (message.context === "CREATE_DIR") {
                 (async () => {
                     const { name, parents } = message.data;
                     const { status, data } = await createDir(name, parents);
                     sendResponse({
-                        context: "CREATE_DIR",
                         status,
                         data,
                     });

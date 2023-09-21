@@ -82,6 +82,7 @@ let dropItems = [];
 let selectedName = "";
 let parentName = "";
 const ROOT_FOLDER = "#Pocket_Drive";
+let ROOT_ID = "";
 
 const app = document.querySelector(".app");
 const rootButton = document.querySelector(".root-button");
@@ -167,18 +168,35 @@ async function handleDirCreate(e) {
     }
 }
 
-// leftButton.addEventListener("click", async () => {
-//     let id = selected.dataset.id;
-//     let { status, childDirs } = await fetchChilds(id);
-//     if (status !== 200) {
-//         selected.style.backgroundColor = "#f00";
-//         setTimeout(() => (selected.style.backgroundColor = "#333"), 1000);
-//         return;
-//     }
-//     childDirs ?? (childDirs = []);
-//     setChildList(childDirs);
-//     childs.hidden = false;
-// });
+leftButton.addEventListener("click", async () => {
+    let id = selected.dataset.id;
+    if (id === ROOT_ID) {
+        toggleList();
+        return;
+    }
+    const { status, data } = await chrome.runtime.sendMessage({
+        context: "FETCH_PARENT",
+        id,
+    });
+    if (status === 200) {
+        const { id: parent, name } = data;
+        if (parent === ROOT_ID) {
+            toggleList();
+            return;
+        }
+        setSelected(parent, name);
+
+        let { status, childDirs } = await fetchChilds(parent);
+        if (status !== 200) {
+            selected.style.backgroundColor = "#f00";
+            setTimeout(() => (selected.style.backgroundColor = "#333"), 1000);
+            return;
+        }
+        childDirs ?? (childDirs = []);
+        setChildList(childDirs);
+        childs.hidden = false;
+    }
+});
 
 downButton.addEventListener("click", async () => {
     let id = selected.dataset.id;
@@ -258,14 +276,19 @@ listWrapper.addEventListener("click", async (e) => {
         }
     }
 });
-listButton.addEventListener("click", async (e) => {
-    e.stopPropagation();
+
+async function toggleList() {
     recents.hidden = true;
     childs.hidden = true;
     dirs.hidden = !dirs.hidden;
     document.querySelector(".history-icon").hidden = true;
     const { roots, active } = await chrome.storage.local.get();
     setSelected(roots[active], ROOT_FOLDER);
+}
+
+listButton.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    toggleList();
 });
 
 function toggleDropHighlight() {
@@ -504,7 +527,9 @@ window.addEventListener("click", () => {
     recents.hidden = true;
 });
 
-window.addEventListener("load", () => {
+window.addEventListener("load", async () => {
+    const { active, roots } = await chrome.storage.local.get();
+    ROOT_ID = roots[active];
     setDefaultSelected();
     setRecents();
     setDirs();
