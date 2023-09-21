@@ -88,7 +88,10 @@ const rootButton = document.querySelector(".root-button");
 const listButton = document.querySelector(".list-button");
 const saveButton = document.querySelector(".save");
 const autoSaveButton = document.querySelector(".autosave");
+const historyIcon = document.querySelector(".history-icon");
 const addButton = document.querySelector(".add-button");
+const downButton = document.querySelector(".down-button");
+const leftButton = document.querySelector(".left-button");
 const createWrapper = document.querySelector(".create-wrapper");
 const createForm = document.querySelector(".create-form");
 const linkButton = document.querySelector(".link");
@@ -164,6 +167,32 @@ async function handleDirCreate(e) {
     }
 }
 
+// leftButton.addEventListener("click", async () => {
+//     let id = selected.dataset.id;
+//     let { status, childDirs } = await fetchChilds(id);
+//     if (status !== 200) {
+//         selected.style.backgroundColor = "#f00";
+//         setTimeout(() => (selected.style.backgroundColor = "#333"), 1000);
+//         return;
+//     }
+//     childDirs ?? (childDirs = []);
+//     setChildList(childDirs);
+//     childs.hidden = false;
+// });
+
+downButton.addEventListener("click", async () => {
+    let id = selected.dataset.id;
+    let { status, childDirs } = await fetchChilds(id);
+    if (status !== 200) {
+        selected.style.backgroundColor = "#f00";
+        setTimeout(() => (selected.style.backgroundColor = "#333"), 1000);
+        return;
+    }
+    childDirs ?? (childDirs = []);
+    setChildList(childDirs);
+    childs.hidden = false;
+});
+
 addButton.addEventListener("click", () => {
     const parent = document.querySelector(".parent-name");
     parent.dataset.id = selected.dataset.id;
@@ -213,7 +242,7 @@ listWrapper.addEventListener("click", async (e) => {
         let { status, childDirs } = await fetchChilds(id);
         if (status !== 200) {
             selected.style.backgroundColor = "#f00";
-            setTimeout(() => (selected.style.backgroundColor = "#333"));
+            setTimeout(() => (selected.style.backgroundColor = "#333"), 1000);
             return;
         }
         childDirs ?? (childDirs = []);

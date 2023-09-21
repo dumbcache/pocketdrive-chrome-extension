@@ -372,6 +372,13 @@ const init = async (sendResponse) => {
                     i.style.display = "none";
                 }
             }
+            if (window.location.host === "band.us") {
+                const ele = document.querySelectorAll(".preventSaveContent");
+                for (let i of ele) {
+                    i.style.display = "none";
+                }
+                console.log(ele);
+            }
             if (main.style.display !== "none") {
                 main.style.display = "none";
                 hideToggles();
