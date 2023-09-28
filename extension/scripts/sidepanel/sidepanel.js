@@ -463,7 +463,7 @@ async function saveImages() {
             saveDropImage(i);
         }
     }
-    clearImages();
+    setTimeout(clearImages, 5000);
 }
 
 async function fetchChilds(id) {
