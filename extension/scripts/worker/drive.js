@@ -74,7 +74,7 @@ export const fetchParent = async (id) => {
     if (res2.status !== 200) {
         if (res2.status === 401) {
             login();
-            return;
+            return { status: 401 };
         }
     }
     const data = await res2.json();

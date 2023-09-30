@@ -195,6 +195,7 @@ leftButton.addEventListener("click", async () => {
         childDirs ?? (childDirs = []);
         setChildList(childDirs);
         childs.hidden = false;
+        recents.hidden = true;
     }
 });
 
@@ -209,6 +210,7 @@ downButton.addEventListener("click", async () => {
     childDirs ?? (childDirs = []);
     setChildList(childDirs);
     childs.hidden = false;
+    recents.hidden = true;
 });
 
 addButton.addEventListener("click", () => {
