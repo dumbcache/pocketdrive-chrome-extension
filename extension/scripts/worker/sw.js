@@ -4,30 +4,18 @@ import {
     initContextMenus,
     init,
     isSystemPage,
-    isLoggedIn,
     checkRuntimeError,
     saveimg,
     saveimgExternal,
     removeUser,
+    beforeInit,
 } from "./utils.js";
 import { fetchDirs, createDir, fetchParent } from "./drive.js";
 
 try {
-    chrome.runtime.onInstalled.addListener(async () => {
-        const { active } = await chrome.storage.local.get("active");
-        if (!active) {
-            chrome.action.setIcon(
-                { path: "/images/krabsOff.png" },
-                checkRuntimeError
-            );
-            initContextMenus();
-            return;
-        }
-        initContextMenus();
-        init();
-        chrome.action.setIcon({ path: "/images/krabs.png" }, checkRuntimeError);
-        chrome.action.setBadgeText({ text: active[0] }, checkRuntimeError);
-    });
+    chrome.runtime.onInstalled.addListener(beforeInit);
+
+    chrome.runtime.onStartup.addListener(beforeInit);
 
     chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 

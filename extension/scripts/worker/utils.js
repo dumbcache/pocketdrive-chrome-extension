@@ -89,6 +89,22 @@ export const initContextMenus = async () => {
     }
 };
 
+export const beforeInit = async () => {
+    const { active } = await chrome.storage.local.get("active");
+    if (!active) {
+        chrome.action.setIcon(
+            { path: "/images/krabsOff.png" },
+            checkRuntimeError
+        );
+        initContextMenus();
+        return;
+    }
+    initContextMenus();
+    init();
+    chrome.action.setIcon({ path: "/images/krabs.png" }, checkRuntimeError);
+    chrome.action.setBadgeText({ text: active[0] }, checkRuntimeError);
+};
+
 export const init = async (refresh = false) => {
     try {
         const token = await getToken();
