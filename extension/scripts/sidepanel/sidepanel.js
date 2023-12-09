@@ -77,6 +77,7 @@ export function createListElement(list, classname) {
     return fragment;
 }
 
+let timeoutId;
 let autosave = false;
 let autolink = true;
 let dropItems = [];
@@ -90,7 +91,6 @@ const rootButton = document.querySelector(".root-button");
 const listButton = document.querySelector(".list-button");
 const saveButton = document.querySelector(".save");
 const autoSaveButton = document.querySelector(".autosave");
-const historyIcon = document.querySelector(".history-icon");
 const addButton = document.querySelector(".add-button");
 const downButton = document.querySelector(".down-button");
 const leftButton = document.querySelector(".left-button");
@@ -444,12 +444,12 @@ function createDropElement(src, id) {
 
     doneButton.addEventListener("click", () => {
         saveDropImage(id);
-        clearImages();
+        callClearImages();
         setRecents();
     });
     cancelButton.addEventListener("click", () => {
         removeDropImage(id);
-        clearImages();
+        callClearImages();
         setRecents();
     });
     return div;
@@ -463,6 +463,12 @@ function clearImages() {
     }
 }
 
+function callClearImages() {
+    clearImages();
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(clearImages, 10000);
+}
+
 async function saveImages() {
     setRecents();
     for (let i in dropItems) {
@@ -470,7 +476,7 @@ async function saveImages() {
             saveDropImage(i);
         }
     }
-    setTimeout(clearImages, 5000);
+    callClearImages();
 }
 
 async function fetchChilds(id) {
