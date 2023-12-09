@@ -152,7 +152,8 @@ body,
 .autosave .img:hover {
     filter: invert(0.7);
 }
-.autosave.autosave-toggle .img {
+.autosave.active .img,
+.link.active .img {
     filter: none;
 }
 

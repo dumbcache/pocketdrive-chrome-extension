@@ -78,6 +78,7 @@ export function createListElement(list, classname) {
 }
 
 let autosave = false;
+let autolink = true;
 let dropItems = [];
 let selectedName = "";
 let parentName = "";
@@ -136,7 +137,7 @@ selected.addEventListener("click", (e) => {
     childs.hidden = true;
 });
 
-function setCurrentTabURL() {
+async function setCurrentTabURL() {
     chrome.tabs
         .query({ active: true, lastFocusedWindow: true })
         .then(([tab]) => {
@@ -234,10 +235,14 @@ createWrapper.addEventListener("click", () => {
 
 autoSaveButton.addEventListener("click", () => {
     autosave = !autosave;
-    autoSaveButton.classList.toggle("autosave-toggle");
+    autoSaveButton.classList.toggle("active");
+});
+linkButton.addEventListener("click", () => {
+    autolink = !autolink;
+    linkButton.classList.toggle("active");
+    autolink && setCurrentTabURL();
 });
 saveButton.addEventListener("click", saveImages);
-linkButton.addEventListener("click", setCurrentTabURL);
 rootButton.addEventListener("click", () => {
     pdWebsite.style.display = "none";
     appBody.style.display = "flex";
@@ -305,8 +310,8 @@ function toggleDropHighlight() {
  */
 function dropHandler(e) {
     e.preventDefault();
+    autolink && setCurrentTabURL();
     app.classList.remove("highlight");
-    setCurrentTabURL();
     if (e.dataTransfer?.files) {
         previewAndSetDropItems(e.dataTransfer.files);
     }
