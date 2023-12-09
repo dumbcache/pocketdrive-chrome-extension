@@ -74,93 +74,6 @@ export function createOptionsElement(dirs) {
     return options;
 }
 
-export function initMain(root, dirs) {
-    const main = createElement("main", [["class", "main"]]);
-    main.style.display = "none";
-
-    const listIcon = createImgElement(iconPath("listIcon"), "menu-img");
-    const addIcon = createImgElement(iconPath("addIcon"), "add-img");
-    const sendIcon = createImgElement(iconPath("sendIcon"), "send-img");
-    const doneIcon = createImgElement(iconPath("doneIcon"), "done-img");
-    const cancelIcon = createImgElement(iconPath("cancelIcon"), "cancel-img");
-    const dirStatusIcon = createImgElement(
-        iconPath("statusIcon"),
-        "status-img",
-        "dir-progress"
-    );
-
-    const addButton = createButtonElement(addIcon, "add-button");
-    const sendButton = createButtonElement(sendIcon, "send-button");
-    const doneButton = createButtonElement(doneIcon, "done-button");
-    const cancelButton = createButtonElement(cancelIcon, "cancel-button");
-    const listButton = createButtonElement(listIcon, "list-button");
-    const rootButton = createButtonElement("/r", "root-button");
-    rootButton.title = "save to root directory";
-
-    const menu = createElement(
-        "div",
-        [["class", "menu"]],
-        listButton,
-        rootButton
-    );
-    const mainImg = createImgElement("", "pic");
-    const selection = createElement("div", [["class", "selection"]]);
-    const selected = createElement(
-        "div",
-        [
-            ["class", "selected"],
-            ["data-id", root],
-            ["data-dir-name", "root"],
-        ],
-        "root"
-    );
-    const recents = createElement(
-        "div",
-        [["class", "recents"]],
-        createOptionsElement([])
-    );
-    selection.append(selected, doneButton, recents);
-
-    const list = createElement("div", [["class", "list"]]);
-    /**
-     *  @type {HTMLInputElement}
-     */
-    let search = createElement("input", [
-        ["class", "search"],
-        ["placeholder", "Search Directory"],
-    ]);
-    const parents = createElement(
-        "div",
-        [["class", `parents`]],
-        createOptionsElement(dirs)
-    );
-    const childs = createElement(
-        "div",
-        [["class", "childs"]],
-        createOptionsElement([])
-    );
-    list.append(search, sendButton, dirStatusIcon, addButton, childs, parents);
-
-    main.append(menu, mainImg, selection, list, cancelButton);
-    return {
-        main,
-        addButton,
-        cancelButton,
-        doneButton,
-        sendButton,
-        selected,
-        recents,
-        dirStatusIcon,
-        search,
-        list,
-        childs,
-        parents,
-        listButton,
-        rootButton,
-        mainImg,
-    };
-}
-
 export function initBulk() {
     const bulk = createElement("div", [["class", "bulk"]]);
     bulk.style.display = "none";
@@ -170,25 +83,11 @@ export function initBulk() {
         cancelIcon,
         "bulk-cancel-button"
     );
-    const okIconPath = chrome.runtime.getURL("images/doneIcon.svg");
-    const okIcon = createImgElement(okIconPath, "ok-img");
-    const bulkOkButton = createButtonElement(okIcon, "bulk-ok-button");
-    const selectedCount = createElement("span", [], 0);
-    const check = createElement("input", [
-        ["class", "check"],
-        ["type", "checkbox"],
-    ]);
-    const ele = createElement(
-        "div",
-        [["class", "count"]],
-        "Selected:  ",
-        selectedCount,
-        check
-    );
-    const wrapper = createElement("div", [["class", "bulk-wrapper"]]);
-    bulk.append(ele, bulkOkButton, bulkCancelButton, wrapper);
 
-    return { bulk, check, bulkOkButton, bulkCancelButton, selectedCount };
+    const wrapper = createElement("div", [["class", "bulk-wrapper"]]);
+    bulk.append(bulkCancelButton, wrapper);
+
+    return { bulk, bulkCancelButton };
 }
 /**
  *

@@ -122,6 +122,7 @@ try {
                             status: 200,
                             src: info.srcUrl,
                         });
+                    console.log(await fetch(info.srcUrl));
                     return;
             }
         } catch (error) {
