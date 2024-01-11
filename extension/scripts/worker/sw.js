@@ -75,7 +75,7 @@ try {
             let { newValue } = changes.recents;
             const { active, recents } = await chrome.storage.local.get();
             if (newValue) {
-                if (newValue[active]?.length > 50) {
+                if (newValue[active]?.length > 100) {
                     newValue[active].pop();
                     recents[active] = newValue[active];
                     chrome.storage.local.set({ recents }, checkRuntimeError);
