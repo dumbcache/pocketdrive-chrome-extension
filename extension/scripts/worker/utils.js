@@ -164,10 +164,10 @@ export const addtoLocalDirs = async (data, parents) => {
 };
 
 export const saveimg = async (data) => {
-    let { origin, parents, blob, mimeType } = data;
+    let { origin, parents, blob, mimeType, name } = data;
     let token = await getToken();
     let imgMeta = {
-        name: `${Date.now()}`,
+        name,
         mimeType: mimeType || "image/webp",
         parents: [parents],
         description: decodeURI(origin),

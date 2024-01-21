@@ -169,8 +169,15 @@ try {
             if (message.context === "SAVE") {
                 (async () => {
                     try {
-                        const { id, dirName, parentName, src, blob, mimeType } =
-                            message.data;
+                        const {
+                            id,
+                            name,
+                            dirName,
+                            parentName,
+                            src,
+                            blob,
+                            mimeType,
+                        } = message.data;
                         updateRecents(id, dirName, parentName);
                         if (blob) {
                             let { status } = await saveimg({
@@ -179,6 +186,7 @@ try {
                                 parents: id,
                                 blob,
                                 mimeType,
+                                name,
                             });
                             sendResponse({ code: status });
                         } else {

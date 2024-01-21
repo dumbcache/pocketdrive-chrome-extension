@@ -83,6 +83,7 @@ let autolink = true;
 let dropItems = [];
 let selectedName = "";
 let parentName = "";
+let tabName = "";
 const ROOT_FOLDER = "#Pocket_Drive";
 let ROOT_ID = "";
 
@@ -137,6 +138,13 @@ selected.addEventListener("click", (e) => {
     childs.hidden = true;
 });
 
+async function setCurrentTabName() {
+    chrome.tabs
+        .query({ active: true, lastFocusedWindow: true })
+        .then(([tab]) => {
+            tabName = tab.title;
+        });
+}
 async function setCurrentTabURL() {
     chrome.tabs
         .query({ active: true, lastFocusedWindow: true })
@@ -310,6 +318,7 @@ function toggleDropHighlight() {
  */
 function dropHandler(e) {
     e.preventDefault();
+    setCurrentTabName();
     autolink && setCurrentTabURL();
     app.classList.remove("highlight");
     if (e.dataTransfer?.files) {
@@ -346,6 +355,7 @@ function previewAndSetDropItems(files) {
                     dropItems = {
                         ...dropItems,
                         [id]: {
+                            name: tabName,
                             mimeType: img.type,
                             bytes,
                             status: "",
@@ -370,6 +380,7 @@ function previewAndSetDropItems(files) {
                         dropItems = {
                             ...dropItems,
                             [id]: {
+                                name: tabName,
                                 mimeType: blob?.type,
                                 bytes,
                                 status: "",
@@ -407,6 +418,7 @@ async function saveDropImage(id) {
         context: "SAVE",
         data: {
             id: selected.dataset.id,
+            name: item.name,
             dirName: selected.innerText,
             parentName: parentName,
             src: document.querySelector("#url").value,
