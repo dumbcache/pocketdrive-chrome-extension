@@ -78,7 +78,7 @@ export function createListElement(list, classname) {
 }
 
 let timeoutId;
-let autosave = false;
+let autosave = true;
 let autolink = true;
 let dropItems = [];
 let selectedName = "";
