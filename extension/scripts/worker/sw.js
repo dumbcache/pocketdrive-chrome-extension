@@ -91,17 +91,11 @@ try {
                     init(true);
                     return;
                 case "login":
-                    chrome.sidePanel.setPanelBehavior({
-                        openPanelOnActionClick: true,
-                    });
                 case "token":
                     login();
                     return;
                 case "logout":
                     logout();
-                    chrome.sidePanel.setPanelBehavior({
-                        openPanelOnActionClick: false,
-                    });
                     return;
                 case "images":
                     try {

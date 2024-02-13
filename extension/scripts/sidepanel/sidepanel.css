@@ -3,10 +3,11 @@
     --size-system: 62.5%;
     --font-size-default: 1.6rem;
 
-    --color-primary: #ffffffa6;
+    --color-primary: #ffffffbb;
     --color-background: #111;
     --color-purple: #784dca;
     --color-purple-background: #251f36;
+    --color-purple-background: #123;
 }
 
 :root {
@@ -38,6 +39,7 @@
     padding: 0rem;
     box-sizing: inherit;
     scroll-behavior: inherit;
+    font-family: inherit;
 }
 
 body {
@@ -86,7 +88,7 @@ body,
     padding: 1rem 2rem;
     background: none;
     border: 1px solid #fff5;
-    color: #4ff;
+    color: #aaa;
     border-radius: 0.5rem;
     cursor: pointer;
 }
@@ -101,8 +103,8 @@ body,
     align-items: center;
     gap: 0.5rem;
     padding: 1rem;
-    border-bottom: 1px solid var(--color-purple);
-    background-color: var(--color-purple-background);
+    border-bottom: 1px solid #aaaa;
+    background-color: #123;
     position: sticky;
     top: 0;
     z-index: 5;
@@ -195,8 +197,7 @@ body,
     top: 3rem;
     user-select: none;
     background-color: #333;
-    border: 1px solid var(--color-purple);
-    border-top: none;
+    border: 1px solid #aaaa;
     border-radius: 0.5rem;
     overflow-y: scroll;
     overflow-x: hidden;
@@ -244,10 +245,10 @@ body,
     bottom: 0;
     left: 0;
     right: 0;
-    background-color: #6665;
+    background-color: #5555;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-    z-index: 1;
+    z-index: 5;
     place-content: center;
 }
 .create-form {
@@ -274,8 +275,8 @@ body,
     left: 0;
     right: 0;
     padding: 1rem;
-    border-top: 1px solid var(--color-purple);
-    background-color: var(--color-purple-background);
+    border-top: 1px solid #aaaa;
+    background-color: #123;
     z-index: 1;
     gap: 1rem;
 }

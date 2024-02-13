@@ -103,6 +103,11 @@ const recents = document.querySelector(".recents");
 const dirs = document.querySelector(".dirs");
 const childs = document.querySelector(".childs");
 /**
+ * @type {HTMLInputElement}
+ */
+const url = document.querySelector("#url");
+url.onfocus = (e) => url.select();
+/**
  * @type {HTMLIFrameElement}
  */
 const pdWebsite = document.querySelector(".pocketdrive-website");
