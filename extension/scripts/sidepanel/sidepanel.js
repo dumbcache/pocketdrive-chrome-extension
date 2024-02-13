@@ -115,6 +115,15 @@ const appBody = document.querySelector(".app-body");
  */
 const footer = document.querySelector(".footer");
 /**
+ * @type {HTMLButtonElement}
+ */
+const loginbutton = document.querySelector(".login-button");
+loginbutton.addEventListener("click", async () => {
+    chrome.runtime.sendMessage({
+        context: "LOGIN",
+    });
+});
+/**
  * @type {HTMLDivElement}
  */
 const pdButton = document.querySelector(".pd-button");
@@ -556,8 +565,32 @@ window.addEventListener("click", () => {
 
 window.addEventListener("load", async () => {
     const { active, roots } = await chrome.storage.local.get();
+    if (!active) {
+        document.querySelector(".app").hidden = true;
+        document.querySelector(".login").style.display = "grid";
+        return;
+    }
+    document.querySelector(".login").style.display = "none";
     ROOT_ID = roots[active];
     setDefaultSelected();
     setRecents();
     setDirs();
+});
+
+chrome.runtime.onMessage.addListener(async (message) => {
+    if (message.context === "LOGIN") {
+        document.querySelector(".login").style.display = "none";
+        document.querySelector(".app").hidden = false;
+        const { active, roots } = await chrome.storage.local.get();
+        ROOT_ID = roots[active];
+        setDefaultSelected();
+        setRecents();
+        setDirs();
+        return;
+    }
+    if (message.context === "LOGOUT") {
+        document.querySelector(".app").hidden = true;
+        document.querySelector(".login").style.display = "grid";
+        return;
+    }
 });

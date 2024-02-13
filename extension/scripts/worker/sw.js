@@ -91,11 +91,17 @@ try {
                     init(true);
                     return;
                 case "login":
+                    chrome.sidePanel.setPanelBehavior({
+                        openPanelOnActionClick: true,
+                    });
                 case "token":
                     login();
                     return;
                 case "logout":
                     logout();
+                    chrome.sidePanel.setPanelBehavior({
+                        openPanelOnActionClick: false,
+                    });
                     return;
                 case "images":
                     try {
@@ -134,6 +140,10 @@ try {
         /******** Related to content scripts *******/
         try {
             if (isSystemPage(sender.tab)) return;
+            if (message.context === "LOGIN") {
+                login();
+                return;
+            }
             if (message.context === "CHILD_DIRS") {
                 (async () => {
                     try {

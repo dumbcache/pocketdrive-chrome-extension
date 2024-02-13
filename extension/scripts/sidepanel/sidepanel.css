@@ -74,6 +74,25 @@ body,
 .pocketdrive-website::-webkit-scrollbar {
     display: none;
 }
+.login {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-content: center;
+}
+
+.login button {
+    font-size: 1.6rem;
+    padding: 1rem 2rem;
+    background: none;
+    border: 1px solid #fff5;
+    color: #4ff;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+.login button:hover {
+    background-color: #fff1;
+}
 
 .header {
     display: flex;
